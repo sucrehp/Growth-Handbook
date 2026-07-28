@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>阿墨逗成长手册 · 管理后台</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #2C3E6B;
+      --primary-light: #4A5C8A;
+      --accent: #D4A853;
+      --accent-light: #F0D890;
+      --bg: #F8F6F2;
+      --bg-card: #FFFFFF;
+      --bg-input: #F5F3EF;
+      --text: #2D2D3A;
+      --text-mid: #666680;
+      --text-light: #9999AA;
+      --border: #E8E4DC;
+      --success: #4CAF50;
+      --danger: #E57373;
+      --shadow: 0 2px 12px rgba(44,62,107,0.08);
+      --radius: 12px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Noto Sans SC',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+    
+    /* ===== Login View ===== */
+    .login-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+    .login-card { background:#fff; border-radius:16px; padding:48px 40px; width:100%; max-width:400px; box-shadow:var(--shadow); text-align:center; }
+    .login-logo { font-size:28px; font-weight:700; color:var(--primary); margin-bottom:4px; }
+    .login-sub { font-size:14px; color:var(--text-light); margin-bottom:32px; }
+    .login-card .gold-line { width:48px; height:3px; background:var(--accent); margin:0 auto 32px; border-radius:2px; }
+    
+    /* ===== Form Elements ===== */
+    .form-group { margin-bottom:16px; text-align:left; }
+    .form-group label { display:block; font-size:13px; font-weight:500; color:var(--text-mid); margin-bottom:6px; }
+    .form-input { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; background:var(--bg-input); transition:border-color .2s; outline:none; }
+    .form-input:focus { border-color:var(--accent); background:#fff; }
+    textarea.form-input { resize:vertical; min-height:80px; }
+    select.form-input { cursor:pointer; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+    
+    /* ===== Buttons ===== */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; border:none; border-radius:8px; font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; transition:all .2s; }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:hover { background:var(--primary-light); }
+    .btn-accent { background:var(--accent); color:#fff; }
+    .btn-accent:hover { background:#C49843; }
+    .btn-outline { background:transparent; border:1.5px solid var(--border); color:var(--text-mid); }
+    .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+    .btn-danger { background:transparent; border:1.5px solid var(--danger); color:var(--danger); }
+    .btn-danger:hover { background:var(--danger); color:#fff; }
+    .btn-sm { padding:6px 14px; font-size:13px; }
+    .btn-block { width:100%; justify-content:center; }
+    .btn-icon { width:36px; height:36px; padding:0; justify-content:center; border-radius:8px; }
+    
+    /* ===== Header ===== */
+    .header { background:#fff; border-bottom:1px solid var(--border); padding:0 24px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+    .header-brand { display:flex; align-items:center; gap:10px; }
+    .header-brand .logo { font-size:20px; font-weight:700; color:var(--primary); }
+    .header-brand .divider { width:1px; height:20px; background:var(--border); }
+    .header-brand .page-title { font-size:14px; color:var(--text-mid); }
+    .header-actions { display:flex; align-items:center; gap:8px; }
+    
+    /* ===== Dashboard ===== */
+    .dashboard { max-width:1100px; margin:0 auto; padding:24px; }
+    .dash-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+    .dash-toolbar h2 { font-size:20px; font-weight:600; }
+    .search-box { position:relative; }
+    .search-box input { padding:8px 14px 8px 36px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; width:240px; outline:none; background:var(--bg-input); }
+    .search-box input:focus { border-color:var(--accent); background:#fff; }
+    .search-box svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-light); }
+    
+    .child-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px; }
+    .child-card { background:#fff; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); cursor:pointer; transition:all .2s; border:2px solid transparent; position:relative; }
+    .child-card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 4px 20px rgba(44,62,107,0.12); }
+    .child-card .card-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .child-card .avatar { width:48px; height:48px; border-radius:50%; background:var(--bg-input); display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; flex-shrink:0; }
+    .child-card .avatar img { width:100%; height:100%; object-fit:cover; }
+    .child-card .card-name { font-size:18px; font-weight:600; }
+    .child-card .card-class { font-size:13px; color:var(--text-light); }
+    .child-card .card-meta { display:flex; gap:8px; flex-wrap:wrap; }
+    .child-card .tag { padding:3px 10px; border-radius:20px; font-size:12px; background:var(--bg-input); color:var(--text-mid); }
+    .child-card .tag.male { background:#E8F0FE; color:#1A5DC8; }
+    .child-card .tag.female { background:#FDE8EF; color:#C81A5D; }
+    .child-card .share-link { display:flex; align-items:center; gap:6px; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+    .child-card .share-link input { flex:1; border:none; background:transparent; font-size:12px; color:var(--text-light); outline:none; font-family:inherit; }
+    .child-card .share-link .btn-copy { padding:4px 10px; font-size:12px; border-radius:6px; }
+    .child-card .card-actions { position:absolute; top:12px; right:12px; display:flex; gap:4px; opacity:0; transition:opacity .2s; }
+    .child-card:hover .card-actions { opacity:1; }
+    
+    .empty-state { text-align:center; padding:60px 20px; color:var(--text-light); }
+    .empty-state .icon { font-size:48px; margin-bottom:16px; }
+    .empty-state p { font-size:15px; margin-bottom:20px; }
+    
+    /* ===== Editor ===== */
+    .editor-wrap { max-width:900px; margin:0 auto; padding:24px; }
+    .editor-header { display:flex; align-items:center; gap:16px; margin-bottom:24px; }
+    .editor-header .back-btn { width:40px; height:40px; border-radius:10px; border:1.5px solid var(--border); background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; flex-shrink:0; }
+    .editor-header .back-btn:hover { border-color:var(--accent); }
+    .editor-header .info { flex:1; }
+    .editor-header .info h2 { font-size:22px; font-weight:600; }
+    .editor-header .info .sub { font-size:13px; color:var(--text-light); margin-top:2px; }
+    
+    .tabs { display:flex; gap:4px; background:#fff; border-radius:var(--radius); padding:4px; box-shadow:var(--shadow); margin-bottom:20px; overflow-x:auto; }
+    .tab { padding:8px 16px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; transition:all .2s; color:var(--text-mid); border:none; background:transparent; font-family:inherit; }
+    .tab:hover { background:var(--bg-input); }
+    .tab.active { background:var(--primary); color:#fff; }
+    
+    .tab-panel { background:#fff; border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); }
+    .tab-panel h3 { font-size:16px; font-weight:600; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    
+    /* ===== Content List (for repeated items) ===== */
+    .content-list { display:flex; flex-direction:column; gap:12px; margin-bottom:16px; }
+    .content-item { background:var(--bg); border-radius:10px; padding:16px; position:relative; }
+    .content-item .item-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .content-item .item-header .item-title { font-weight:500; font-size:14px; }
+    .content-item .item-actions { display:flex; gap:4px; }
+    .content-item .item-body { font-size:13px; color:var(--text-mid); line-height:1.6; }
+    .content-item .item-meta { font-size:12px; color:var(--text-light); margin-top:6px; }
+    
+    .add-section { border:2px dashed var(--border); border-radius:10px; padding:20px; text-align:center; cursor:pointer; transition:all .2s; color:var(--text-light); }
+    .add-section:hover { border-color:var(--accent); color:var(--accent); }
+    
+    /* ===== Photo Upload ===== */
+    .photo-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:12px; margin-bottom:16px; }
+    .photo-thumb { aspect-ratio:1; border-radius:10px; overflow:hidden; position:relative; background:var(--bg-input); cursor:pointer; }
+    .photo-thumb img { width:100%; height:100%; object-fit:cover; }
+    .photo-thumb .remove { position:absolute; top:4px; right:4px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,0.5); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; opacity:0; transition:opacity .2s; }
+    .photo-thumb:hover .remove { opacity:1; }
+    .photo-upload-btn { aspect-ratio:1; border:2px dashed var(--border); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; color:var(--text-light); font-size:13px; gap:4px; }
+    .photo-upload-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .photo-upload-btn svg { width:24px; height:24px; }
+    
+    /* ===== Modal ===== */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .modal-overlay.show { opacity:1; pointer-events:auto; }
+    .modal { background:#fff; border-radius:16px; padding:28px; width:100%; max-width:520px; max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.15); }
+    .modal h3 { font-size:18px; font-weight:600; margin-bottom:20px; }
+    .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; }
+    
+    /* ===== Toast ===== */
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--primary); color:#fff; padding:12px 24px; border-radius:10px; font-size:14px; z-index:2000; transition:transform .3s; box-shadow:0 4px 16px rgba(0,0,0,0.2); }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast.success { background:var(--success); }
+    .toast.error { background:var(--danger); }
+    
+    /* ===== Share Dialog ===== */
+    .share-url-box { display:flex; gap:8px; align-items:center; background:var(--bg); border-radius:8px; padding:8px 12px; margin-top:8px; }
+    .share-url-box input { flex:1; border:none; background:transparent; font-size:13px; color:var(--text); outline:none; font-family:inherit; }
+    .share-url-box .btn { flex-shrink:0; }
+    
+    /* ===== Style Selector ===== */
+    .style-options { display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; }
+    .style-opt { border:2px solid var(--border); border-radius:10px; padding:14px; cursor:pointer; transition:all .2s; text-align:center; }
+    .style-opt:hover { border-color:var(--accent); }
+    .style-opt.selected { border-color:var(--accent); background:rgba(212,168,83,0.08); }
+    .style-opt .style-icon { font-size:24px; margin-bottom:6px; }
+    .style-opt .style-name { font-size:13px; font-weight:500; }
+    
+    /* ===== Loading ===== */
+    .loading { display:flex; align-items:center; justify-content:center; padding:40px; }
+    .spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    
+    /* ===== Responsive ===== */
+    @media (max-width:768px) {
+      .form-row, .form-row-3 { grid-template-columns:1fr; }
+      .child-grid { grid-template-columns:1fr; }
+      .dash-toolbar { flex-direction:column; gap:12px; align-items:stretch; }
+      .search-box input { width:100%; }
+      .tabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .editor-wrap { padding:16px; }
+      .style-options { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modal-content"></div>
+  </div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+  // ============================================
+  // Configuration
+  // ============================================
+  // ⚠️ 请替换为你的 Supabase 项目信息
+  const SUPABASE_URL = 'https://mcworpfnawdtitjvggsi.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_Dcia8-L7jVCXgGGJXMQYnw_Pc_ZF4Xb';
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ============================================
+  // State
+  // ============================================
+  let user = null;
+  let children = [];
+  let currentChild = null;
+  let currentContent = {};
+  let activeTab = 'basic';
+  let searchQuery = '';
+
+  const STYLES = [
+    { id: 'boy_space', name: '星空探索', icon: '🚀', desc: '深空蓝+星光金' },
+    { id: 'boy_forest', name: '森林探险', icon: '🌿', desc: '森林绿+木棕金' },
+    { id: 'girl_garden', name: '梦幻花园', icon: '🌸', desc: '玫瑰粉+蜜桃金' },
+    { id: 'girl_rainbow', name: '阳光彩虹', icon: '🌈', desc: '暖珊瑚+阳光黄' },
+  ];
+
+  // ============================================
+  // Utilities
+  // ============================================
+  function toast(msg, type = '') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show ' + type;
+    setTimeout(() => el.className = 'toast', 2500);
+  }
+
+  function openModal(html) {
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('modal-overlay').classList.add('show');
+  }
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('show');
+  }
+
+  function formatDate(d) {
+    if (!d) return '';
+    return new Date(d).toLocaleDateString('zh-CN');
+  }
+
+  function getPhotoUrl(path) {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const { data } = db.storage.from('photos').getPublicUrl(path);
+    return data?.publicUrl || '';
+  }
+
+  async function uploadPhoto(file) {
+    const ext = file.name.split('.').pop();
+    const path = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await db.storage.from('photos').upload(path, file);
+    if (error) throw error;
+    return path;
+  }
+
+  // ============================================
+  // Auth
+  // ============================================
+  async function checkAuth() {
+    const { data: { session } } = await db.auth.getSession();
+    if (session) {
+      user = session.user;
+      renderDashboard();
+    } else {
+      renderLogin();
+    }
+  }
+
+  async function login(email, password) {
+    const { error } = await db.auth.signInWithPassword({ email, password });
+    if (error) { toast(error.message === 'Invalid login credentials' ? '邮箱或密码错误' : error.message, 'error'); return; }
+    const { data: { session } } = await db.auth.getSession();
+    user = session.user;
+    toast('登录成功', 'success');
+    renderDashboard();
+  }
+
+  async function logout() {
+    await db.auth.signOut();
+    user = null;
+    children = [];
+    currentChild = null;
+    renderLogin();
+  }
+
+  // ============================================
+  // Data Loading
+  // ============================================
+  async function loadChildren() {
+    const { data, error } = await db.from('children').select('*').order('created_at', { ascending: false });
+    if (error) { toast('加载数据失败: ' + error.message, 'error'); return; }
+    children = data || [];
+  }
+
+  async function loadChildContent(childId) {
+    const tables = ['growth_timeline', 'course_records', 'teacher_comments', 'photo_records', 'activity_records', 'achievements', 'parent_messages'];
+    const keys = ['timeline', 'courses', 'comments', 'photos', 'activities', 'achievements', 'messages'];
+    const results = await Promise.all(
+      tables.map((t, i) => db.from(t).select('*').eq('child_id', childId).order('sort_order').order('event_date', { ascending: false }))
+    );
+    currentContent = {};
+    keys.forEach((k, i) => {
+      currentContent[k] = results[i].data || [];
+    });
+  }
+
+  // ============================================
+  // Render: Login
+  // ============================================
+  function renderLogin() {
+    document.getElementById('app').innerHTML = `
+      <div class="login-wrap">
+        <div class="login-card">
+          <div class="login-logo">阿墨逗</div>
+          <div class="login-sub">儿童成长中心 · 成长手册管理</div>
+          <div class="gold-line"></div>
+          <form onsubmit="event.preventDefault(); login(this.email.value, this.password.value)">
+            <div class="form-group">
+              <label>管理员邮箱</label>
+              <input class="form-input" name="email" type="email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group">
+              <label>密码</label>
+              <input class="form-input" name="password" type="password" placeholder="输入密码" required>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit" style="margin-top:8px">登 录</button>
+          </form>
+          <p style="margin-top:20px;font-size:12px;color:var(--text-light)">首次使用请在 Supabase 中创建账号</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // ============================================
+  // Render: Dashboard
+  // ============================================
+  async function renderDashboard() {
+    document.getElementById('app').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    await loadChildren();
+
+    const filtered = searchQuery
+      ? children.filter(c => c.name.includes(searchQuery) || (c.class_name || '').includes(searchQuery))
+      : children;
+
+    const cardsHtml = filtered.length ? filtered.map(c => {
+      const avatarHtml = c.avatar_url
+        ? `<img src="${getPhotoUrl(c.avatar_url)}" alt="">`
+        : (c.gender === 'female' ? '👧' : '👦');
+      const shareUrl = `${location.origin}/child.html?t=${c.share_token}`;
+      return `
+        <div class="child-card" onclick="openEditor('${c.id}')">
+          <div class="card-actions">
+            <button class="btn btn-icon btn-outline btn-sm" onclick="event.stopPropagation();editShare('${c.id}','${c.share_token}')" title="分享链接">🔗</button>
+            <button class="btn btn-icon btn-outline btn-sm" onclick="event.stopPropagation();deleteChild('${c.id}','${c.name}')" title="删除">🗑</button>
+          </div>
+          <div class="card-header">
+            <div class="avatar">${avatarHtml}</div>
+            <div>
+              <div class="card-name">${c.name}</div>
+              <div class="card-class">${c.class_name || '未分班'}</div>
+            </div>
+          </div>
+          <div class="card-meta">
+            <span class="tag ${c.gender === 'male' ? 'male' : c.gender === 'female' ? 'female' : ''}">${c.gender === 'male' ? '男' : c.gender === 'female' ? '女' : '未设置'}</span>
+            ${c.birthday ? `<span class="tag">生日 ${formatDate(c.birthday)}</span>` : ''}
+            ${c.enrollment_date ? `<span class="tag">入学 ${formatDate(c.enrollment_date)}</span>` : ''}
+          </div>
+          <div class="share-link">
+            <input value="${shareUrl}" readonly onclick="event.stopPropagation();this.select()">
+            <button class="btn btn-outline btn-sm btn-copy" onclick="event.stopPropagation();copyLink('${shareUrl}')">复制</button>
+          </div>
+        </div>
+      `;
+    }).join('') : `<div class="empty-state" style="grid-column:1/-1"><div class="icon">📋</div><p>${searchQuery ? '没有找到匹配的孩子' : '还没有添加孩子，点击上方按钮开始'}</p></div>`;
+
+    document.getElementById('app').innerHTML = `
+      <div class="header">
+        <div class="header-brand">
+          <span class="logo">阿墨逗</span>
+          <span class="divider"></span>
+          <span class="page-title">成长手册管理</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline btn-sm" onclick="logout()">退出登录</button>
+        </div>
+      </div>
+      <div class="dashboard">
+        <div class="dash-toolbar">
+          <h2>全部孩子 (${children.length})</h2>
+          <div style="display:flex;gap:8px">
+            <div class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input placeholder="搜索姓名或班级..." value="${searchQuery}" oninput="searchQuery=this.value;renderDashboard()">
+            </div>
+            <button class="btn btn-accent" onclick="addChild()">+ 添加孩子</button>
+          </div>
+        </div>
+        <div class="child-grid">${cardsHtml}</div>
+      </div>
+    `;
+  }
+
+  // ============================================
+  // Render: Editor
+  // ============================================
+  async function openEditor(childId) {
+    document.getElementById('app').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    const { data } = await db.from('children').select('*').eq('id', childId).single();
+    if (!data) { toast('加载失败', 'error'); renderDashboard(); return; }
+    currentChild = data;
+    await loadChildContent(childId);
+    activeTab = 'basic';
+    renderEditor();
+  }
+
+  function renderEditor() {
+    const c = currentChild;
+    const avatarHtml = c.avatar_url
+      ? `<img src="${getPhotoUrl(c.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+      : (c.gender === 'female' ? '👧' : '👦');
+
+    const tabDefs = [
+      { id: 'basic', label: '基本信息' },
+      { id: 'timeline', label: '成长时间线' },
+      { id: 'courses', label: '课程记录' },
+      { id: 'comments', label: '老师评语' },
+      { id: 'photos', label: '照片库' },
+      { id: 'activities', label: '活动记录' },
+      { id: 'achievements', label: '获奖成就' },
+      { id: 'messages', label: '家长留言' },
+    ];
+
+    const tabsHtml = tabDefs.map(t =>
+      `<button class="tab ${activeTab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.label}</button>`
+    ).join('');
+
+    document.getElementById('app').innerHTML = `
+      <div class="header">
+        <div class="header-brand">
+          <span class="logo">阿墨逗</span>
+          <span class="divider"></span>
+          <span class="page-title">编辑手册</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline btn-sm" onclick="previewChild()">👁 预览</button>
+          <button class="btn btn-outline btn-sm" onclick="renderDashboard()">← 返回列表</button>
+        </div>
+      </div>
+      <div class="editor-wrap">
+        <div class="editor-header">
+          <div class="back-btn" onclick="renderDashboard()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          </div>
+          <div class="avatar" style="width:52px;height:52px;border-radius:50%;background:var(--bg-input);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;flex-shrink:0">${avatarHtml}</div>
+          <div class="info">
+            <h2>${c.name}</h2>
+            <div class="sub">${c.class_name || ''} · ${STYLES.find(s => s.id === c.style_preference)?.name || '星空探索'}</div>
+          </div>
+        </div>
+        <div class="tabs">${tabsHtml}</div>
+        <div class="tab-panel" id="tab-panel"></div>
+      </div>
+    `;
+    renderTabContent();
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    renderTabContent();
+  }
+
+  // ============================================
+  // Tab Content Renderers
+  // ============================================
+  function renderTabContent() {
+    const panel = document.getElementById('tab-panel');
+    switch (activeTab) {
+      case 'basic': renderBasicTab(panel); break;
+      case 'timeline': renderListTab(panel, 'timeline', '成长时间线', timelineItemHtml, 'timelineModal'); break;
+      case 'courses': renderListTab(panel, 'courses', '课程记录', courseItemHtml, 'courseModal'); break;
+      case 'comments': renderListTab(panel, 'comments', '老师评语', commentItemHtml, 'commentModal'); break;
+      case 'photos': renderPhotosTab(panel); break;
+      case 'activities': renderListTab(panel, 'activities', '活动记录', activityItemHtml, 'activityModal'); break;
+      case 'achievements': renderListTab(panel, 'achievements', '获奖成就', achievementItemHtml, 'achievementModal'); break;
+      case 'messages': renderListTab(panel, 'messages', '家长留言', messageItemHtml, 'messageModal'); break;
+    }
+  }
+
+  // --- Basic Info Tab ---
+  function renderBasicTab(panel) {
+    const c = currentChild;
+    const styleOptions = STYLES.map(s => `
+      <div class="style-opt ${c.style_preference === s.id ? 'selected' : ''}" onclick="selectStyle('${s.id}')">
+        <div class="style-icon">${s.icon}</div>
+        <div class="style-name">${s.name}</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:2px">${s.desc}</div>
+      </div>
+    `).join('');
+
+    panel.innerHTML = `
+      <h3>基本信息</h3>
+      <form id="basicForm" onsubmit="event.preventDefault();saveBasic()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>姓名 *</label>
+            <input class="form-input" name="name" value="${c.name || ''}" required>
+          </div>
+          <div class="form-group">
+            <label>性别</label>
+            <select class="form-input" name="gender">
+              <option value="">请选择</option>
+              <option value="male" ${c.gender === 'male' ? 'selected' : ''}>男</option>
+              <option value="female" ${c.gender === 'female' ? 'selected' : ''}>女</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>生日</label>
+            <input class="form-input" name="birthday" type="date" value="${c.birthday || ''}">
+          </div>
+          <div class="form-group">
+            <label>班级</label>
+            <input class="form-input" name="class_name" value="${c.class_name || ''}" placeholder="如：英语A班">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>入学日期</label>
+            <input class="form-input" name="enrollment_date" type="date" value="${c.enrollment_date || ''}">
+          </div>
+          <div class="form-group">
+            <label>头像</label>
+            <input class="form-input" name="avatar_file" type="file" accept="image/*" onchange="uploadAvatar(this)">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>备注</label>
+          <textarea class="form-input" name="notes" rows="2">${c.notes || ''}</textarea>
+        </div>
+        <div class="form-group">
+          <label>手册风格</label>
+          <div class="style-options">${styleOptions}</div>
+          <input type="hidden" name="style_preference" value="${c.style_preference || 'boy_space'}">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:20px">
+          <button class="btn btn-primary" type="submit">保存信息</button>
+        </div>
+      </form>
+      <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+        <h3 style="border:none;padding:0;margin-bottom:12px">分享链接</h3>
+        <div class="share-url-box">
+          <input value="${location.origin}/child.html?t=${c.share_token}" readonly id="shareUrlInput">
+          <button class="btn btn-accent btn-sm" onclick="copyLink('${location.origin}/child.html?t=${c.share_token}')">复制链接</button>
+          <button class="btn btn-outline btn-sm" onclick="previewChild()">预览</button>
+        </div>
+        <p style="font-size:12px;color:var(--text-light);margin-top:8px">将此链接发送给家长，即可查看孩子的成长手册</p>
+      </div>
+    `;
+  }
+
+  async function saveBasic() {
+    const form = document.getElementById('basicForm');
+    const data = {
+      name: form.name.value,
+      gender: form.gender.value || null,
+      birthday: form.birthday.value || null,
+      class_name: form.class_name.value || null,
+      enrollment_date: form.enrollment_date.value || null,
+      notes: form.notes.value || null,
+      style_preference: form.style_preference.value,
+    };
+    const { error } = await db.from('children').update(data).eq('id', currentChild.id);
+    if (error) { toast('保存失败: ' + error.message, 'error'); return; }
+    Object.assign(currentChild, data);
+    toast('保存成功', 'success');
+    renderEditor();
+  }
+
+  async function uploadAvatar(input) {
+    if (!input.files[0]) return;
+    try {
+      const path = await uploadPhoto(input.files[0]);
+      const { error } = await db.from('children').update({ avatar_url: path }).eq('id', currentChild.id);
+      if (error) throw error;
+      currentChild.avatar_url = path;
+      toast('头像上传成功', 'success');
+      renderEditor();
+    } catch (e) {
+      toast('上传失败: ' + e.message, 'error');
+    }
+  }
+
+  function selectStyle(id) {
+    currentChild.style_preference = id;
+    document.querySelector('[name=style_preference]').value = id;
+    document.querySelectorAll('.style-opt').forEach(el => el.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+  }
+
+  // --- Generic List Tab ---
+  function renderListTab(panel, key, title, itemRenderer, modalId) {
+    const items = currentContent[key] || [];
+    const itemsHtml = items.length
+      ? items.map((item, i) => itemRenderer(item, i, key)).join('')
+      : '<div style="text-align:center;padding:20px;color:var(--text-light)">暂无记录</div>';
+
+    panel.innerHTML = `
+      <h3>${title} (${items.length})</h3>
+      <div class="content-list">${itemsHtml}</div>
+      <div class="add-section" onclick="open${modalId.charAt(0).toUpperCase() + modalId.slice(1)}()">
+        + 添加${title.replace('记录', '').replace('库', '')}
+      </div>
+    `;
+  }
+
+  function timelineItemHtml(item, i, key) {
+    return `
+      <div class="content-item">
+        <div class="item-header">
+          <span class="item-title">${item.title || '未命名事件'}</span>
+          <div class="item-actions">
+            <button class="btn btn-outline btn-sm" onclick="editListItem('${key}',${i})">编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteListItem('${key}','${item.id}')">删除</button>
+          </div>
+        </div>
+        <div class="item-body">${item.description || ''}</div>
+        <div class="item-meta">${formatDate(item.event_date)}</div>
+      </div>
+    `;
+  }
+  function courseItemHtml(item, i, key) {
+    return `
+      <div class="content-item">
+        <div class="item-header">
+          <span class="item-title">${item.course_name || '未命名课程'}</span>
+          <div class="item-actions">
+            <button class="btn btn-outline btn-sm" onclick="editListItem('${key}',${i})">编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteListItem('${key}','${item.id}')">删除</button>
+          </div>
+        </div>
+        <div class="item-body">${item.performance || ''}</div>
+        <div class="item-meta">${item.teacher_name || ''} ${item.date ? '· ' + formatDate(item.date) : ''}</div>
+      </div>
+    `;
+  }
+  function commentItemHtml(item, i, key) {
+    return `
+      <div class="content-item">
+        <div class="item-header">
+          <span class="item-title">${item.teacher_name || '老师'} · ${item.semester || ''}</span>
+          <div class="item-actions">
+            <button class="btn btn-outline btn-sm" onclick="editListItem('${key}',${i})">编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteListItem('${key}','${item.id}')">删除</button>
+          </div>
+        </div>
+        <div class="item-body">${item.comment || ''}</div>
+        <div class="item-meta">${formatDate(item.date)}</div>
+      </div>
+    `;
+  }
+  function activityItemHtml(item, i, key) {
+    return `
+      <div class="content-item">
+        <div class="item-header">
+          <span class="item-title">${item.activity_name || '未命名活动'}</span>
+          <div class="item-actions">
+            <button class="btn btn-outline btn-sm" onclick="editListItem('${key}',${i})">编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteListItem('${key}','${item.id}')">删除</button>
+          </div>
+        </div>
+        <div class="item-body">${item.description || ''} ${item.role ? '<br>角色: ' + item.role : ''}</div>
+        <div class="item-meta">${formatDate(item.date)}</div>
+      </div>
+    `;
+  }
+  function achievementItemHtml(item, i, key) {
+    return `
+      <div class="content-item">
+        <div class="item-header">
+          <span class="item-title">🏆 ${item.title || '未命名'}</span>
+          <div class="item-actions">
+            <button class="btn btn-outline btn-sm" onclick="editListItem('${key}',${i})">编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteListItem('${key}','${item.id}')">删除</button>
+          </div>
+        </div>
+        <div class="item-body">${item.description || ''}</div>
+        <div class="item-meta">${formatDate(item.date)}</div>
+      </div>
+    `;
+  }
+  function messageItemHtml(item, i, key) {
+    return `
+      <div class="content-item">
+        <div class="item-header">
+          <span class="item-title">${item.sender_name || '家长'} ${item.relationship ? '(' + item.relationship + ')' : ''}</span>
+          <div class="item-actions">
+            <button class="btn btn-outline btn-sm" onclick="editListItem('${key}',${i})">编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteListItem('${key}','${item.id}')">删除</button>
+          </div>
+        </div>
+        <div class="item-body">${item.message || ''}</div>
+        <div class="item-meta">${formatDate(item.date)}</div>
+      </div>
+    `;
+  }
+
+  // --- Photos Tab ---
+  function renderPhotosTab(panel) {
+    const photos = currentContent.photos || [];
+    const photosHtml = photos.map((p, i) => `
+      <div class="photo-thumb">
+        <img src="${getPhotoUrl(p.photo_url)}" alt="${p.caption || ''}" loading="lazy">
+        <button class="remove" onclick="deletePhoto('${p.id}', ${i})">×</button>
+      </div>
+    `).join('');
+
+    panel.innerHTML = `
+      <h3>照片库 (${photos.length})</h3>
+      <div class="photo-grid">
+        ${photosHtml}
+        <label class="photo-upload-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          上传照片
+          <input type="file" accept="image/*" multiple hidden onchange="uploadPhotos(this)">
+        </label>
+      </div>
+    `;
+  }
+
+  // ============================================
+  // CRUD Operations
+  // ============================================
+  const TABLE_MAP = {
+    timeline: 'growth_timeline',
+    courses: 'course_records',
+    comments: 'teacher_comments',
+    photos: 'photo_records',
+    activities: 'activity_records',
+    achievements: 'achievements',
+    messages: 'parent_messages',
+  };
+
+  const FIELDS_MAP = {
+    timeline: ['event_date', 'title', 'description', 'photo_url'],
+    courses: ['course_name', 'date', 'performance', 'teacher_name', 'photo_url'],
+    comments: ['semester', 'teacher_name', 'comment', 'date'],
+    activities: ['activity_name', 'date', 'role', 'description', 'photo_url'],
+    achievements: ['title', 'description', 'date', 'photo_url'],
+    messages: ['sender_name', 'relationship', 'message', 'date'],
+  };
+
+  // --- Modal Generators ---
+  function openTimelineModal(editItem, editIdx) {
+    const item = editItem || {};
+    openModal(`
+      <h3>${editItem ? '编辑' : '添加'}成长记录</h3>
+      <form onsubmit="event.preventDefault();saveListItem('timeline',${editIdx ?? 'null'},this)">
+        <div class="form-row">
+          <div class="form-group"><label>日期</label><input class="form-input" name="event_date" type="date" value="${item.event_date || ''}"></div>
+          <div class="form-group"><label>标题</label><input class="form-input" name="title" value="${item.title || ''}" required></div>
+        </div>
+        <div class="form-group"><label>描述</label><textarea class="form-input" name="description" rows="3">${item.description || ''}</textarea></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" onclick="closeModal()">取消</button>
+          <button class="btn btn-primary" type="submit">保存</button>
+        </div>
+      </form>
+    `);
+  }
+  function openCourseModal(editItem, editIdx) {
+    const item = editItem || {};
+    openModal(`
+      <h3>${editItem ? '编辑' : '添加'}课程记录</h3>
+      <form onsubmit="event.preventDefault();saveListItem('courses',${editIdx ?? 'null'},this)">
+        <div class="form-row">
+          <div class="form-group"><label>课程名称</label><input class="form-input" name="course_name" value="${item.course_name || ''}" required></div>
+          <div class="form-group"><label>日期</label><input class="form-input" name="date" type="date" value="${item.date || ''}"></div>
+        </div>
+        <div class="form-group"><label>授课老师</label><input class="form-input" name="teacher_name" value="${item.teacher_name || ''}"></div>
+        <div class="form-group"><label>表现评语</label><textarea class="form-input" name="performance" rows="3">${item.performance || ''}</textarea></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" onclick="closeModal()">取消</button>
+          <button class="btn btn-primary" type="submit">保存</button>
+        </div>
+      </form>
+    `);
+  }
+  function openCommentModal(editItem, editIdx) {
+    const item = editItem || {};
+    openModal(`
+      <h3>${editItem ? '编辑' : '添加'}老师评语</h3>
+      <form onsubmit="event.preventDefault();saveListItem('comments',${editIdx ?? 'null'},this)">
+        <div class="form-row">
+          <div class="form-group"><label>学期</label><input class="form-input" name="semester" value="${item.semester || ''}" placeholder="如：2026春季"></div>
+          <div class="form-group"><label>老师</label><input class="form-input" name="teacher_name" value="${item.teacher_name || ''}"></div>
+        </div>
+        <div class="form-group"><label>评语</label><textarea class="form-input" name="comment" rows="4" required>${item.comment || ''}</textarea></div>
+        <div class="form-group"><label>日期</label><input class="form-input" name="date" type="date" value="${item.date || ''}"></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" onclick="closeModal()">取消</button>
+          <button class="btn btn-primary" type="submit">保存</button>
+        </div>
+      </form>
+    `);
+  }
+  function openActivityModal(editItem, editIdx) {
+    const item = editItem || {};
+    openModal(`
+      <h3>${editItem ? '编辑' : '添加'}活动记录</h3>
+      <form onsubmit="event.preventDefault();saveListItem('activities',${editIdx ?? 'null'},this)">
+        <div class="form-row">
+          <div class="form-group"><label>活动名称</label><input class="form-input" name="activity_name" value="${item.activity_name || ''}" required></div>
+          <div class="form-group"><label>日期</label><input class="form-input" name="date" type="date" value="${item.date || ''}"></div>
+        </div>
+        <div class="form-group"><label>担任角色</label><input class="form-input" name="role" value="${item.role || ''}" placeholder="如：主持人、参与者"></div>
+        <div class="form-group"><label>描述</label><textarea class="form-input" name="description" rows="3">${item.description || ''}</textarea></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" onclick="closeModal()">取消</button>
+          <button class="btn btn-primary" type="submit">保存</button>
+        </div>
+      </form>
+    `);
+  }
+  function openAchievementModal(editItem, editIdx) {
+    const item = editItem || {};
+    openModal(`
+      <h3>${editItem ? '编辑' : '添加'}获奖成就</h3>
+      <form onsubmit="event.preventDefault();saveListItem('achievements',${editIdx ?? 'null'},this)">
+        <div class="form-group"><label>奖项名称</label><input class="form-input" name="title" value="${item.title || ''}" required></div>
+        <div class="form-group"><label>日期</label><input class="form-input" name="date" type="date" value="${item.date || ''}"></div>
+        <div class="form-group"><label>描述</label><textarea class="form-input" name="description" rows="3">${item.description || ''}</textarea></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" onclick="closeModal()">取消</button>
+          <button class="btn btn-primary" type="submit">保存</button>
+        </div>
+      </form>
+    `);
+  }
+  function openMessageModal(editItem, editIdx) {
+    const item = editItem || {};
+    openModal(`
+      <h3>${editItem ? '编辑' : '添加'}家长留言</h3>
+      <form onsubmit="event.preventDefault();saveListItem('messages',${editIdx ?? 'null'},this)">
+        <div class="form-row">
+          <div class="form-group"><label>家长姓名</label><input class="form-input" name="sender_name" value="${item.sender_name || ''}"></div>
+          <div class="form-group"><label>关系</label><input class="form-input" name="relationship" value="${item.relationship || ''}" placeholder="如：妈妈、爸爸"></div>
+        </div>
+        <div class="form-group"><label>留言内容</label><textarea class="form-input" name="message" rows="4" required>${item.message || ''}</textarea></div>
+        <div class="form-group"><label>日期</label><input class="form-input" name="date" type="date" value="${item.date || ''}"></div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" onclick="closeModal()">取消</button>
+          <button class="btn btn-primary" type="submit">保存</button>
+        </div>
+      </form>
+    `);
+  }
+
+  // --- Save List Item ---
+  async function saveListItem(key, editIdx, form) {
+    const table = TABLE_MAP[key];
+    const fields = FIELDS_MAP[key];
+    const data = { child_id: currentChild.id };
+    fields.forEach(f => {
+      if (form[f]) data[f] = form[f].value || null;
+    });
+
+    if (editIdx !== null && editIdx !== undefined) {
+      // Update existing
+      const item = currentContent[key][editIdx];
+      const { error } = await db.from(table).update(data).eq('id', item.id);
+      if (error) { toast('保存失败: ' + error.message, 'error'); return; }
+      Object.assign(currentContent[key][editIdx], data);
+    } else {
+      // Insert new
+      data.sort_order = (currentContent[key] || []).length;
+      const { error } = await db.from(table).insert(data);
+      if (error) { toast('添加失败: ' + error.message, 'error'); return; }
+      if (!currentContent[key]) currentContent[key] = [];
+      currentContent[key].push(data);
+    }
+    closeModal();
+    toast('保存成功', 'success');
+    renderTabContent();
+  }
+
+  function editListItem(key, idx) {
+    const item = currentContent[key][idx];
+    const modalName = { timeline: 'openTimelineModal', courses: 'openCourseModal', comments: 'openCommentModal', activities: 'openActivityModal', achievements: 'openAchievementModal', messages: 'openMessageModal' };
+    window[modalName[key]](item, idx);
+  }
+
+  async function deleteListItem(key, itemId) {
+    if (!confirm('确定删除这条记录吗？')) return;
+    const table = TABLE_MAP[key];
+    const { error } = await db.from(table).delete().eq('id', itemId);
+    if (error) { toast('删除失败', 'error'); return; }
+    currentContent[key] = currentContent[key].filter(it => it.id !== itemId);
+    toast('已删除', 'success');
+    renderTabContent();
+  }
+
+  // --- Photo Operations ---
+  async function uploadPhotos(input) {
+    const files = Array.from(input.files);
+    if (!files.length) return;
+    toast(`正在上传 ${files.length} 张照片...`);
+    for (const file of files) {
+      try {
+        const path = await uploadPhoto(file);
+        const { data, error } = await db.from('photo_records').insert({
+          child_id: currentChild.id,
+          photo_url: path,
+          sort_order: (currentContent.photos || []).length,
+        }).select();
+        if (error) throw error;
+        if (!currentContent.photos) currentContent.photos = [];
+        currentContent.photos.push(data[0]);
+      } catch (e) {
+        toast('上传失败: ' + e.message, 'error');
+      }
+    }
+    toast(`${files.length} 张照片上传完成`, 'success');
+    renderTabContent();
+  }
+
+  async function deletePhoto(photoId, idx) {
+    if (!confirm('确定删除这张照片吗？')) return;
+    const { error } = await db.from('photo_records').delete().eq('id', photoId);
+    if (error) { toast('删除失败', 'error'); return; }
+    currentContent.photos.splice(idx, 1);
+    toast('已删除', 'success');
+    renderTabContent();
+  }
+
+  // ============================================
+  // Child CRUD
+  // ============================================
+  function addChild() {
+    openModal(`
+      <h3>添加孩子</h3>
+      <form onsubmit="event.preventDefault();saveNewChild(this)">
+        <div class="form-group"><label>姓名 *</label><input class="form-input" name="name" required></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>性别</label>
+            <select class="form-input" name="gender">
+              <option value="">请选择</option>
+              <option value="male">男</option>
+              <option value="female">女</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>班级</label>
+            <input class="form-input" name="class_name" placeholder="如：英语A班">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>手册风格</label>
+          <select class="form-input" name="style_preference">
+            ${STYLES.map(s => `<option value="${s.id}">${s.icon} ${s.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" onclick="closeModal()">取消</button>
+          <button class="btn btn-primary" type="submit">创建</button>
+        </div>
+      </form>
+    `);
+  }
+
+  async function saveNewChild(form) {
+    const data = {
+      name: form.name.value,
+      gender: form.gender.value || null,
+      class_name: form.class_name.value || null,
+      style_preference: form.style_preference.value,
+    };
+    const { data: newChild, error } = await db.from('children').insert(data).select();
+    if (error) { toast('创建失败: ' + error.message, 'error'); return; }
+    closeModal();
+    toast('已创建: ' + data.name, 'success');
+    await openEditor(newChild[0].id);
+  }
+
+  async function deleteChild(id, name) {
+    if (!confirm(`确定删除「${name}」的所有数据吗？此操作不可恢复！`)) return;
+    const { error } = await db.from('children').delete().eq('id', id);
+    if (error) { toast('删除失败', 'error'); return; }
+    toast('已删除', 'success');
+    renderDashboard();
+  }
+
+  // ============================================
+  // Share & Preview
+  // ============================================
+  function copyLink(url) {
+    navigator.clipboard.writeText(url).then(() => toast('链接已复制', 'success')).catch(() => {
+      prompt('请手动复制以下链接:', url);
+    });
+  }
+
+  function editShare(id, token) {
+    const url = `${location.origin}/child.html?t=${token}`;
+    openModal(`
+      <h3>分享链接</h3>
+      <p style="font-size:14px;color:var(--text-mid);margin-bottom:12px">将此链接发送给家长，即可查看孩子的成长手册</p>
+      <div class="share-url-box">
+        <input value="${url}" readonly id="modalShareUrl">
+        <button class="btn btn-accent btn-sm" onclick="copyLink('${url}')">复制</button>
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn btn-outline btn-sm" onclick="window.open('${url}','_blank')">在新窗口预览</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal()">关闭</button>
+      </div>
+    `);
+  }
+
+  function previewChild() {
+    window.open(`child.html?t=${currentChild.share_token}`, '_blank');
+  }
+
+  // ============================================
+  // Init
+  // ============================================
+  db.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && !user) {
+      user = session.user;
+      renderDashboard();
+    } else if (event === 'SIGNED_OUT') {
+      user = null;
+      renderLogin();
+    }
+  });
+
+  checkAuth();
+  </script>
+</body>
+</html>

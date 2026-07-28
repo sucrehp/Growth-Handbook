@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>成长手册 - 阿墨逗儿童成长中心</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <style>
+    :root {
+      --primary: #2C3E6B;
+      --primary-light: #4A5C8A;
+      --accent: #D4A853;
+      --accent-light: #F0D890;
+      --bg: #FAF8F5;
+      --bg-card: #FFFFFF;
+      --text: #2D2D3A;
+      --text-mid: #666680;
+      --text-light: #9999AA;
+      --border: #E8E4DC;
+      --shadow: 0 2px 16px rgba(44,62,107,0.06);
+      --radius: 16px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Noto Sans SC',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+    
+    /* ===== Style Themes ===== */
+    body.theme-boy_space { --primary:#1A2A5E; --primary-light:#4A90D9; --accent:#F0C040; --accent-light:#C0D8F0; --bg:#F0F4FA; }
+    body.theme-boy_forest { --primary:#2D5A3D; --primary-light:#6BA85C; --accent:#D4A04A; --accent-light:#D8E8C8; --bg:#F2F8F0; }
+    body.theme-girl_garden { --primary:#E88AA8; --primary-light:#C8A0D8; --accent:#F0C8A0; --accent-light:#F8E0E8; --bg:#FDF6F8; }
+    body.theme-girl_rainbow { --primary:#F08060; --primary-light:#F8C850; --accent:#60B8D8; --accent-light:#FDE8D0; --bg:#FFF8F5; }
+
+    /* ===== Loading & Error ===== */
+    .center-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+    .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .error-card { background:#fff; border-radius:16px; padding:40px; text-align:center; max-width:400px; box-shadow:var(--shadow); }
+    .error-card .icon { font-size:48px; margin-bottom:16px; }
+    .error-card h2 { font-size:20px; margin-bottom:8px; }
+    .error-card p { color:var(--text-mid); font-size:14px; }
+
+    /* ===== Hero Section ===== */
+    .hero { background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:#fff; padding:60px 24px 48px; text-align:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; top:-50%; right:-20%; width:400px; height:400px; background:rgba(255,255,255,0.05); border-radius:50%; }
+    .hero::after { content:''; position:absolute; bottom:-30%; left:-10%; width:300px; height:300px; background:rgba(255,255,255,0.03); border-radius:50%; }
+    .hero-content { position:relative; z-index:1; max-width:600px; margin:0 auto; }
+    .hero .avatar { width:100px; height:100px; border-radius:50%; margin:0 auto 20px; overflow:hidden; border:3px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:40px; }
+    .hero .avatar img { width:100%; height:100%; object-fit:cover; }
+    .hero h1 { font-family:'Noto Serif SC',serif; font-size:32px; font-weight:700; margin-bottom:8px; }
+    .hero .subtitle { font-size:15px; opacity:0.85; }
+    .hero .meta { display:flex; gap:16px; justify-content:center; margin-top:16px; font-size:13px; opacity:0.75; }
+    .hero .gold-line { width:60px; height:3px; background:var(--accent); margin:16px auto 0; border-radius:2px; }
+
+    /* ===== Navigation ===== */
+    .nav-bar { background:#fff; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .nav-inner { display:flex; max-width:800px; margin:0 auto; padding:0 16px; }
+    .nav-item { padding:14px 16px; font-size:13px; font-weight:500; color:var(--text-mid); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent; transition:all .2s; }
+    .nav-item:hover { color:var(--primary); }
+    .nav-item.active { color:var(--primary); border-bottom-color:var(--accent); }
+
+    /* ===== Content ===== */
+    .content { max-width:800px; margin:0 auto; padding:24px 16px 80px; }
+    .section { margin-bottom:32px; scroll-margin-top:70px; }
+    .section-title { font-family:'Noto Serif SC',serif; font-size:22px; font-weight:600; color:var(--primary); margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+    .section-title .icon { font-size:20px; }
+    .section-sub { font-size:13px; color:var(--text-light); margin-bottom:16px; }
+    .section-line { width:40px; height:3px; background:var(--accent); border-radius:2px; margin-bottom:20px; }
+
+    /* ===== Cards ===== */
+    .card { background:#fff; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); margin-bottom:12px; }
+    .card-title { font-size:16px; font-weight:600; margin-bottom:6px; }
+    .card-meta { font-size:12px; color:var(--text-light); margin-bottom:8px; display:flex; gap:12px; }
+    .card-body { font-size:14px; color:var(--text-mid); line-height:1.8; }
+    .card-body p { margin-bottom:8px; }
+
+    /* ===== Info Card ===== */
+    .info-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; }
+    .info-item { background:#fff; border-radius:12px; padding:16px; box-shadow:var(--shadow); }
+    .info-label { font-size:12px; color:var(--text-light); margin-bottom:4px; }
+    .info-value { font-size:15px; font-weight:500; }
+
+    /* ===== Timeline ===== */
+    .timeline { position:relative; padding-left:24px; }
+    .timeline::before { content:''; position:absolute; left:8px; top:8px; bottom:8px; width:2px; background:var(--border); }
+    .timeline-item { position:relative; margin-bottom:20px; }
+    .timeline-item::before { content:''; position:absolute; left:-20px; top:8px; width:10px; height:10px; border-radius:50%; background:var(--accent); border:2px solid #fff; box-shadow:0 0 0 2px var(--accent); }
+    .timeline-date { font-size:12px; color:var(--accent); font-weight:500; margin-bottom:4px; }
+    .timeline-title { font-size:15px; font-weight:600; margin-bottom:4px; }
+    .timeline-desc { font-size:14px; color:var(--text-mid); }
+
+    /* ===== Photo Gallery ===== */
+    .gallery-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; }
+    .gallery-item { aspect-ratio:1; border-radius:12px; overflow:hidden; cursor:pointer; position:relative; }
+    .gallery-item img { width:100%; height:100%; object-fit:cover; transition:transform .3s; }
+    .gallery-item:hover img { transform:scale(1.05); }
+    .gallery-item .caption { position:absolute; bottom:0; left:0; right:0; padding:8px; background:linear-gradient(transparent, rgba(0,0,0,0.6)); color:#fff; font-size:12px; }
+
+    /* ===== Achievement ===== */
+    .achievement-card { background:linear-gradient(135deg, var(--accent-light), #fff); border:1px solid var(--accent); }
+    .achievement-card .card-title { color:var(--primary); }
+
+    /* ===== Message ===== */
+    .message-card { background:var(--bg); border-left:3px solid var(--accent); }
+    .message-card .card-body { font-style:italic; }
+    .message-sender { font-size:13px; color:var(--text-mid); font-style:normal; margin-top:8px; font-weight:500; }
+
+    /* ===== Empty State ===== */
+    .empty { text-align:center; padding:24px; color:var(--text-light); font-size:14px; }
+
+    /* ===== Download Button ===== */
+    .fab { position:fixed; bottom:24px; right:24px; z-index:200; }
+    .fab button { background:var(--primary); color:#fff; border:none; padding:14px 24px; border-radius:50px; font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; box-shadow:0 4px 16px rgba(44,62,107,0.3); transition:all .2s; display:flex; align-items:center; gap:8px; }
+    .fab button:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(44,62,107,0.4); }
+    .fab button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+    .fab .download-progress { position:absolute; bottom:100%; right:0; margin-bottom:8px; background:#fff; padding:12px 16px; border-radius:10px; box-shadow:var(--shadow); font-size:13px; white-space:nowrap; display:none; }
+    .fab .download-progress.show { display:block; }
+
+    /* ===== Footer ===== */
+    .page-footer { text-align:center; padding:32px 16px; color:var(--text-light); font-size:12px; border-top:1px solid var(--border); margin-top:40px; }
+    .page-footer .brand { font-weight:600; color:var(--primary); font-size:14px; margin-bottom:4px; }
+
+    /* ===== Lightbox ===== */
+    .lightbox { position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; cursor:pointer; }
+    .lightbox.show { opacity:1; pointer-events:auto; }
+    .lightbox img { max-width:90vw; max-height:90vh; border-radius:8px; }
+
+    /* ===== Responsive ===== */
+    @media (max-width:768px) {
+      .hero h1 { font-size:26px; }
+      .hero .avatar { width:80px; height:80px; font-size:32px; }
+      .info-grid { grid-template-columns:1fr 1fr; }
+      .gallery-grid { grid-template-columns:repeat(3, 1fr); }
+      .nav-item { padding:12px 12px; font-size:12px; }
+      .fab button { padding:12px 18px; font-size:13px; }
+    }
+
+    /* ===== Animations ===== */
+    .fade-in { opacity:0; transform:translateY(20px); transition:all .5s ease-out; }
+    .fade-in.visible { opacity:1; transform:translateY(0); }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="center-wrap"><div class="spinner"></div></div>
+  </div>
+  <div class="lightbox" id="lightbox" onclick="this.classList.remove('show')"><img id="lightbox-img" src=""></div>
+
+  <script>
+  // ============================================
+  // Configuration
+  // ============================================
+  const SUPABASE_URL = 'https://mcworpfnawdtitjvggsi.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_Dcia8-L7jVCXgGGJXMQYnw_Pc_ZF4Xb';
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ============================================
+  // State
+  // ============================================
+  let profile = null;
+  let isDownloading = false;
+
+  // ============================================
+  // Init
+  // ============================================
+  async function init() {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('t');
+    if (!token) { showError('链接无效', '缺少分享令牌参数'); return; }
+
+    try {
+      const { data, error } = await db.rpc('get_child_by_token', { p_token: token });
+      if (error) throw error;
+      if (!data || !data.child) { showError('未找到记录', '该分享链接可能已失效，请联系老师确认'); return; }
+      
+      profile = data;
+      const style = data.child.style_preference || 'boy_space';
+      document.body.classList.add('theme-' + style);
+      document.title = `${data.child.name}的成长手册 - 阿墨逗儿童成长中心`;
+      render();
+    } catch (e) {
+      console.error(e);
+      showError('加载失败', '请稍后重试或联系老师');
+    }
+  }
+
+  function showError(title, msg) {
+    document.getElementById('app').innerHTML = `
+      <div class="center-wrap">
+        <div class="error-card">
+          <div class="icon">📖</div>
+          <h2>${title}</h2>
+          <p>${msg}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // ============================================
+  // Render
+  // ============================================
+  function render() {
+    const c = profile.child;
+    const avatarHtml = c.avatar_url ? `<img src="${getPhotoUrl(c.avatar_url)}">` : (c.gender === 'female' ? '👧' : '👦');
+    
+    document.getElementById('app').innerHTML = `
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-content">
+          <div class="avatar">${avatarHtml}</div>
+          <h1>${c.name}的成长手册</h1>
+          <div class="subtitle">阿墨逗儿童成长中心</div>
+          <div class="gold-line"></div>
+          <div class="meta">
+            ${c.class_name ? `<span>📚 ${c.class_name}</span>` : ''}
+            ${c.enrollment_date ? `<span>📅 入学 ${formatDate(c.enrollment_date)}</span>` : ''}
+            ${c.birthday ? `<span>🎂 ${formatDate(c.birthday)}</span>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <div class="nav-bar">
+        <div class="nav-inner">
+          <div class="nav-item active" onclick="scrollTo2('sec-info',this)">基本信息</div>
+          <div class="nav-item" onclick="scrollTo2('sec-timeline',this)">成长足迹</div>
+          <div class="nav-item" onclick="scrollTo2('sec-courses',this)">课程记录</div>
+          <div class="nav-item" onclick="scrollTo2('sec-comments',this)">老师评语</div>
+          <div class="nav-item" onclick="scrollTo2('sec-photos',this)">精彩瞬间</div>
+          <div class="nav-item" onclick="scrollTo2('sec-activities',this)">活动参与</div>
+          <div class="nav-item" onclick="scrollTo2('sec-achievements',this)">荣誉成就</div>
+          <div class="nav-item" onclick="scrollTo2('sec-messages',this)">家长寄语</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- 基本信息 -->
+        <div class="section fade-in" id="sec-info">
+          <div class="section-title"><span class="icon">📋</span> 基本信息</div>
+          <div class="section-line"></div>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">姓名</div><div class="info-value">${c.name}</div></div>
+            <div class="info-item"><div class="info-label">性别</div><div class="info-value">${c.gender === 'male' ? '男' : c.gender === 'female' ? '女' : '-'}</div></div>
+            <div class="info-item"><div class="info-label">生日</div><div class="info-value">${c.birthday ? formatDate(c.birthday) : '-'}</div></div>
+            <div class="info-item"><div class="info-label">班级</div><div class="info-value">${c.class_name || '-'}</div></div>
+            <div class="info-item"><div class="info-label">入学日期</div><div class="info-value">${c.enrollment_date ? formatDate(c.enrollment_date) : '-'}</div></div>
+          </div>
+        </div>
+
+        <!-- 成长时间线 -->
+        <div class="section fade-in" id="sec-timeline">
+          <div class="section-title"><span class="icon">👣</span> 成长足迹</div>
+          <div class="section-sub">记录每一个重要的成长瞬间</div>
+          <div class="section-line"></div>
+          ${renderTimeline(profile.timeline)}
+        </div>
+
+        <!-- 课程记录 -->
+        <div class="section fade-in" id="sec-courses">
+          <div class="section-title"><span class="icon">📚</span> 课程记录</div>
+          <div class="section-sub">课堂上的精彩表现</div>
+          <div class="section-line"></div>
+          ${renderCards(profile.courses, (item) => `
+            <div class="card">
+              <div class="card-title">${item.course_name || '课程'}</div>
+              <div class="card-meta">
+                ${item.teacher_name ? `<span>👩‍🏫 ${item.teacher_name}</span>` : ''}
+                ${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}
+              </div>
+              <div class="card-body">${item.performance || ''}</div>
+            </div>
+          `)}
+        </div>
+
+        <!-- 老师评语 -->
+        <div class="section fade-in" id="sec-comments">
+          <div class="section-title"><span class="icon">💬</span> 老师评语</div>
+          <div class="section-sub">来自老师的温暖寄语</div>
+          <div class="section-line"></div>
+          ${renderCards(profile.comments, (item) => `
+            <div class="card message-card">
+              <div class="card-meta">
+                ${item.teacher_name ? `<span>👩‍🏫 ${item.teacher_name}</span>` : ''}
+                ${item.semester ? `<span>📅 ${item.semester}</span>` : ''}
+              </div>
+              <div class="card-body">${item.comment || ''}</div>
+            </div>
+          `)}
+        </div>
+
+        <!-- 照片库 -->
+        <div class="section fade-in" id="sec-photos">
+          <div class="section-title"><span class="icon">📸</span> 精彩瞬间</div>
+          <div class="section-sub">定格美好的成长记忆</div>
+          <div class="section-line"></div>
+          ${renderGallery(profile.photos)}
+        </div>
+
+        <!-- 活动记录 -->
+        <div class="section fade-in" id="sec-activities">
+          <div class="section-title"><span class="icon">🎪</span> 活动参与</div>
+          <div class="section-sub">丰富多彩的活动体验</div>
+          <div class="section-line"></div>
+          ${renderCards(profile.activities, (item) => `
+            <div class="card">
+              <div class="card-title">${item.activity_name || '活动'}</div>
+              <div class="card-meta">
+                ${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}
+                ${item.role ? `<span>🎭 ${item.role}</span>` : ''}
+              </div>
+              <div class="card-body">${item.description || ''}</div>
+            </div>
+          `)}
+        </div>
+
+        <!-- 获奖成就 -->
+        <div class="section fade-in" id="sec-achievements">
+          <div class="section-title"><span class="icon">🏆</span> 荣誉成就</div>
+          <div class="section-sub">值得骄傲的闪光时刻</div>
+          <div class="section-line"></div>
+          ${renderCards(profile.achievements, (item) => `
+            <div class="card achievement-card">
+              <div class="card-title">🏆 ${item.title || '成就'}</div>
+              <div class="card-meta">${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}</div>
+              <div class="card-body">${item.description || ''}</div>
+            </div>
+          `)}
+        </div>
+
+        <!-- 家长留言 -->
+        <div class="section fade-in" id="sec-messages">
+          <div class="section-title"><span class="icon">💌</span> 家长寄语</div>
+          <div class="section-sub">来自家人的爱与期望</div>
+          <div class="section-line"></div>
+          ${renderCards(profile.messages, (item) => `
+            <div class="card message-card">
+              <div class="card-body">${item.message || ''}</div>
+              <div class="message-sender">—— ${item.sender_name || '家长'}${item.relationship ? ' (' + item.relationship + ')' : ''}</div>
+            </div>
+          `)}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="page-footer">
+        <div class="brand">阿墨逗儿童成长中心</div>
+        <div>用心陪伴每一个孩子的成长</div>
+      </div>
+
+      <!-- Download FAB -->
+      <div class="fab">
+        <div class="download-progress" id="dl-progress">正在生成PPT...</div>
+        <button onclick="downloadPPT()" id="dl-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          下载PPT
+        </button>
+      </div>
+    `;
+
+    // Intersection observer for fade-in
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  }
+
+  // ============================================
+  // Section Renderers
+  // ============================================
+  function renderTimeline(items) {
+    if (!items || !items.length) return '<div class="empty">暂无成长记录</div>';
+    return '<div class="timeline">' + items.map(item => `
+      <div class="timeline-item">
+        <div class="timeline-date">${formatDate(item.event_date)}</div>
+        <div class="timeline-title">${item.title || ''}</div>
+        <div class="timeline-desc">${item.description || ''}</div>
+      </div>
+    `).join('') + '</div>';
+  }
+
+  function renderCards(items, renderer) {
+    if (!items || !items.length) return '<div class="empty">暂无记录</div>';
+    return items.map(renderer).join('');
+  }
+
+  function renderGallery(photos) {
+    if (!photos || !photos.length) return '<div class="empty">暂无照片</div>';
+    return '<div class="gallery-grid">' + photos.map(p => `
+      <div class="gallery-item" onclick="showLightbox('${getPhotoUrl(p.photo_url)}')">
+        <img src="${getPhotoUrl(p.photo_url)}" alt="${p.caption || ''}" loading="lazy">
+        ${p.caption ? `<div class="caption">${p.caption}</div>` : ''}
+      </div>
+    `).join('') + '</div>';
+  }
+
+  // ============================================
+  // Helpers
+  // ============================================
+  function getPhotoUrl(path) {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const { data } = db.storage.from('photos').getPublicUrl(path);
+    return data?.publicUrl || '';
+  }
+
+  function formatDate(d) {
+    if (!d) return '';
+    return new Date(d).toLocaleDateString('zh-CN');
+  }
+
+  function scrollTo2(id, el) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function showLightbox(url) {
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox').classList.add('show');
+  }
+
+  // ============================================
+  // PPT Download (pptxgenjs)
+  // ============================================
+  async function downloadPPT() {
+    if (isDownloading) return;
+    isDownloading = true;
+    const btn = document.getElementById('dl-btn');
+    const progress = document.getElementById('dl-progress');
+    btn.disabled = true;
+    progress.classList.add('show');
+
+    try {
+      const pptx = new PptxGenJS();
+      const c = profile.child;
+      const style = c.style_preference || 'boy_space';
+      
+      // Style colors
+      const styleColors = {
+        boy_space: { primary: '1A2A5E', accent: 'F0C040', bg: 'F0F4FA', secondary: '4A90D9' },
+        boy_forest: { primary: '2D5A3D', accent: 'D4A04A', bg: 'F2F8F0', secondary: '6BA85C' },
+        girl_garden: { primary: 'E88AA8', accent: 'F0C8A0', bg: 'FDF6F8', secondary: 'C8A0D8' },
+        girl_rainbow: { primary: 'F08060', accent: '60B8D8', bg: 'FFF8F5', secondary: 'F8C850' },
+      };
+      const sc = styleColors[style] || styleColors.boy_space;
+
+      pptx.layout = 'LAYOUT_WIDE';
+      pptx.author = '阿墨逗儿童成长中心';
+      pptx.title = `${c.name}的成长手册`;
+
+      // Helper: add background
+      function addBg(slide) {
+        slide.background = { fill: sc.bg };
+        // Left accent bar
+        slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.1, h: 7.5, fill: { color: sc.primary } });
+      }
+
+      // Helper: section header
+      function addSectionHeader(slide, title, subtitle) {
+        addBg(slide);
+        slide.addText(title, { x: 0.5, y: 0.3, w: 8, fontSize: 28, fontFace: 'Microsoft YaHei', color: sc.primary, bold: true });
+        if (subtitle) {
+          slide.addText(subtitle, { x: 0.5, y: 0.9, w: 8, fontSize: 14, fontFace: 'Microsoft YaHei', color: '888888' });
+        }
+        slide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.25, w: 1.5, h: 0.04, fill: { color: sc.accent } });
+        slide.addShape(pptx.ShapeType.rect, { x: 0, y: 1.4, w: 13.33, h: 0.01, fill: { color: 'E0E0E0' } });
+      }
+
+      // Helper: footer
+      function addFooter(slide) {
+        slide.addText('阿墨逗儿童成长中心  |  用心陪伴每一个孩子的成长', {
+          x: 0.5, y: 7.0, w: 8, fontSize: 9, color: '999999', fontFace: 'Microsoft YaHei'
+        });
+      }
+
+      // ===== Slide 1: Cover =====
+      let slide = pptx.addSlide();
+      slide.background = { fill: sc.primary };
+      slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 7.5, fill: { color: sc.primary } });
+      // Decorative circle
+      slide.addShape(pptx.ShapeType.ellipse, { x: 9, y: -1, w: 5, h: 5, fill: { color: sc.primary, transparency: 80 } });
+      slide.addShape(pptx.ShapeType.ellipse, { x: -1.5, y: 5, w: 4, h: 4, fill: { color: sc.primary, transparency: 85 } });
+      
+      slide.addText('成长手册', { x: 1, y: 1.5, w: 11, fontSize: 48, fontFace: 'Microsoft YaHei', color: 'FFFFFF', bold: true, align: 'center' });
+      slide.addShape(pptx.ShapeType.rect, { x: 5.5, y: 2.5, w: 2.3, h: 0.05, fill: { color: sc.accent } });
+      slide.addText(c.name, { x: 1, y: 3, w: 11, fontSize: 36, fontFace: 'Microsoft YaHei', color: sc.accent, align: 'center' });
+      slide.addText('阿墨逗儿童成长中心', { x: 1, y: 4.2, w: 11, fontSize: 16, fontFace: 'Microsoft YaHei', color: 'FFFFFF', align: 'center', transparency: 30 });
+      if (c.class_name) {
+        slide.addText(c.class_name, { x: 1, y: 4.8, w: 11, fontSize: 14, fontFace: 'Microsoft YaHei', color: 'FFFFFF', align: 'center', transparency: 50 });
+      }
+
+      // ===== Slide 2: Basic Info =====
+      slide = pptx.addSlide();
+      addSectionHeader(slide, '基本信息', 'About Me');
+      
+      const infoItems = [
+        ['姓名', c.name],
+        ['性别', c.gender === 'male' ? '男' : c.gender === 'female' ? '女' : '-'],
+        ['生日', c.birthday ? formatDate(c.birthday) : '-'],
+        ['班级', c.class_name || '-'],
+        ['入学日期', c.enrollment_date ? formatDate(c.enrollment_date) : '-'],
+      ];
+      infoItems.forEach((item, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const x = 0.8 + col * 5.5;
+        const y = 1.8 + row * 1.2;
+        slide.addShape(pptx.ShapeType.roundRect, { x, y, w: 5, h: 0.9, fill: { color: 'FFFFFF' }, rectRadius: 0.1, shadow: { type: 'outer', blur: 6, offset: 2, color: '000000', opacity: 0.06 } });
+        slide.addText(item[0], { x: x + 0.2, y: y + 0.1, w: 2, fontSize: 11, color: '999999', fontFace: 'Microsoft YaHei' });
+        slide.addText(item[1], { x: x + 0.2, y: y + 0.4, w: 4.5, fontSize: 16, color: sc.primary, bold: true, fontFace: 'Microsoft YaHei' });
+      });
+      addFooter(slide);
+
+      // ===== Slide 3: Timeline =====
+      if (profile.timeline?.length) {
+        slide = pptx.addSlide();
+        addSectionHeader(slide, '成长足迹', 'Growth Timeline');
+        profile.timeline.slice(0, 6).forEach((item, i) => {
+          const y = 1.7 + i * 0.9;
+          slide.addShape(pptx.ShapeType.ellipse, { x: 0.85, y: y + 0.15, w: 0.2, h: 0.2, fill: { color: sc.accent } });
+          if (i < 5) slide.addShape(pptx.ShapeType.rect, { x: 0.92, y: y + 0.35, w: 0.06, h: 0.7, fill: { color: 'E0E0E0' } });
+          slide.addText(item.title || '', { x: 1.3, y: y, w: 4, fontSize: 14, bold: true, color: sc.primary, fontFace: 'Microsoft YaHei' });
+          slide.addText(formatDate(item.event_date), { x: 5.5, y: y, w: 2, fontSize: 11, color: '999999', fontFace: 'Microsoft YaHei' });
+          if (item.description) {
+            slide.addText(item.description, { x: 1.3, y: y + 0.35, w: 10, fontSize: 12, color: '666666', fontFace: 'Microsoft YaHei' });
+          }
+        });
+        addFooter(slide);
+      }
+
+      // ===== Slide 4: Courses =====
+      if (profile.courses?.length) {
+        slide = pptx.addSlide();
+        addSectionHeader(slide, '课程记录', 'Course Records');
+        profile.courses.slice(0, 5).forEach((item, i) => {
+          const y = 1.7 + i * 1.0;
+          slide.addShape(pptx.ShapeType.roundRect, { x: 0.6, y, w: 12, h: 0.85, fill: { color: 'FFFFFF' }, rectRadius: 0.08, shadow: { type: 'outer', blur: 4, offset: 1, color: '000000', opacity: 0.05 } });
+          slide.addText(item.course_name || '', { x: 0.9, y: y + 0.08, w: 3, fontSize: 14, bold: true, color: sc.primary, fontFace: 'Microsoft YaHei' });
+          slide.addText(`${item.teacher_name || ''} ${item.date ? formatDate(item.date) : ''}`, { x: 4, y: y + 0.08, w: 4, fontSize: 11, color: '999999', fontFace: 'Microsoft YaHei' });
+          if (item.performance) {
+            slide.addText(item.performance, { x: 0.9, y: y + 0.4, w: 11.5, fontSize: 12, color: '666666', fontFace: 'Microsoft YaHei', truncate: true });
+          }
+        });
+        addFooter(slide);
+      }
+
+      // ===== Slide 5: Teacher Comments =====
+      if (profile.comments?.length) {
+        slide = pptx.addSlide();
+        addSectionHeader(slide, '老师评语', 'Teacher Comments');
+        profile.comments.slice(0, 3).forEach((item, i) => {
+          const y = 1.7 + i * 1.7;
+          slide.addShape(pptx.ShapeType.roundRect, { x: 0.6, y, w: 12, h: 1.5, fill: { color: 'FFFFFF' }, rectRadius: 0.1 });
+          slide.addShape(pptx.ShapeType.rect, { x: 0.6, y, w: 0.06, h: 1.5, fill: { color: sc.accent } });
+          slide.addText(`—— ${item.teacher_name || '老师'} ${item.semester || ''}`, { x: 1, y: y + 0.1, w: 11, fontSize: 12, color: '999999', fontFace: 'Microsoft YaHei' });
+          slide.addText(item.comment || '', { x: 1, y: y + 0.45, w: 11.2, fontSize: 13, color: '444444', fontFace: 'Microsoft YaHei', italic: true });
+        });
+        addFooter(slide);
+      }
+
+      // ===== Slide 6: Activities =====
+      if (profile.activities?.length) {
+        slide = pptx.addSlide();
+        addSectionHeader(slide, '活动参与', 'Activities');
+        profile.activities.slice(0, 5).forEach((item, i) => {
+          const y = 1.7 + i * 1.0;
+          slide.addShape(pptx.ShapeType.roundRect, { x: 0.6, y, w: 12, h: 0.85, fill: { color: 'FFFFFF' }, rectRadius: 0.08 });
+          slide.addText(item.activity_name || '', { x: 0.9, y: y + 0.08, w: 5, fontSize: 14, bold: true, color: sc.primary, fontFace: 'Microsoft YaHei' });
+          slide.addText(`${item.role || ''} ${item.date ? formatDate(item.date) : ''}`, { x: 6, y: y + 0.08, w: 6, fontSize: 11, color: '999999', fontFace: 'Microsoft YaHei' });
+          if (item.description) {
+            slide.addText(item.description, { x: 0.9, y: y + 0.4, w: 11.5, fontSize: 12, color: '666666', fontFace: 'Microsoft YaHei', truncate: true });
+          }
+        });
+        addFooter(slide);
+      }
+
+      // ===== Slide 7: Achievements =====
+      if (profile.achievements?.length) {
+        slide = pptx.addSlide();
+        addSectionHeader(slide, '荣誉成就', 'Achievements');
+        profile.achievements.slice(0, 5).forEach((item, i) => {
+          const y = 1.7 + i * 1.0;
+          slide.addShape(pptx.ShapeType.roundRect, { x: 0.6, y, w: 12, h: 0.85, fill: { color: sc.accent, transparency: 85 }, rectRadius: 0.08, line: { color: sc.accent, width: 1 } });
+          slide.addText(`🏆 ${item.title || ''}`, { x: 0.9, y: y + 0.08, w: 8, fontSize: 14, bold: true, color: sc.primary, fontFace: 'Microsoft YaHei' });
+          slide.addText(item.date ? formatDate(item.date) : '', { x: 9, y: y + 0.08, w: 3, fontSize: 11, color: '999999', align: 'right', fontFace: 'Microsoft YaHei' });
+          if (item.description) {
+            slide.addText(item.description, { x: 0.9, y: y + 0.4, w: 11.5, fontSize: 12, color: '666666', fontFace: 'Microsoft YaHei' });
+          }
+        });
+        addFooter(slide);
+      }
+
+      // ===== Slide 8: Parent Messages =====
+      if (profile.messages?.length) {
+        slide = pptx.addSlide();
+        addSectionHeader(slide, '家长寄语', 'Messages from Family');
+        profile.messages.slice(0, 3).forEach((item, i) => {
+          const y = 1.7 + i * 1.7;
+          slide.addShape(pptx.ShapeType.roundRect, { x: 0.6, y, w: 12, h: 1.5, fill: { color: 'FFFFFF' }, rectRadius: 0.1 });
+          slide.addShape(pptx.ShapeType.rect, { x: 0.6, y, w: 0.06, h: 1.5, fill: { color: sc.secondary } });
+          slide.addText(item.message || '', { x: 1, y: y + 0.15, w: 11.2, fontSize: 14, color: '444444', fontFace: 'Microsoft YaHei', italic: true });
+          slide.addText(`—— ${item.sender_name || '家长'}${item.relationship ? ' (' + item.relationship + ')' : ''}`, { x: 1, y: y + 1.0, w: 11, fontSize: 12, color: '999999', fontFace: 'Microsoft YaHei' });
+        });
+        addFooter(slide);
+      }
+
+      // ===== Last Slide: Closing =====
+      slide = pptx.addSlide();
+      slide.background = { fill: sc.primary };
+      slide.addText('继续加油！', { x: 1, y: 2, w: 11, fontSize: 40, fontFace: 'Microsoft YaHei', color: 'FFFFFF', bold: true, align: 'center' });
+      slide.addShape(pptx.ShapeType.rect, { x: 5.5, y: 3, w: 2.3, h: 0.05, fill: { color: sc.accent } });
+      slide.addText('愿你快乐成长，勇敢追梦', { x: 1, y: 3.5, w: 11, fontSize: 18, fontFace: 'Microsoft YaHei', color: 'FFFFFF', align: 'center', transparency: 20 });
+      slide.addText('阿墨逗儿童成长中心', { x: 1, y: 5.5, w: 11, fontSize: 14, fontFace: 'Microsoft YaHei', color: 'FFFFFF', align: 'center', transparency: 40 });
+
+      // Generate and download
+      progress.textContent = '正在生成文件...';
+      const fileName = `${c.name}的成长手册.pptx`;
+      await pptx.writeFile({ fileName });
+      progress.textContent = '下载完成！';
+      setTimeout(() => progress.classList.remove('show'), 2000);
+    } catch (e) {
+      console.error(e);
+      progress.textContent = '下载失败，请重试';
+      setTimeout(() => progress.classList.remove('show'), 3000);
+    } finally {
+      isDownloading = false;
+      btn.disabled = false;
+    }
+  }
+
+  // ============================================
+  // Start
+  // ============================================
+  init();
+  </script>
+</body>
+</html>
