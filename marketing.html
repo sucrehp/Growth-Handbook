@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#173b36" />
+  <title>内容营销智能体｜阿墨逗儿童成长中心</title>
+  <link rel="stylesheet" href="/marketing.css" />
+</head>
+<body>
+  <section id="loginScreen" class="login-screen">
+    <form id="loginForm" class="login-card">
+      <div class="logo">墨</div>
+      <p class="eyebrow">阿墨逗儿童成长中心</p>
+      <h1>内容营销智能体</h1>
+      <p class="muted">使用 Growth Handbook 管理账号登录</p>
+      <label>邮箱<input id="email" type="email" required /></label>
+      <label>密码<input id="password" type="password" required /></label>
+      <p id="loginError" class="error" hidden></p>
+      <button type="submit" class="primary">登录工作台</button>
+    </form>
+  </section>
+
+  <div id="workspace" hidden>
+    <header>
+      <div><p class="eyebrow">校区内容运营</p><h1>今日素材工作台</h1></div>
+      <nav><a href="/teacher-agent.html">成长归档</a><button id="logout">退出</button></nav>
+    </header>
+    <main>
+      <section class="hero">
+        <div><span>从课堂现场到三平台发布稿</span><h2>上传一次，生成朋友圈、小红书和抖音三个版本。</h2></div>
+        <div class="hero-note">儿童素材必须完成家长授权与人工审核后才能进入排期。</div>
+      </section>
+
+      <section class="grid">
+        <form id="materialForm" class="card">
+          <div class="card-title"><b>01</b><div><h3>添加今日素材</h3><p>支持照片、短视频或纯文字记录</p></div></div>
+          <label class="upload"><input id="mediaFile" type="file" accept="image/*,video/*" /><span id="fileLabel">选择照片或视频</span></label>
+          <div class="two">
+            <label>活动名称<input id="activityName" placeholder="例如：森林探险课" /></label>
+            <label>课程类别<input id="courseCategory" placeholder="例如：PBL / 乐高 / 英语" /></label>
+          </div>
+          <label>校区<input id="campus" value="阿墨逗儿童成长中心" /></label>
+          <label>现场文字<textarea id="originalText" rows="5" placeholder="记录孩子做了什么、说了什么，以及本次活动的亮点"></textarea></label>
+          <label class="consent"><input id="consentConfirmed" type="checkbox" /><span>已确认画面内儿童具备有效的宣传素材授权，且不含姓名、电话、学校等敏感信息</span></label>
+          <button class="primary" type="submit">保存素材并生成发布稿</button>
+        </form>
+
+        <section class="card privacy">
+          <div class="card-title"><b>必检</b><div><h3>儿童隐私检查</h3><p>发布前必须逐项确认</p></div></div>
+          <ul>
+            <li>家长肖像与作品授权仍在有效期内</li>
+            <li>未授权儿童已排除或完成打码</li>
+            <li>画面中没有电话、学校、住址等信息</li>
+            <li>文案不披露孩子全名和健康信息</li>
+            <li>负责人最终人工审核</li>
+          </ul>
+          <p class="tip">未勾选授权确认的素材只会保存为待检查，不会生成发布稿。</p>
+        </section>
+      </section>
+
+      <section class="section-head"><div><p class="eyebrow">待审核内容</p><h2>三平台发布稿</h2></div><button id="refreshDrafts">刷新</button></section>
+      <div id="drafts" class="draft-grid"><p class="empty">还没有发布稿。</p></div>
+
+      <section class="section-head"><div><p class="eyebrow">发布计划</p><h2>手机提醒与排期</h2></div></section>
+      <div id="schedules" class="schedule-list"><p class="empty">还没有排期。</p></div>
+    </main>
+    <div id="toast" class="toast"></div>
+  </div>
+  <script src="/marketing.js"></script>
+</body>
+</html>

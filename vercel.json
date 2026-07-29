@@ -13,5 +13,8 @@
         { "key": "X-Frame-Options", "value": "DENY" }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/marketing", "destination": "/marketing.html" }
   ]
 }
