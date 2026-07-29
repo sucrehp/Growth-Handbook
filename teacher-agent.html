@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f58a48" />
+    <title>阿墨逗成长助手</title>
+    <link rel="stylesheet" href="/agent-styles.css" />
+  </head>
+  <body>
+    <section id="loginScreen" class="login-screen">
+      <form id="loginForm" class="login-panel">
+        <div class="brand-mark">墨</div>
+        <p class="eyebrow">阿墨逗儿童成长中心</p>
+        <h2>老师成长助手</h2>
+        <p>使用现有 Growth Handbook 管理员账号登录</p>
+        <label>邮箱<input id="email" type="email" autocomplete="username" required /></label>
+        <label>密码<input id="password" type="password" autocomplete="current-password" required /></label>
+        <div id="loginError" class="notice" hidden></div>
+        <button id="loginButton" class="primary-button" type="submit">登录成长助手</button>
+      </form>
+    </section>
+    <div id="appScreen" hidden>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">墨</div>
+        <div>
+          <p>阿墨逗儿童成长中心</p>
+          <h1>成长助手</h1>
+        </div>
+      </div>
+      <button id="logoutButton" class="mode-badge">退出登录</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <span class="eyebrow">老师端 · 照片智能归档</span>
+          <h2>拍下成长瞬间，<br /><em>一句话自动归档</em></h2>
+          <p>上传照片并输入“将该照片存入张明的成长手册”，系统会自动识别学员、分类并等待你确认。</p>
+        </div>
+        <div class="hero-orbit" aria-hidden="true">
+          <div class="sun">✦</div>
+          <span class="orbit orbit-a">📷</span>
+          <span class="orbit orbit-b">🎨</span>
+          <span class="orbit orbit-c">🌱</span>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="stepper" aria-label="操作步骤">
+          <div class="step active" data-step="1"><b>1</b><span>上传照片</span></div>
+          <i></i>
+          <div class="step" data-step="2"><b>2</b><span>说出指令</span></div>
+          <i></i>
+          <div class="step" data-step="3"><b>3</b><span>确认归档</span></div>
+        </div>
+
+        <div class="card upload-card">
+          <div class="section-title">
+            <div><span>01</span><h3>选择成长照片</h3></div>
+            <small>支持 JPG、PNG、WebP，最大 10MB</small>
+          </div>
+          <label id="dropzone" class="dropzone">
+            <input id="photoInput" type="file" accept="image/*" />
+            <img id="preview" alt="照片预览" hidden />
+            <div id="dropPrompt">
+              <div class="camera">⌁</div>
+              <strong>点击拍照或选择照片</strong>
+              <span>手机端可直接调用相机</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="card command-card">
+          <div class="section-title">
+            <div><span>02</span><h3>输入归档指令</h3></div>
+          </div>
+          <div class="command-box">
+            <textarea id="instruction" rows="3" placeholder="例如：将这张照片存入张明的成长手册，分类为作品展示"></textarea>
+            <button id="voiceButton" class="icon-button" type="button" title="语音输入">◉</button>
+          </div>
+          <div class="examples">
+            <span>快捷示例</span>
+            <button type="button">存入张明的成长手册</button>
+            <button type="button">归档给李芳，分类为课堂风采</button>
+          </div>
+          <button id="parseButton" class="primary-button" type="button">智能识别指令 <span>→</span></button>
+        </div>
+
+        <div id="resultCard" class="card result-card" hidden>
+          <div class="section-title">
+            <div><span>03</span><h3>确认归档信息</h3></div>
+            <small id="confidence"></small>
+          </div>
+          <div id="clarification" class="notice" hidden></div>
+          <div class="form-grid">
+            <label>学员<select id="childSelect"></select></label>
+            <label>照片分类
+              <select id="categorySelect">
+                <option>课堂风采</option><option>作品展示</option><option>活动记录</option>
+                <option>日常瞬间</option><option>其他</option>
+              </select>
+            </label>
+            <label class="full">照片描述<textarea id="description" rows="3"></textarea></label>
+            <label>上传老师<input id="uploadedBy" value="老师" /></label>
+          </div>
+          <button id="archiveButton" class="primary-button" type="button">确认并存入成长手册 <span>✓</span></button>
+        </div>
+      </section>
+
+      <section class="recent-section">
+        <div class="recent-heading">
+          <div><span class="eyebrow">实时记录</span><h2>最近归档</h2></div>
+          <button id="refreshButton" class="text-button" type="button">刷新</button>
+        </div>
+        <div id="emptyState" class="empty-state">还没有归档记录，上传第一张成长照片吧。</div>
+        <div id="photoGrid" class="photo-grid"></div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+    </div>
+    <script src="/agent.js"></script>
+  </body>
+</html>
