@@ -138,9 +138,195 @@
     /* ===== Animations ===== */
     .fade-in { opacity:0; transform:translateY(20px); transition:all .5s ease-out; }
     .fade-in.visible { opacity:1; transform:translateY(0); }
+
+    /* ===== Dynamic digital-card experience ===== */
+    html { scroll-behavior:smooth; }
+    body { overflow-x:hidden; background:
+      radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 32%),
+      radial-gradient(circle at 92% 26%, color-mix(in srgb, var(--primary-light) 12%, transparent), transparent 28%),
+      var(--bg);
+    }
+    .scroll-progress { position:fixed; inset:0 auto auto 0; height:3px; width:0; z-index:1200;
+      background:linear-gradient(90deg,var(--accent),var(--primary-light)); box-shadow:0 0 14px var(--accent); }
+    .hero { min-height:680px; padding:70px 24px 80px; display:grid; place-items:center;
+      background:
+        radial-gradient(circle at 50% 10%, rgba(255,255,255,.16), transparent 34%),
+        linear-gradient(145deg, color-mix(in srgb, var(--primary) 94%, #111), var(--primary-light));
+    }
+    .hero::before { width:620px; height:620px; top:-34%; right:-18%; border:1px solid rgba(255,255,255,.13);
+      background:transparent; animation:orbit 22s linear infinite; }
+    .hero::after { width:380px; height:380px; bottom:-24%; left:-8%; filter:blur(3px);
+      background:radial-gradient(circle,rgba(255,255,255,.12),transparent 68%); animation:float 9s ease-in-out infinite; }
+    .hero-content { width:min(920px,100%); max-width:none; }
+    .digital-card { position:relative; display:grid; grid-template-columns:240px 1fr; gap:42px; align-items:center;
+      padding:38px; border:1px solid rgba(255,255,255,.25); border-radius:32px;
+      background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.08));
+      box-shadow:0 30px 90px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.28);
+      backdrop-filter:blur(20px); text-align:left; overflow:hidden; transform-style:preserve-3d;
+      animation:cardEntrance .9s cubic-bezier(.2,.8,.2,1) both; }
+    .digital-card::after { content:""; position:absolute; width:220px; height:560px; top:-170px; left:-260px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent); transform:rotate(22deg);
+      animation:shine 7s ease-in-out infinite 1.4s; }
+    .portrait-wrap { position:relative; display:grid; place-items:center; }
+    .portrait-ring { position:absolute; width:210px; height:210px; border-radius:50%;
+      border:1px dashed rgba(255,255,255,.5); animation:orbit 16s linear infinite; }
+    .portrait-ring::before,.portrait-ring::after { content:""; position:absolute; width:10px; height:10px;
+      border-radius:50%; background:var(--accent); box-shadow:0 0 18px var(--accent); }
+    .portrait-ring::before { top:10px; left:38px; }.portrait-ring::after { right:7px; bottom:50px; }
+    .hero .avatar { width:172px; height:172px; margin:0; font-size:64px; border:5px solid rgba(255,255,255,.5);
+      box-shadow:0 18px 50px rgba(0,0,0,.25); background:rgba(255,255,255,.16); }
+    .card-kicker { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:99px;
+      background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.16); font-size:12px; letter-spacing:.13em; }
+    .card-kicker i { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+    .hero h1 { font-size:clamp(36px,5vw,62px); line-height:1.16; margin:18px 0 10px; letter-spacing:.03em; }
+    .hero .subtitle { font-size:16px; letter-spacing:.16em; }
+    .hero .gold-line { margin:22px 0 0; width:86px; }
+    .hero .meta { justify-content:flex-start; flex-wrap:wrap; margin-top:20px; opacity:.88; }
+    .hero .meta span { padding:7px 11px; border-radius:10px; background:rgba(255,255,255,.1); }
+    .hero-quote { margin-top:28px; padding-left:16px; border-left:2px solid var(--accent); color:rgba(255,255,255,.82);
+      font-family:'Noto Serif SC',serif; font-size:15px; line-height:1.8; }
+    .float-symbol { position:absolute; z-index:2; font-size:24px; filter:drop-shadow(0 8px 12px rgba(0,0,0,.2));
+      animation:float 6s ease-in-out infinite; pointer-events:none; }
+    .float-symbol.one { left:7%; top:18%; }.float-symbol.two { right:8%; top:26%; animation-delay:-2s; }
+    .float-symbol.three { left:12%; bottom:13%; animation-delay:-4s; }.float-symbol.four { right:13%; bottom:12%; animation-delay:-1s; }
+    .scroll-cue { margin:34px auto 0; width:30px; height:48px; border:1px solid rgba(255,255,255,.45);
+      border-radius:20px; position:relative; }
+    .scroll-cue::after { content:""; position:absolute; top:9px; left:50%; width:4px; height:8px; border-radius:4px;
+      background:#fff; transform:translateX(-50%); animation:scrollCue 1.8s ease-in-out infinite; }
+    .nav-bar { top:0; border:0; background:rgba(255,255,255,.78); backdrop-filter:blur(18px);
+      box-shadow:0 8px 30px rgba(44,62,107,.06); }
+    .nav-inner { max-width:1050px; justify-content:center; }
+    .nav-item { padding:16px 15px; transition:.25s ease; }
+    .nav-item.active { background:color-mix(in srgb,var(--accent) 11%,transparent); }
+    .content { max-width:1050px; padding:52px 22px 100px; }
+    .section { position:relative; margin-bottom:28px; padding:34px; border-radius:28px;
+      background:rgba(255,255,255,.82); border:1px solid rgba(255,255,255,.9);
+      box-shadow:0 18px 55px rgba(44,62,107,.08); backdrop-filter:blur(12px); overflow:hidden; }
+    .section::after { content:attr(data-no); position:absolute; right:20px; top:-28px; color:var(--primary);
+      opacity:.035; font:bold 110px/1 'Noto Serif SC',serif; pointer-events:none; }
+    .section-title { font-size:27px; }.section-title .icon { width:44px; height:44px; display:grid; place-items:center;
+      border-radius:15px; background:color-mix(in srgb,var(--accent) 16%,white); box-shadow:0 8px 18px rgba(0,0,0,.06); }
+    .section-line { width:66px; }
+    .overview-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:-26px auto 48px;
+      position:relative; z-index:3; max-width:900px; }
+    .overview-item { padding:18px; border-radius:18px; background:#fff; box-shadow:0 16px 40px rgba(44,62,107,.12);
+      text-align:center; border:1px solid var(--border); }
+    .overview-item strong { display:block; color:var(--primary); font:700 25px/1.2 'Noto Serif SC',serif; }
+    .overview-item span { color:var(--text-light); font-size:12px; }
+    .info-item,.card { border:1px solid color-mix(in srgb,var(--border) 80%,transparent); box-shadow:0 10px 28px rgba(44,62,107,.07);
+      transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease; }
+    .info-item:hover,.card:hover { transform:translateY(-4px); box-shadow:0 18px 38px rgba(44,62,107,.12); border-color:var(--accent-light); }
+    .timeline::before { width:3px; background:linear-gradient(var(--accent),var(--primary-light)); }
+    .timeline-item { margin:0 0 16px; padding:18px 20px; border-radius:16px; background:color-mix(in srgb,var(--bg) 72%,white);
+      transition:transform .25s ease; }.timeline-item:hover { transform:translateX(5px); }
+    .timeline-item::before { top:25px; box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 20%,white); }
+    .gallery-grid { grid-template-columns:repeat(12,1fr); grid-auto-rows:70px; gap:12px; }
+    .gallery-item { grid-column:span 4; grid-row:span 3; aspect-ratio:auto; border-radius:18px;
+      box-shadow:0 14px 32px rgba(44,62,107,.12); }
+    .gallery-item:nth-child(5n+1) { grid-column:span 8; grid-row:span 5; }
+    .gallery-item:nth-child(5n+4) { grid-column:span 5; grid-row:span 4; }
+    .gallery-item img { transition:transform .6s cubic-bezier(.2,.8,.2,1),filter .4s; }
+    .gallery-item:hover img { transform:scale(1.08); filter:saturate(1.08); }
+    .lightbox { backdrop-filter:blur(16px); }.lightbox img { box-shadow:0 30px 90px rgba(0,0,0,.5); }
+    .fab button { background:linear-gradient(135deg,var(--primary),var(--primary-light)); padding:15px 25px;
+      box-shadow:0 10px 30px color-mix(in srgb,var(--primary) 32%,transparent); }
+    @keyframes orbit { to { transform:rotate(360deg); } }
+    @keyframes float { 0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-16px) rotate(4deg)} }
+    @keyframes shine { 0%,55%{left:-260px}75%,100%{left:110%} }
+    @keyframes scrollCue { 0%{opacity:0;transform:translate(-50%,0)}40%{opacity:1}100%{opacity:0;transform:translate(-50%,17px)} }
+    @keyframes cardEntrance { from{opacity:0;transform:translateY(34px) scale(.96)}to{opacity:1;transform:none} }
+    @media (max-width:768px) {
+      .hero { min-height:760px; padding:42px 16px 58px; }
+      .digital-card { grid-template-columns:1fr; gap:26px; text-align:center; padding:28px 20px; border-radius:27px; }
+      .portrait-wrap { min-height:185px; }.hero .avatar { width:145px; height:145px; }.portrait-ring{width:178px;height:178px}
+      .hero .gold-line { margin:18px auto 0; }.hero .meta { justify-content:center; }.hero-quote{text-align:left}
+      .float-symbol.one,.float-symbol.three { left:3%; }.float-symbol.two,.float-symbol.four { right:3%; }
+      .overview-strip { grid-template-columns:1fr 1fr; margin:-20px 10px 34px; }
+      .content { padding:32px 12px 86px; }.section { padding:25px 18px; border-radius:22px; }
+      .section-title { font-size:23px; }.nav-inner { justify-content:flex-start; }
+      .gallery-grid { grid-auto-rows:48px; gap:8px; }.gallery-item { grid-column:span 6; grid-row:span 4; }
+      .gallery-item:nth-child(5n+1) { grid-column:span 12; grid-row:span 6; }
+      .gallery-item:nth-child(5n+4) { grid-column:span 6; grid-row:span 4; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important; }
+    }
+
+    /* ===== Editorial art direction v2 ===== */
+    body.theme-boy_space { --ink-deep:#111a42; --glow-a:#7bb7ff; --glow-b:#ffe17a; --art-soft:#e9f1ff; }
+    body.theme-boy_forest { --ink-deep:#193d31; --glow-a:#7fd29a; --glow-b:#e8bd62; --art-soft:#e8f5e8; }
+    body.theme-girl_garden { --ink-deep:#633c65; --glow-a:#f4a8bf; --glow-b:#c7a6e8; --art-soft:#faeaf2; }
+    body.theme-girl_rainbow { --ink-deep:#573c61; --glow-a:#ff9f86; --glow-b:#69c5db; --art-soft:#fff0e6; }
+    .hero { isolation:isolate; background:
+      radial-gradient(circle at 18% 18%, color-mix(in srgb,var(--glow-a) 50%,transparent),transparent 26%),
+      radial-gradient(circle at 82% 74%, color-mix(in srgb,var(--glow-b) 38%,transparent),transparent 29%),
+      linear-gradient(145deg,var(--ink-deep),var(--primary),var(--primary-light)); }
+    .aurora { position:absolute; inset:0; overflow:hidden; z-index:0; pointer-events:none; opacity:.9; }
+    .aurora span { position:absolute; border-radius:999px; filter:blur(2px); mix-blend-mode:screen; opacity:.24; }
+    .aurora .a1 { width:46vw;height:12vw;min-height:90px;left:-8%;top:20%;background:linear-gradient(90deg,transparent,var(--glow-a),transparent);transform:rotate(-18deg);animation:auroraFlow 13s ease-in-out infinite; }
+    .aurora .a2 { width:52vw;height:10vw;min-height:80px;right:-15%;bottom:18%;background:linear-gradient(90deg,transparent,var(--glow-b),transparent);transform:rotate(16deg);animation:auroraFlow 16s ease-in-out infinite reverse; }
+    .aurora .a3 { width:20vw;height:20vw;left:42%;top:-8%;background:radial-gradient(circle,var(--glow-a),transparent 68%);filter:blur(22px);animation:breath 8s ease-in-out infinite; }
+    .motif-field { position:absolute;inset:0;z-index:1;pointer-events:none; }
+    .motif { position:absolute;display:grid;place-items:center;color:#fff;border:1px solid rgba(255,255,255,.22);
+      background:rgba(255,255,255,.07);backdrop-filter:blur(8px);box-shadow:0 12px 32px rgba(0,0,0,.12); }
+    .motif.m1{left:4%;top:10%;width:64px;height:64px;border-radius:22px;transform:rotate(-12deg);animation:float 7s ease-in-out infinite}
+    .motif.m2{right:5%;top:14%;width:48px;height:48px;border-radius:50%;animation:float 8s ease-in-out infinite -3s}
+    .motif.m3{right:7%;bottom:12%;width:84px;height:50px;border-radius:50%;transform:rotate(13deg);animation:float 9s ease-in-out infinite -5s}
+    .motif.m4{left:6%;bottom:14%;width:44px;height:70px;border-radius:50% 50% 45% 55%;animation:float 10s ease-in-out infinite -2s}
+    .theme-boy_space .motif::before{content:"✦"}.theme-boy_space .motif.m2::before{content:"◌"}.theme-boy_space .motif.m3::before{content:"⋆｡°✩"}.theme-boy_space .motif.m4::before{content:"☾"}
+    .theme-boy_forest .motif::before{content:"⌁"}.theme-boy_forest .motif.m2::before{content:"❧"}.theme-boy_forest .motif.m3::before{content:"葉"}.theme-boy_forest .motif.m4::before{content:"♧"}
+    .theme-girl_garden .motif::before{content:"✿"}.theme-girl_garden .motif.m2::before{content:"❀"}.theme-girl_garden .motif.m3::before{content:"花 · 光"}.theme-girl_garden .motif.m4::before{content:"❁"}
+    .theme-girl_rainbow .motif::before{content:"◒"}.theme-girl_rainbow .motif.m2::before{content:"✦"}.theme-girl_rainbow .motif.m3::before{content:"色 · 光"}.theme-girl_rainbow .motif.m4::before{content:"〰"}
+    .digital-card { grid-template-columns:minmax(210px,250px) 1fr; border-color:rgba(255,255,255,.32);
+      background:linear-gradient(125deg,rgba(255,255,255,.22),rgba(255,255,255,.07) 55%,rgba(255,255,255,.13));
+      box-shadow:0 38px 100px rgba(3,13,35,.32),inset 0 1px 0 rgba(255,255,255,.42); transition:transform .16s ease-out; }
+    .digital-card::before { content:"";position:absolute;inset:1px;border-radius:31px;pointer-events:none;
+      background:linear-gradient(115deg,rgba(255,255,255,.14),transparent 28%,transparent 70%,rgba(255,255,255,.08)); }
+    .portrait-wrap::after { content:"";position:absolute;width:130px;height:26px;bottom:-20px;border-radius:50%;
+      background:rgba(0,0,0,.22);filter:blur(16px);z-index:-1; }
+    .portrait-ring { border-style:solid;border-color:transparent;border-top-color:rgba(255,255,255,.75);border-bottom-color:var(--accent); }
+    .theme-ribbon { position:relative;z-index:5;margin:-22px auto 0;width:min(920px,calc(100% - 32px));height:44px;
+      display:flex;align-items:center;justify-content:center;gap:18px;overflow:hidden;border:1px solid rgba(255,255,255,.75);
+      border-radius:99px;background:rgba(255,255,255,.72);backdrop-filter:blur(18px);box-shadow:0 14px 40px rgba(44,62,107,.12);
+      color:var(--primary);font-size:12px;letter-spacing:.12em; }
+    .theme-ribbon::before,.theme-ribbon::after{content:"✦";color:var(--accent);animation:spin 9s linear infinite}
+    .theme-ribbon-track{white-space:nowrap;animation:ribbonDrift 12s ease-in-out infinite}
+    .content::before { content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.42;
+      background-image:radial-gradient(color-mix(in srgb,var(--primary) 20%,transparent) .7px,transparent .7px);
+      background-size:22px 22px;mask-image:linear-gradient(to bottom,transparent 8%,#000 35%,#000 72%,transparent); }
+    .section { transform-origin:center 20%; }
+    .section:nth-of-type(3n+1){background:linear-gradient(135deg,rgba(255,255,255,.92),color-mix(in srgb,var(--art-soft) 55%,white));}
+    .section:nth-of-type(3n+2){background:linear-gradient(145deg,color-mix(in srgb,var(--primary) 6%,white),rgba(255,255,255,.9));}
+    .section:nth-of-type(3n){background:linear-gradient(155deg,rgba(255,255,255,.95),color-mix(in srgb,var(--glow-b) 12%,white));}
+    .section:nth-child(even){margin-left:34px}.section:nth-child(odd){margin-right:34px}
+    .section::before { content:"";position:absolute;width:150px;height:150px;right:-55px;bottom:-72px;border-radius:42% 58% 66% 34%;
+      border:1px solid color-mix(in srgb,var(--primary) 13%,transparent);transform:rotate(24deg); }
+    .section:nth-child(even)::before{right:auto;left:-74px;top:-72px;bottom:auto;border-radius:50%;background:color-mix(in srgb,var(--glow-a) 7%,transparent)}
+    .section-title .icon { position:relative;overflow:hidden;transform:rotate(-3deg); }
+    .section-title .icon::after{content:"";position:absolute;inset:auto -20% -60% 20%;height:80%;background:rgba(255,255,255,.7);transform:rotate(-18deg)}
+    .overview-item { position:relative;overflow:hidden;background:linear-gradient(145deg,#fff,color-mix(in srgb,var(--art-soft) 45%,white));
+      transition:.35s cubic-bezier(.2,.8,.2,1); }
+    .overview-item::after{content:"";position:absolute;width:50px;height:50px;border-radius:50%;right:-24px;top:-24px;background:var(--glow-a);opacity:.14}
+    .overview-item:hover{transform:translateY(-7px) rotate(-1deg)}
+    .card:nth-child(2n){margin-left:18px}.card:nth-child(3n){margin-right:28px}
+    .gallery-item::after{content:"↗";position:absolute;right:12px;top:12px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+      color:#fff;background:rgba(15,20,35,.24);backdrop-filter:blur(8px);opacity:0;transform:translateY(6px);transition:.3s}
+    .gallery-item:hover::after{opacity:1;transform:none}
+    .gallery-item:nth-child(odd){transform:rotate(-.5deg)}.gallery-item:nth-child(even){transform:rotate(.5deg)}
+    .page-footer { position:relative;overflow:hidden;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--art-soft) 55%,transparent));padding:70px 16px 42px; }
+    .page-footer::before{content:"✦  KEEP WONDERING  ·  KEEP GROWING  ✦";display:block;margin-bottom:20px;color:var(--accent);letter-spacing:.2em;font-size:11px}
+    @keyframes auroraFlow{0%,100%{transform:translateX(-4%) rotate(-18deg) scaleX(.9)}50%{transform:translateX(12%) rotate(-12deg) scaleX(1.18)}}
+    @keyframes breath{0%,100%{transform:scale(.85);opacity:.18}50%{transform:scale(1.25);opacity:.36}}
+    @keyframes ribbonDrift{0%,100%{transform:translateX(-10px)}50%{transform:translateX(10px)}}
+    @media(max-width:768px){
+      .digital-card{grid-template-columns:1fr}.motif{opacity:.7}.motif.m1{left:2%;top:7%}.motif.m2{right:2%;top:8%}
+      .theme-ribbon{margin-top:-18px;gap:10px;padding:0 16px}.section:nth-child(n){margin-left:0;margin-right:0}
+      .card:nth-child(n){margin-left:0;margin-right:0}
+    }
   </style>
 </head>
 <body>
+  <div class="scroll-progress" id="scroll-progress"></div>
   <div id="app">
     <div class="center-wrap"><div class="spinner"></div></div>
   </div>
@@ -166,6 +352,13 @@
   async function init() {
     const params = new URLSearchParams(location.search);
     const token = params.get('t');
+    if (params.get('demo') === '1' || location.protocol === 'file:') {
+      profile = createDemoProfile();
+      document.body.classList.add('theme-girl_rainbow');
+      document.title = '成长手册动态演示 - 阿墨逗儿童成长中心';
+      render();
+      return;
+    }
     if (!token) { showError('链接无效', '缺少分享令牌参数'); return; }
 
     try {
@@ -202,22 +395,49 @@
   function render() {
     const c = profile.child;
     const avatarHtml = c.avatar_url ? `<img src="${getPhotoUrl(c.avatar_url)}">` : (c.gender === 'female' ? '👧' : '👦');
+    const themeCopy = {
+      boy_space: '星轨探索 · 保持好奇 · 勇敢抵达',
+      boy_forest: '自然生长 · 自由探索 · 温柔坚定',
+      girl_garden: '花园漫游 · 自信表达 · 向光盛放',
+      girl_rainbow: '收藏色彩 · 拥抱想象 · 闪闪发光'
+    }[c.style_preference || 'boy_space'];
+    const counts = {
+      timeline: (profile.timeline || []).length,
+      courses: (profile.courses || []).length,
+      photos: (profile.photos || []).length,
+      achievements: (profile.achievements || []).length
+    };
     
     document.getElementById('app').innerHTML = `
       <!-- Hero -->
       <div class="hero">
+        <div class="aurora"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+        <div class="motif-field"><span class="motif m1"></span><span class="motif m2"></span><span class="motif m3"></span><span class="motif m4"></span></div>
+        <span class="float-symbol one">✦</span><span class="float-symbol two">✧</span>
+        <span class="float-symbol three">🌱</span><span class="float-symbol four">★</span>
         <div class="hero-content">
-          <div class="avatar">${avatarHtml}</div>
-          <h1>${c.name}的成长手册</h1>
-          <div class="subtitle">阿墨逗儿童成长中心</div>
-          <div class="gold-line"></div>
-          <div class="meta">
-            ${c.class_name ? `<span>📚 ${c.class_name}</span>` : ''}
-            ${c.enrollment_date ? `<span>📅 入学 ${formatDate(c.enrollment_date)}</span>` : ''}
-            ${c.birthday ? `<span>🎂 ${formatDate(c.birthday)}</span>` : ''}
+          <div class="digital-card" id="digital-card">
+            <div class="portrait-wrap">
+              <div class="portrait-ring"></div>
+              <div class="avatar">${avatarHtml}</div>
+            </div>
+            <div>
+              <span class="card-kicker"><i></i> GROWTH PORTFOLIO · 2026</span>
+              <h1>${c.name}的<br>成长手册</h1>
+              <div class="subtitle">阿墨逗儿童成长中心</div>
+              <div class="gold-line"></div>
+              <div class="meta">
+                ${c.class_name ? `<span>📚 ${c.class_name}</span>` : ''}
+                ${c.enrollment_date ? `<span>📅 入学 ${formatDate(c.enrollment_date)}</span>` : ''}
+                ${c.birthday ? `<span>🎂 ${formatDate(c.birthday)}</span>` : ''}
+              </div>
+              <div class="hero-quote">“每一个被认真记录的瞬间，都会成为孩子未来回望时闪闪发光的成长坐标。”</div>
+            </div>
           </div>
+          <div class="scroll-cue" aria-label="向下滚动"></div>
         </div>
       </div>
+      <div class="theme-ribbon"><span class="theme-ribbon-track">${themeCopy}　·　阿墨逗儿童成长中心</span></div>
 
       <!-- Nav -->
       <div class="nav-bar">
@@ -234,8 +454,14 @@
       </div>
 
       <div class="content">
+        <div class="overview-strip">
+          <div class="overview-item"><strong>${counts.timeline}</strong><span>成长足迹</span></div>
+          <div class="overview-item"><strong>${counts.courses}</strong><span>课程记录</span></div>
+          <div class="overview-item"><strong>${counts.photos}</strong><span>精彩照片</span></div>
+          <div class="overview-item"><strong>${counts.achievements}</strong><span>荣誉成就</span></div>
+        </div>
         <!-- 基本信息 -->
-        <div class="section fade-in" id="sec-info">
+        <div class="section fade-in" id="sec-info" data-no="01">
           <div class="section-title"><span class="icon">📋</span> 基本信息</div>
           <div class="section-line"></div>
           <div class="info-grid">
@@ -248,7 +474,7 @@
         </div>
 
         <!-- 成长时间线 -->
-        <div class="section fade-in" id="sec-timeline">
+        <div class="section fade-in" id="sec-timeline" data-no="02">
           <div class="section-title"><span class="icon">👣</span> 成长足迹</div>
           <div class="section-sub">记录每一个重要的成长瞬间</div>
           <div class="section-line"></div>
@@ -256,7 +482,7 @@
         </div>
 
         <!-- 课程记录 -->
-        <div class="section fade-in" id="sec-courses">
+        <div class="section fade-in" id="sec-courses" data-no="03">
           <div class="section-title"><span class="icon">📚</span> 课程记录</div>
           <div class="section-sub">课堂上的精彩表现</div>
           <div class="section-line"></div>
@@ -273,7 +499,7 @@
         </div>
 
         <!-- 老师评语 -->
-        <div class="section fade-in" id="sec-comments">
+        <div class="section fade-in" id="sec-comments" data-no="04">
           <div class="section-title"><span class="icon">💬</span> 老师评语</div>
           <div class="section-sub">来自老师的温暖寄语</div>
           <div class="section-line"></div>
@@ -289,7 +515,7 @@
         </div>
 
         <!-- 照片库 -->
-        <div class="section fade-in" id="sec-photos">
+        <div class="section fade-in" id="sec-photos" data-no="05">
           <div class="section-title"><span class="icon">📸</span> 精彩瞬间</div>
           <div class="section-sub">定格美好的成长记忆</div>
           <div class="section-line"></div>
@@ -297,7 +523,7 @@
         </div>
 
         <!-- 活动记录 -->
-        <div class="section fade-in" id="sec-activities">
+        <div class="section fade-in" id="sec-activities" data-no="06">
           <div class="section-title"><span class="icon">🎪</span> 活动参与</div>
           <div class="section-sub">丰富多彩的活动体验</div>
           <div class="section-line"></div>
@@ -314,7 +540,7 @@
         </div>
 
         <!-- 获奖成就 -->
-        <div class="section fade-in" id="sec-achievements">
+        <div class="section fade-in" id="sec-achievements" data-no="07">
           <div class="section-title"><span class="icon">🏆</span> 荣誉成就</div>
           <div class="section-sub">值得骄傲的闪光时刻</div>
           <div class="section-line"></div>
@@ -328,7 +554,7 @@
         </div>
 
         <!-- 家长留言 -->
-        <div class="section fade-in" id="sec-messages">
+        <div class="section fade-in" id="sec-messages" data-no="08">
           <div class="section-title"><span class="icon">💌</span> 家长寄语</div>
           <div class="section-sub">来自家人的爱与期望</div>
           <div class="section-line"></div>
@@ -359,9 +585,40 @@
 
     // Intersection observer for fade-in
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          const nav = document.querySelector(`.nav-item[onclick*="${e.target.id}"]`);
+          if (nav) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            nav.classList.add('active');
+          }
+        }
+      });
     }, { threshold: 0.1 });
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    const updateMotion = () => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const ratio = max > 0 ? scrollY / max : 0;
+      const progress = document.getElementById('scroll-progress');
+      if (progress) progress.style.width = `${ratio * 100}%`;
+      const card = document.getElementById('digital-card');
+      if (card && scrollY < innerHeight) card.style.transform = `translateY(${scrollY * .08}px) scale(${1 - scrollY * .00008})`;
+    };
+    addEventListener('scroll', updateMotion, { passive:true });
+    updateMotion();
+
+    const tiltCard = document.getElementById('digital-card');
+    if (tiltCard && matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+      tiltCard.addEventListener('pointermove', (event) => {
+        const rect = tiltCard.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - .5;
+        const y = (event.clientY - rect.top) / rect.height - .5;
+        tiltCard.style.transform = `perspective(1200px) rotateY(${x * 4}deg) rotateX(${-y * 4}deg) translateY(${scrollY * .04}px)`;
+      });
+      tiltCard.addEventListener('pointerleave', () => { tiltCard.style.transform = ''; });
+    }
   }
 
   // ============================================
@@ -398,9 +655,57 @@
   // ============================================
   function getPhotoUrl(path) {
     if (!path) return '';
-    if (path.startsWith('http')) return path;
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
     const { data } = db.storage.from('photos').getPublicUrl(path);
     return data?.publicUrl || '';
+  }
+
+  function createDemoProfile() {
+    const art = (title, color1, color2, icon) => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700">
+        <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="${color1}"/><stop offset="1" stop-color="${color2}"/></linearGradient></defs>
+        <rect width="900" height="700" rx="36" fill="url(#g)"/>
+        <circle cx="720" cy="130" r="180" fill="white" opacity=".13"/><circle cx="130" cy="610" r="230" fill="white" opacity=".1"/>
+        <text x="450" y="310" text-anchor="middle" font-size="120">${icon}</text>
+        <text x="450" y="410" text-anchor="middle" fill="white" font-family="Microsoft YaHei" font-size="42" font-weight="bold">${title}</text>
+        <text x="450" y="470" text-anchor="middle" fill="white" opacity=".8" font-family="Microsoft YaHei" font-size="22">阿墨逗儿童成长中心 · DEMO</text>
+      </svg>`;
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    };
+    return {
+      child: {
+        name: '果果', gender: 'female', birthday: '2020-05-18', class_name: '星星探索班',
+        enrollment_date: '2025-09-01', style_preference: 'girl_rainbow', avatar_url: ''
+      },
+      timeline: [
+        { event_date:'2026-03-12', title:'第一次独立完成创意搭建', description:'从观察图纸到调整结构，果果始终专注地寻找自己的解决办法。' },
+        { event_date:'2026-05-24', title:'勇敢站上小舞台分享', description:'清楚地向同伴介绍作品，也学会了认真倾听别人的想法。' },
+        { event_date:'2026-07-18', title:'成为小组里的合作小达人', description:'主动分配材料、帮助伙伴，在合作中感受到共同完成任务的快乐。' }
+      ],
+      courses: [
+        { course_name:'森林建造师 PBL', teacher_name:'白雪老师', date:'2026-07-18', performance:'能够主动观察材料特征，尝试不同连接方式，并清楚表达自己的设计思路。' },
+        { course_name:'故事英语剧场', teacher_name:'西瓜老师', date:'2026-07-11', performance:'愿意使用完整句子进行角色表达，语音自然，参与感很强。' }
+      ],
+      comments: [
+        { teacher_name:'白雪老师', semester:'2026夏季', comment:'果果对新鲜事物始终保持好奇。比答案更珍贵的，是她已经开始相信自己的观察与判断。' }
+      ],
+      photos: [
+        { photo_url:art('森林创意搭建','#f28a72','#f7c45c','🌳'), caption:'一起设计森林里的秘密基地' },
+        { photo_url:art('勇敢表达','#6fbad3','#7c8bd8','🎤'), caption:'向大家介绍自己的作品' },
+        { photo_url:art('合作时刻','#6fbf8f','#b1d36d','🤝'), caption:'和伙伴共同解决难题' },
+        { photo_url:art('星光作品','#a17bd1','#e58ab0','✨'), caption:'每一份作品都有独特想法' },
+        { photo_url:art('快乐课堂','#ee8a9c','#f5b36b','🌈'), caption:'在探索中收获快乐' }
+      ],
+      activities: [
+        { activity_name:'夏日自然探索营', date:'2026-07-20', role:'小小观察员', description:'记录叶片形状，和伙伴一起完成自然色彩地图。' }
+      ],
+      achievements: [
+        { title:'本月勇敢表达之星', date:'2026-07-25', description:'能够在集体面前完整介绍自己的发现与作品。' }
+      ],
+      messages: [
+        { message:'愿你一直保持好奇，慢慢长大，也慢慢成为最喜欢的自己。', sender_name:'妈妈', relationship:'母女' }
+      ]
+    };
   }
 
   function formatDate(d) {
