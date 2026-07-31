@@ -180,6 +180,14 @@
   </style>
 </head>
 <body>
+  <script>
+    if (
+      location.hash.includes('type=recovery') ||
+      (location.hash.includes('access_token=') && location.hash.includes('refresh_token='))
+    ) {
+      location.replace('/reset-password' + location.hash);
+    }
+  </script>
   <div id="app"></div>
   <div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal" id="modal-content"></div>
