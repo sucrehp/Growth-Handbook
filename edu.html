@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EDU教培运营智能体</title>
+  <link rel="stylesheet" href="./edu.css" />
+  <style>
+    .embedded-view{height:calc(100vh - 122px);margin:-2px -4px 0}
+    .embedded-view iframe{width:100%;height:100%;border:0;border-radius:20px;background:#f8f6f1;box-shadow:0 12px 35px rgba(42,51,67,.08)}
+  </style>
+</head>
+<body>
+  <section id="loginScreen" class="login-screen">
+    <form id="loginForm" class="login-card">
+      <div class="brand-mark">EDU</div>
+      <p class="eyebrow">阿墨逗儿童成长中心</p>
+      <h1>教培运营智能体</h1>
+      <p class="muted">一个入口管理招生、合同、课时、任务和经营数据</p>
+      <label>管理员邮箱<input id="email" type="email" required /></label>
+      <label>密码<input id="password" type="password" required /></label>
+      <p id="loginError" class="error" hidden></p>
+      <button class="primary" type="submit">进入运营中心</button>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+    <aside>
+      <div class="aside-brand"><div class="brand-mark small">EDU</div><div><strong>运营智能体</strong><span>Growth OS</span></div></div>
+      <nav>
+        <button class="active" data-view="overview">◈ 经营总览</button>
+        <button data-view="leads">◎ 招生客户</button>
+        <button data-view="contracts">◇ 合同收费</button>
+        <button data-view="accounts">◫ 课时账户</button>
+        <button data-view="tasks">✓ 任务中心</button>
+        <button data-view="growth" data-module="growth">▣ 成长手册</button>
+        <a href="/teacher-agent" data-module="teacher">✦ 老师归档</a>
+        <a href="/marketing" data-module="marketing">◉ 内容营销</a>
+        <button class="disabled" title="按计划最后开发">⌁ 排课消课 <small>最后阶段</small></button>
+      </nav>
+      <button id="logout" class="logout">退出登录</button>
+    </aside>
+
+    <main>
+      <header><div><p class="eyebrow">EDU OPERATIONS</p><h1 id="viewTitle">经营总览</h1></div><div class="today" id="today"></div></header>
+
+      <section id="overviewView" class="view active">
+        <div id="kpis" class="kpi-grid"></div>
+        <div class="panel-grid">
+          <article class="panel">
+            <div class="panel-head"><div><span>模块进度</span><h2>智能体建设路线</h2></div></div>
+            <div class="roadmap">
+              <div class="done"><b>01</b><span>成长手册、老师归档、内容营销</span><em>已上线</em></div>
+              <div class="doing"><b>02</b><span>招生、合同、课时、任务底座</span><em>本阶段</em></div>
+              <div><b>03</b><span>家长服务、活动、微信通知</span><em>待配置</em></div>
+              <div><b>04</b><span>财务同步与经营驾驶舱</span><em>待配置</em></div>
+              <div><b>05</b><span>排课、点名、消课</span><em>最后开发</em></div>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><span>今日重点</span><h2>运营提醒</h2></div></div>
+            <div id="alerts" class="alerts"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="leadsView" class="view">
+        <div class="toolbar"><button class="primary" data-open="leadModal">＋ 新增客户</button></div>
+        <div class="panel table-panel"><table><thead><tr><th>家长/孩子</th><th>电话</th><th>来源</th><th>意向课程</th><th>意向</th><th>阶段</th><th>下次跟进</th></tr></thead><tbody id="leadsBody"></tbody></table></div>
+      </section>
+
+      <section id="contractsView" class="view">
+        <div class="toolbar"><button class="primary" data-open="contractModal">＋ 新建合同</button></div>
+        <div class="panel table-panel"><table><thead><tr><th>合同编号</th><th>学员/家长</th><th>课程</th><th>课时</th><th>合同金额</th><th>已收</th><th>签署状态</th><th>有效期</th></tr></thead><tbody id="contractsBody"></tbody></table></div>
+      </section>
+
+      <section id="accountsView" class="view">
+        <div class="panel table-panel"><table><thead><tr><th>学员</th><th>合同编号</th><th>课程</th><th>购买</th><th>赠送</th><th>已消</th><th>可用余额</th><th>状态</th></tr></thead><tbody id="accountsBody"></tbody></table></div>
+      </section>
+
+      <section id="tasksView" class="view">
+        <div class="toolbar"><button class="primary" data-open="taskModal">＋ 新建任务</button></div>
+        <div id="taskBoard" class="task-board"></div>
+      </section>
+
+      <section id="growthView" class="view embedded-view">
+        <iframe id="growthFrame" title="成长手册管理" loading="lazy"></iframe>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="leadModal"><form id="leadForm" method="dialog"><h2>新增招生客户</h2><div class="form-grid">
+    <label>家长姓名<input name="parent_name" required /></label><label>联系电话<input name="phone" required /></label>
+    <label>孩子姓名<input name="child_name" /></label><label>孩子年龄<input name="child_age" type="number" step=".5" /></label>
+    <label>客户来源<input name="source" placeholder="大众点评/转介绍/到店" /></label><label>意向课程<input name="interested_course" /></label>
+    <label>意向等级<select name="intention_level"><option value="high">高</option><option value="medium" selected>中</option><option value="low">低</option></select></label>
+    <label>下次跟进<input name="next_followup_at" type="datetime-local" /></label>
+    <label class="full">备注<textarea name="notes"></textarea></label>
+  </div><div class="dialog-actions"><button type="button" data-close>取消</button><button class="primary" value="default">保存客户</button></div></form></dialog>
+
+  <dialog id="contractModal"><form id="contractForm" method="dialog"><h2>新建合同记录</h2><div class="form-grid">
+    <label>合同编号<input name="contract_no" required /></label><label>家长姓名<input name="guardian_name" required /></label>
+    <label>家长电话<input name="guardian_phone" /></label><label>课程类别<input name="course_category" required /></label>
+    <label>合同类型<select name="contract_type"><option value="new">新签</option><option value="renewal">续费</option><option value="upgrade">升级</option><option value="transfer">转课</option></select></label>
+    <label>合同课时<input name="total_lessons" type="number" step=".5" required /></label>
+    <label>赠送课时<input name="gift_lessons" type="number" step=".5" value="0" /></label><label>合同金额<input name="contract_amount" type="number" step=".01" required /></label>
+    <label>已收金额<input name="paid_amount" type="number" step=".01" value="0" /></label><label>签署状态<select name="sign_status"><option value="draft">草稿</option><option value="pending">待签</option><option value="signed">已签</option></select></label>
+    <label>生效日期<input name="valid_from" type="date" /></label><label>截止日期<input name="valid_until" type="date" /></label>
+  </div><div class="dialog-actions"><button type="button" data-close>取消</button><button class="primary" value="default">保存合同</button></div></form></dialog>
+
+  <dialog id="taskModal"><form id="taskForm" method="dialog"><h2>新建运营任务</h2><div class="form-grid">
+    <label class="full">任务标题<input name="title" required /></label><label>任务类型<input name="task_type" placeholder="跟进/续费/审核" /></label>
+    <label>优先级<select name="priority"><option value="urgent">紧急</option><option value="high">高</option><option value="normal" selected>普通</option><option value="low">低</option></select></label>
+    <label>截止时间<input name="due_at" type="datetime-local" /></label><label class="full">任务说明<textarea name="description"></textarea></label>
+  </div><div class="dialog-actions"><button type="button" data-close>取消</button><button class="primary" value="default">保存任务</button></div></form></dialog>
+  <div id="toast" class="toast"></div>
+  <script src="./edu.js"></script>
+</body>
+</html>
