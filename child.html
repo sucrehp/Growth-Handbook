@@ -319,9 +319,29 @@
     @keyframes breath{0%,100%{transform:scale(.85);opacity:.18}50%{transform:scale(1.25);opacity:.36}}
     @keyframes ribbonDrift{0%,100%{transform:translateX(-10px)}50%{transform:translateX(10px)}}
     @media(max-width:768px){
+      .hero { min-height:auto; padding-bottom:74px; }
       .digital-card{grid-template-columns:1fr}.motif{opacity:.7}.motif.m1{left:2%;top:7%}.motif.m2{right:2%;top:8%}
+      .hero-identity,.keyword-list { justify-content:center; }
+      .hero-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .hero-stat { text-align:left; padding:13px 16px; }
+      .hero-stat:last-child { grid-column:1/-1; text-align:center; }
       .theme-ribbon{margin-top:-18px;gap:10px;padding:0 16px}.section:nth-child(n){margin-left:0;margin-right:0}
       .card:nth-child(n){margin-left:0;margin-right:0}
+      .nav-inner { scroll-snap-type:x proximity; }
+      .nav-item { scroll-snap-align:center; }
+      .nav-bar { scrollbar-width:none; }
+      .nav-bar::-webkit-scrollbar { display:none; }
+      .fab { right:14px; bottom:14px; }
+      .fab button { width:50px; height:50px; padding:0; justify-content:center; border-radius:50%; font-size:0; }
+      .fab button svg { width:20px; height:20px; }
+    }
+    @media(max-width:420px){
+      .digital-card { padding:24px 18px; }
+      .hero h1.portfolio-title span { font-size:48px; }
+      .hero h1.portfolio-title small { font-size:14px; }
+      .hero-quote { font-size:14px; }
+      .portfolio-subsection { padding:18px 14px; }
+      .report-button { width:100%; justify-content:center; }
     }
 
     /* ===== Growth Portfolio Lite information architecture ===== */
@@ -386,6 +406,7 @@
   // ============================================
   let profile = null;
   let isDownloading = false;
+  let navLockUntil = 0;
 
   // ============================================
   // Init
@@ -640,14 +661,14 @@
         if (e.isIntersecting) {
           e.target.classList.add('visible');
           const nav = document.querySelector(`.nav-item[onclick*="${e.target.id}"]`);
-          if (nav) {
+          if (nav && Date.now() >= navLockUntil) {
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             nav.classList.add('active');
           }
         }
       });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    }, { rootMargin: '-25% 0px -55% 0px', threshold: 0 });
+    document.querySelectorAll('.fade-in, #sec-hero').forEach(el => observer.observe(el));
 
     const updateMotion = () => {
       const max = document.documentElement.scrollHeight - innerHeight;
@@ -656,6 +677,10 @@
       if (progress) progress.style.width = `${ratio * 100}%`;
       const card = document.getElementById('digital-card');
       if (card && scrollY < innerHeight) card.style.transform = `translateY(${scrollY * .08}px) scale(${1 - scrollY * .00008})`;
+      if (scrollY + innerHeight >= document.documentElement.scrollHeight - 4) {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelector('.nav-item:last-child')?.classList.add('active');
+      }
     };
     addEventListener('scroll', updateMotion, { passive:true });
     updateMotion();
@@ -803,6 +828,7 @@
   }
 
   function scrollTo2(id, el) {
+    navLockUntil = Date.now() + 1400;
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
