@@ -25,11 +25,18 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Noto Sans SC',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
     
-    /* ===== Style Themes ===== */
-    body.theme-boy_space { --primary:#1A2A5E; --primary-light:#4A90D9; --accent:#F0C040; --accent-light:#C0D8F0; --bg:#F0F4FA; }
-    body.theme-boy_forest { --primary:#2D5A3D; --primary-light:#6BA85C; --accent:#D4A04A; --accent-light:#D8E8C8; --bg:#F2F8F0; }
-    body.theme-girl_garden { --primary:#E88AA8; --primary-light:#C8A0D8; --accent:#F0C8A0; --accent-light:#F8E0E8; --bg:#FDF6F8; }
-    body.theme-girl_rainbow { --primary:#F08060; --primary-light:#F8C850; --accent:#60B8D8; --accent-light:#FDE8D0; --bg:#FFF8F5; }
+    /* ===== Growth Portfolio theme presets ===== */
+    body.theme-sky { --primary:#315F91; --primary-light:#74B7E8; --accent:#F1B84B; --accent-light:#FFE3A1; --bg:#F1F8FC; --ink-deep:#153A64; --glow-a:#8ED9F7; --glow-b:#FFE28C; --art-soft:#E4F4FC; --badge-radius:18px 999px 999px 18px; --motif-1:"☁"; --motif-2:"✈"; --motif-3:"风 · 光"; --motif-4:"⌁"; }
+    body.theme-cosmic { --primary:#493A8E; --primary-light:#7769D8; --accent:#FFCA57; --accent-light:#FFE8A5; --bg:#F4F1FC; --ink-deep:#1D174D; --glow-a:#A89CFF; --glow-b:#FF85C8; --art-soft:#ECE8FF; --badge-radius:999px; --motif-1:"✦"; --motif-2:"◌"; --motif-3:"⋆｡°✩"; --motif-4:"☾"; }
+    body.theme-forest { --primary:#2E6650; --primary-light:#6EAD76; --accent:#D9A94E; --accent-light:#EBD69E; --bg:#F1F7F0; --ink-deep:#173D32; --glow-a:#8CD3A3; --glow-b:#EBC36D; --art-soft:#E4F2E4; --badge-radius:12px 24px 24px 12px; --motif-1:"⌁"; --motif-2:"❧"; --motif-3:"葉 · 光"; --motif-4:"♧"; }
+    body.theme-sunshine { --primary:#C45B34; --primary-light:#F09A4A; --accent:#FFD052; --accent-light:#FFE9A5; --bg:#FFF8ED; --ink-deep:#71331F; --glow-a:#FFB75E; --glow-b:#FFE26B; --art-soft:#FFF0D5; --badge-radius:22px 10px 22px 10px; --motif-1:"☀"; --motif-2:"➜"; --motif-3:"GO · PLAY"; --motif-4:"◒"; }
+    body.theme-blossom { --primary:#A64F76; --primary-light:#DB86A8; --accent:#E9B75F; --accent-light:#F6DBA7; --bg:#FFF5F7; --ink-deep:#61334F; --glow-a:#F3A9C2; --glow-b:#E6B9F2; --art-soft:#FBE8EF; --badge-radius:18px 999px 999px 18px; --motif-1:"✿"; --motif-2:"❀"; --motif-3:"花 · 光"; --motif-4:"❁"; }
+    body.theme-dream { --primary:#5367A4; --primary-light:#9A8BD4; --accent:#E8B9CF; --accent-light:#F4D9E6; --bg:#F7F4FC; --ink-deep:#30365F; --glow-a:#AFC8FF; --glow-b:#EAB9E9; --art-soft:#EEEBFA; --badge-radius:24px 8px 24px 8px; --motif-1:"◒"; --motif-2:"✦"; --motif-3:"梦 · 想"; --motif-4:"〰"; }
+    /* Legacy preferences remain readable without creating a second markup system. */
+    body.theme-boy_space { --primary:#493A8E; --primary-light:#7769D8; --accent:#FFCA57; --accent-light:#FFE8A5; --bg:#F4F1FC; --ink-deep:#1D174D; --glow-a:#A89CFF; --glow-b:#FF85C8; --art-soft:#ECE8FF; }
+    body.theme-boy_forest { --primary:#2E6650; --primary-light:#6EAD76; --accent:#D9A94E; --accent-light:#EBD69E; --bg:#F1F7F0; --ink-deep:#173D32; --glow-a:#8CD3A3; --glow-b:#EBC36D; --art-soft:#E4F2E4; }
+    body.theme-girl_garden { --primary:#A64F76; --primary-light:#DB86A8; --accent:#E9B75F; --accent-light:#F6DBA7; --bg:#FFF5F7; --ink-deep:#61334F; --glow-a:#F3A9C2; --glow-b:#E6B9F2; --art-soft:#FBE8EF; }
+    body.theme-girl_rainbow { --primary:#5367A4; --primary-light:#9A8BD4; --accent:#E8B9CF; --accent-light:#F4D9E6; --bg:#F7F4FC; --ink-deep:#30365F; --glow-a:#AFC8FF; --glow-b:#EAB9E9; --art-soft:#EEEBFA; }
 
     /* ===== Loading & Error ===== */
     .center-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
@@ -253,10 +260,8 @@
     }
 
     /* ===== Editorial art direction v2 ===== */
-    body.theme-boy_space { --ink-deep:#111a42; --glow-a:#7bb7ff; --glow-b:#ffe17a; --art-soft:#e9f1ff; }
-    body.theme-boy_forest { --ink-deep:#193d31; --glow-a:#7fd29a; --glow-b:#e8bd62; --art-soft:#e8f5e8; }
-    body.theme-girl_garden { --ink-deep:#633c65; --glow-a:#f4a8bf; --glow-b:#c7a6e8; --art-soft:#faeaf2; }
-    body.theme-girl_rainbow { --ink-deep:#573c61; --glow-a:#ff9f86; --glow-b:#69c5db; --art-soft:#fff0e6; }
+    body::before { content:""; position:fixed; inset:0; z-index:-2; pointer-events:none; opacity:.34;
+      background:radial-gradient(circle at 12% 16%,color-mix(in srgb,var(--glow-a) 22%,transparent),transparent 24%),radial-gradient(circle at 88% 82%,color-mix(in srgb,var(--glow-b) 18%,transparent),transparent 27%); }
     .hero { isolation:isolate; background:
       radial-gradient(circle at 18% 18%, color-mix(in srgb,var(--glow-a) 50%,transparent),transparent 26%),
       radial-gradient(circle at 82% 74%, color-mix(in srgb,var(--glow-b) 38%,transparent),transparent 29%),
@@ -273,10 +278,7 @@
     .motif.m2{right:5%;top:14%;width:48px;height:48px;border-radius:50%;animation:float 8s ease-in-out infinite -3s}
     .motif.m3{right:7%;bottom:12%;width:84px;height:50px;border-radius:50%;transform:rotate(13deg);animation:float 9s ease-in-out infinite -5s}
     .motif.m4{left:6%;bottom:14%;width:44px;height:70px;border-radius:50% 50% 45% 55%;animation:float 10s ease-in-out infinite -2s}
-    .theme-boy_space .motif::before{content:"✦"}.theme-boy_space .motif.m2::before{content:"◌"}.theme-boy_space .motif.m3::before{content:"⋆｡°✩"}.theme-boy_space .motif.m4::before{content:"☾"}
-    .theme-boy_forest .motif::before{content:"⌁"}.theme-boy_forest .motif.m2::before{content:"❧"}.theme-boy_forest .motif.m3::before{content:"葉"}.theme-boy_forest .motif.m4::before{content:"♧"}
-    .theme-girl_garden .motif::before{content:"✿"}.theme-girl_garden .motif.m2::before{content:"❀"}.theme-girl_garden .motif.m3::before{content:"花 · 光"}.theme-girl_garden .motif.m4::before{content:"❁"}
-    .theme-girl_rainbow .motif::before{content:"◒"}.theme-girl_rainbow .motif.m2::before{content:"✦"}.theme-girl_rainbow .motif.m3::before{content:"色 · 光"}.theme-girl_rainbow .motif.m4::before{content:"〰"}
+    .motif::before{content:var(--motif-1,"✦")}.motif.m2::before{content:var(--motif-2,"◌")}.motif.m3::before{content:var(--motif-3,"成长")}.motif.m4::before{content:var(--motif-4,"〰")}
     .digital-card { grid-template-columns:minmax(210px,250px) 1fr; border-color:rgba(255,255,255,.32);
       background:linear-gradient(125deg,rgba(255,255,255,.22),rgba(255,255,255,.07) 55%,rgba(255,255,255,.13));
       box-shadow:0 38px 100px rgba(3,13,35,.32),inset 0 1px 0 rgba(255,255,255,.42); transition:transform .16s ease-out; }
@@ -398,7 +400,7 @@
     .skills-section { background:linear-gradient(145deg,color-mix(in srgb,var(--primary) 7%,white),rgba(255,255,255,.94)); }
     .skill-collection { display:grid; gap:18px; }
     .badge-wall { display:flex; flex-wrap:wrap; gap:12px; padding:24px; border-radius:25px; background:color-mix(in srgb,var(--primary) 5%,white); border:1px dashed color-mix(in srgb,var(--primary) 22%,transparent); }
-    .skill-badge { display:inline-flex; align-items:center; gap:10px; padding:11px 15px 11px 11px; border-radius:18px 999px 999px 18px; background:#fff; border:1px solid var(--border); box-shadow:0 9px 22px rgba(44,62,107,.08); color:var(--primary); font-weight:600; }
+    .skill-badge { display:inline-flex; align-items:center; gap:10px; padding:11px 15px 11px 11px; border-radius:var(--badge-radius,18px 999px 999px 18px); background:#fff; border:1px solid var(--border); box-shadow:0 9px 22px rgba(44,62,107,.08); color:var(--primary); font-weight:600; }
     .skill-badge i { width:34px; height:34px; display:grid; place-items:center; border-radius:12px; background:linear-gradient(135deg,var(--accent-light),var(--art-soft)); font-style:normal; }
     .skill-badge small { display:block; color:var(--text-light); font-weight:400; font-size:10px; }
     .achievement-showcase { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
@@ -521,6 +523,15 @@
   let profile = null;
   let isDownloading = false;
   let navLockUntil = 0;
+  let activeTheme = 'sky';
+  const THEME_PRESETS = ['sky', 'cosmic', 'forest', 'sunshine', 'blossom', 'dream'];
+  const LEGACY_THEME_MAP = { boy_space:'cosmic', boy_forest:'forest', girl_garden:'blossom', girl_rainbow:'dream' };
+
+  function applyTheme(requestedTheme, legacyPreference) {
+    const normalized = String(requestedTheme || '').toLowerCase();
+    activeTheme = THEME_PRESETS.includes(normalized) ? normalized : (LEGACY_THEME_MAP[legacyPreference] || 'sky');
+    document.body.classList.add('theme-' + activeTheme);
+  }
 
   // ============================================
   // Init
@@ -528,9 +539,10 @@
   async function init() {
     const params = new URLSearchParams(location.search);
     const token = params.get('t');
+    const requestedTheme = params.get('theme');
     if (params.get('demo') === '1' || location.protocol === 'file:') {
       profile = createDemoProfile();
-      document.body.classList.add('theme-girl_rainbow');
+      applyTheme(requestedTheme, profile.child.style_preference);
       document.title = '成长手册动态演示 - 阿墨逗儿童成长中心';
       render();
       return;
@@ -543,8 +555,7 @@
       if (!data || !data.child) { showError('未找到记录', '该分享链接可能已失效，请联系老师确认'); return; }
       
       profile = data;
-      const style = data.child.style_preference || 'boy_space';
-      document.body.classList.add('theme-' + style);
+      applyTheme(requestedTheme, data.child.style_preference);
       document.title = `${data.child.name}的成长手册 - 阿墨逗儿童成长中心`;
       render();
     } catch (e) {
@@ -572,11 +583,13 @@
       const c = profile.child;
       const avatarHtml = c.avatar_url ? `<img src="${getPhotoUrl(c.avatar_url)}">` : (c.gender === 'female' ? '👧' : '👦');
     const themeCopy = {
-      boy_space: '星轨探索 · 保持好奇 · 勇敢抵达',
-      boy_forest: '自然生长 · 自由探索 · 温柔坚定',
-      girl_garden: '花园漫游 · 自信表达 · 向光盛放',
-      girl_rainbow: '收藏色彩 · 拥抱想象 · 闪闪发光'
-    }[c.style_preference || 'boy_space'];
+      sky: '天空探索 · 自由想象 · 向光出发',
+      cosmic: '星际创想 · 保持好奇 · 勇敢抵达',
+      forest: '自然生长 · 自由探索 · 温柔坚定',
+      sunshine: '阳光运动 · 热烈体验 · 快乐成长',
+      blossom: '花园漫游 · 自信表达 · 向光盛放',
+      dream: '梦想画室 · 收藏灵感 · 闪闪发光'
+    }[activeTheme];
     const counts = {
       timeline: (profile.timeline || []).length,
       courses: (profile.courses || []).length,
