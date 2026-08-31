@@ -296,6 +296,7 @@
     .theme-trigger { flex:0 0 auto; border:0; border-radius:999px; padding:7px 12px; background:var(--primary); color:#fff; font:600 11px/1 'Noto Sans SC',sans-serif; cursor:pointer; box-shadow:0 7px 18px color-mix(in srgb,var(--primary) 22%,transparent); }
     .theme-trigger:hover { background:var(--primary-light); }
     .theme-panel { position:fixed; inset:0; z-index:600; display:flex; align-items:flex-end; justify-content:center; padding:24px; background:rgba(18,25,45,.42); backdrop-filter:blur(8px); opacity:0; visibility:hidden; transition:opacity .22s,visibility .22s; }
+    body.theme-panel-open { overflow:hidden; }
     .theme-panel.show { opacity:1; visibility:visible; }
     .theme-dialog { width:min(680px,100%); max-height:min(720px,calc(100vh - 48px)); overflow:auto; padding:26px; border-radius:30px; background:rgba(255,255,255,.94); border:1px solid rgba(255,255,255,.9); box-shadow:0 34px 90px rgba(12,22,55,.28); transform:translateY(20px); transition:transform .25s; }
     .theme-panel.show .theme-dialog { transform:none; }
@@ -646,6 +647,7 @@
     const open = typeof force === 'boolean' ? force : !panel.classList.contains('show');
     panel.classList.toggle('show', open);
     panel.setAttribute('aria-hidden', String(!open));
+    document.body.classList.toggle('theme-panel-open', open);
   }
 
   function closeThemePanelFromBackdrop(event) {
