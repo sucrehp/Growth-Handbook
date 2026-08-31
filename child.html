@@ -335,6 +335,29 @@
     .report-panel h3 { font:600 24px/1.4 'Noto Serif SC',serif; margin-bottom:8px; }
     .report-panel p { color:rgba(255,255,255,.78); font-size:14px; max-width:560px; }
     .report-button { position:relative; z-index:1; display:inline-flex; align-items:center; gap:8px; border:0; border-radius:999px; padding:13px 20px; background:#fff; color:var(--primary); font:600 14px/1 'Noto Sans SC',sans-serif; cursor:pointer; box-shadow:0 12px 28px rgba(0,0,0,.2); }
+    .hero-copy { min-width:0; }
+    .hero-identity { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .hero-stage { display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border-radius:999px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.92); font-size:12px; }
+    .hero-stage::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px var(--accent); }
+    .hero h1.portfolio-title { margin:16px 0 8px; line-height:1; }
+    .hero h1.portfolio-title span { display:block; font-size:clamp(46px,6.4vw,76px); letter-spacing:.08em; }
+    .hero h1.portfolio-title small { display:block; margin-top:12px; font:400 clamp(15px,2vw,20px)/1.4 'Noto Sans SC',sans-serif; letter-spacing:.18em; color:rgba(255,255,255,.72); }
+    .keyword-list { display:flex; gap:9px; flex-wrap:wrap; margin-top:20px; }
+    .keyword-chip { padding:7px 12px; border-radius:999px; background:color-mix(in srgb,var(--glow-a) 22%,rgba(255,255,255,.08)); border:1px solid rgba(255,255,255,.18); color:#fff; font-size:12px; letter-spacing:.06em; }
+    .hero-quote { position:relative; max-width:620px; }
+    .hero-quote::before { content:"“"; position:absolute; left:10px; top:-34px; color:rgba(255,255,255,.11); font:700 72px/1 Georgia,serif; pointer-events:none; }
+    .hero-stats { grid-column:1/-1; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; padding-top:4px; }
+    .hero-stat { min-width:0; padding:13px 14px; border-radius:16px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.14); }
+    .hero-stat strong { display:block; font:700 22px/1.1 'Noto Serif SC',serif; color:#fff; }
+    .hero-stat span { display:block; margin-top:5px; color:rgba(255,255,255,.64); font-size:11px; white-space:nowrap; }
+    .portfolio-subsection { position:relative; overflow:hidden; box-shadow:inset 0 1px 0 rgba(255,255,255,.9); }
+    .portfolio-subsection::after { content:""; position:absolute; width:90px; height:90px; right:-42px; bottom:-48px; border-radius:38% 62% 55% 45%; background:color-mix(in srgb,var(--glow-a) 10%,transparent); transform:rotate(18deg); pointer-events:none; }
+    .subsection-kicker { position:relative; z-index:1; letter-spacing:.04em; }
+    .subsection-kicker::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
+    .portfolio-subsection .card { position:relative; z-index:1; margin-bottom:10px; background:rgba(255,255,255,.82); }
+    .portfolio-subsection .card-title { color:var(--primary); }
+    .portfolio-subsection .card-meta span { display:inline-flex; align-items:center; padding:4px 8px; border-radius:999px; background:var(--bg); }
+    .achievement-card { background:linear-gradient(135deg,color-mix(in srgb,var(--accent-light) 55%,white),#fff)!important; }
     @media(max-width:768px){
       .portfolio-split { grid-template-columns:1fr; }
       .portfolio-subsection.wide { grid-column:auto; }
@@ -410,9 +433,9 @@
   // ============================================
   // Render
   // ============================================
-  function render() {
-    const c = profile.child;
-    const avatarHtml = c.avatar_url ? `<img src="${getPhotoUrl(c.avatar_url)}">` : (c.gender === 'female' ? '👧' : '👦');
+    function render() {
+      const c = profile.child;
+      const avatarHtml = c.avatar_url ? `<img src="${getPhotoUrl(c.avatar_url)}">` : (c.gender === 'female' ? '👧' : '👦');
     const themeCopy = {
       boy_space: '星轨探索 · 保持好奇 · 勇敢抵达',
       boy_forest: '自然生长 · 自由探索 · 温柔坚定',
@@ -423,8 +446,13 @@
       timeline: (profile.timeline || []).length,
       courses: (profile.courses || []).length,
       photos: (profile.photos || []).length,
-      achievements: (profile.achievements || []).length
+      achievements: (profile.achievements || []).length,
+      projects: (profile.activities || []).length
     };
+    const age = getAge(c.birthday);
+    const growthStage = getGrowthStage(age);
+    const heroKeywords = getGrowthKeywords(profile);
+    const heroQuote = profile.comments?.[0]?.comment || '每一个被认真记录的瞬间，都会成为未来回望时闪闪发光的成长坐标。';
     
     document.getElementById('app').innerHTML = `
       <!-- Hero -->
@@ -439,17 +467,26 @@
               <div class="portrait-ring"></div>
               <div class="avatar">${avatarHtml}</div>
             </div>
-            <div>
+            <div class="hero-copy">
               <span class="card-kicker"><i></i> GROWTH PORTFOLIO · 2026</span>
-              <h1>${c.name}的<br>成长手册</h1>
-              <div class="subtitle">阿墨逗儿童成长中心</div>
-              <div class="gold-line"></div>
+              <div class="hero-identity">
+                <span class="hero-stage">${age !== null ? `${age}岁 · ` : ''}${growthStage}</span>
+                <span class="subtitle">阿墨逗儿童成长中心</span>
+              </div>
+              <h1 class="portfolio-title"><span>${c.name}</span><small>我的成长 Portfolio</small></h1>
+              <div class="keyword-list">${heroKeywords.map(keyword => `<span class="keyword-chip">${keyword}</span>`).join('')}</div>
               <div class="meta">
                 ${c.class_name ? `<span>📚 ${c.class_name}</span>` : ''}
                 ${c.enrollment_date ? `<span>📅 入学 ${formatDate(c.enrollment_date)}</span>` : ''}
-                ${c.birthday ? `<span>🎂 ${formatDate(c.birthday)}</span>` : ''}
               </div>
-              <div class="hero-quote">“每一个被认真记录的瞬间，都会成为孩子未来回望时闪闪发光的成长坐标。”</div>
+              <div class="hero-quote">${heroQuote}</div>
+            </div>
+            <div class="hero-stats" aria-label="成长数据概览">
+              <div class="hero-stat"><strong>${counts.timeline}</strong><span>成长记录</span></div>
+              <div class="hero-stat"><strong>${counts.projects}</strong><span>项目经历</span></div>
+              <div class="hero-stat"><strong>${counts.photos}</strong><span>作品影像</span></div>
+              <div class="hero-stat"><strong>${counts.courses}</strong><span>学习技能</span></div>
+              <div class="hero-stat"><strong>${counts.achievements}</strong><span>荣誉高光</span></div>
             </div>
           </div>
           <div class="scroll-cue" aria-label="向下滚动"></div>
@@ -470,12 +507,6 @@
       </div>
 
       <div class="content">
-        <div class="overview-strip">
-          <div class="overview-item"><strong>${counts.timeline}</strong><span>成长足迹</span></div>
-          <div class="overview-item"><strong>${counts.courses}</strong><span>课程记录</span></div>
-          <div class="overview-item"><strong>${counts.photos}</strong><span>精彩照片</span></div>
-          <div class="overview-item"><strong>${counts.achievements}</strong><span>荣誉成就</span></div>
-        </div>
         <!-- B · Growth Timeline -->
         <div class="section fade-in" id="sec-timeline" data-no="01">
           <div class="section-title"><span class="icon">👣</span> 成长轨迹</div>
@@ -731,6 +762,44 @@
   function formatDate(d) {
     if (!d) return '';
     return new Date(d).toLocaleDateString('zh-CN');
+  }
+
+  function getAge(birthday) {
+    if (!birthday) return null;
+    const birth = new Date(birthday);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const beforeBirthday = today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+    if (beforeBirthday) age -= 1;
+    return Math.max(0, age);
+  }
+
+  function getGrowthStage(age) {
+    if (age === null) return '成长探索期';
+    if (age <= 3) return '启蒙发现期';
+    if (age <= 6) return '好奇探索期';
+    if (age <= 9) return '兴趣拓展期';
+    if (age <= 12) return '自主进阶期';
+    return '青春成长阶段';
+  }
+
+  function getGrowthKeywords(data) {
+    const source = [
+      ...(data.timeline || []).flatMap(item => [item.title, item.description]),
+      ...(data.courses || []).flatMap(item => [item.course_name, item.performance]),
+      ...(data.activities || []).flatMap(item => [item.activity_name, item.role, item.description]),
+      ...(data.comments || []).map(item => item.comment)
+    ].filter(Boolean).join(' ');
+    const rules = [
+      [/表达|介绍|分享|语言|英语/, '自信表达'],
+      [/合作|伙伴|小组|帮助/, '乐于合作'],
+      [/创意|设计|想法|搭建|作品/, '创意探索'],
+      [/观察|发现|自然|好奇/, '好奇观察'],
+      [/专注|坚持|独立|完成/, '专注行动']
+    ];
+    const matched = rules.filter(([pattern]) => pattern.test(source)).map(([, label]) => label);
+    return [...matched, '成长进行时', '闪光日常'].slice(0, 3);
   }
 
   function scrollTo2(id, el) {
