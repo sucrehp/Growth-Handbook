@@ -292,7 +292,27 @@
       border-radius:99px;background:rgba(255,255,255,.72);backdrop-filter:blur(18px);box-shadow:0 14px 40px rgba(44,62,107,.12);
       color:var(--primary);font-size:12px;letter-spacing:.12em; }
     .theme-ribbon::before,.theme-ribbon::after{content:"✦";color:var(--accent);animation:spin 9s linear infinite}
-    .theme-ribbon-track{white-space:nowrap;animation:ribbonDrift 12s ease-in-out infinite}
+    .theme-ribbon-track{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:ribbonDrift 12s ease-in-out infinite}
+    .theme-trigger { flex:0 0 auto; border:0; border-radius:999px; padding:7px 12px; background:var(--primary); color:#fff; font:600 11px/1 'Noto Sans SC',sans-serif; cursor:pointer; box-shadow:0 7px 18px color-mix(in srgb,var(--primary) 22%,transparent); }
+    .theme-trigger:hover { background:var(--primary-light); }
+    .theme-panel { position:fixed; inset:0; z-index:600; display:flex; align-items:flex-end; justify-content:center; padding:24px; background:rgba(18,25,45,.42); backdrop-filter:blur(8px); opacity:0; visibility:hidden; transition:opacity .22s,visibility .22s; }
+    .theme-panel.show { opacity:1; visibility:visible; }
+    .theme-dialog { width:min(680px,100%); max-height:min(720px,calc(100vh - 48px)); overflow:auto; padding:26px; border-radius:30px; background:rgba(255,255,255,.94); border:1px solid rgba(255,255,255,.9); box-shadow:0 34px 90px rgba(12,22,55,.28); transform:translateY(20px); transition:transform .25s; }
+    .theme-panel.show .theme-dialog { transform:none; }
+    .theme-dialog-head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; }
+    .theme-dialog-head small { color:var(--accent); font-size:9px; font-weight:700; letter-spacing:.18em; }
+    .theme-dialog-head h3 { margin-top:4px; color:var(--primary); font:600 24px/1.4 'Noto Serif SC',serif; }
+    .theme-dialog-head p { margin-top:5px; color:var(--text-light); font-size:12px; }
+    .theme-close { width:36px; height:36px; flex:0 0 auto; border:1px solid var(--border); border-radius:50%; background:#fff; color:var(--primary); cursor:pointer; font-size:18px; }
+    .theme-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:20px; }
+    .theme-option { position:relative; min-width:0; padding:14px; text-align:left; border:1px solid var(--border); border-radius:20px; background:#fff; color:var(--text); cursor:pointer; transition:transform .2s,border-color .2s,box-shadow .2s; }
+    .theme-option:hover { transform:translateY(-3px); box-shadow:0 12px 26px rgba(44,62,107,.1); }
+    .theme-option.active { border-color:var(--primary); box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 13%,transparent); }
+    .theme-option.active::after { content:"✓"; position:absolute; right:10px; top:10px; width:22px; height:22px; display:grid; place-items:center; border-radius:50%; background:var(--primary); color:#fff; font-size:11px; }
+    .theme-preview { height:58px; display:flex; overflow:hidden; border-radius:13px; margin-bottom:12px; }
+    .theme-preview span { flex:1; background:var(--swatch); }
+    .theme-option strong { display:block; color:var(--primary); font-size:13px; }
+    .theme-option small { display:block; margin-top:3px; color:var(--text-light); font-size:9px; letter-spacing:.08em; }
     .content::before { content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.42;
       background-image:radial-gradient(color-mix(in srgb,var(--primary) 20%,transparent) .7px,transparent .7px);
       background-size:22px 22px;mask-image:linear-gradient(to bottom,transparent 8%,#000 35%,#000 72%,transparent); }
@@ -328,6 +348,7 @@
       .hero-stat { text-align:left; padding:13px 16px; }
       .hero-stat:last-child { grid-column:1/-1; text-align:center; }
       .theme-ribbon{margin-top:-18px;gap:10px;padding:0 16px}.section:nth-child(n){margin-left:0;margin-right:0}
+      .theme-ribbon::after { display:none; }
       .card:nth-child(n){margin-left:0;margin-right:0}
       .nav-inner { scroll-snap-type:x proximity; }
       .nav-item { scroll-snap-align:center; }
@@ -336,6 +357,8 @@
       .fab { right:14px; bottom:14px; }
       .fab button { width:50px; height:50px; padding:0; justify-content:center; border-radius:50%; font-size:0; }
       .fab button svg { width:20px; height:20px; }
+      .theme-dialog { padding:22px 18px; border-radius:26px; }
+      .theme-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
     }
     @media(max-width:420px){
       .digital-card { padding:24px 18px; }
@@ -345,6 +368,9 @@
       .portfolio-subsection { padding:18px 14px; }
       .report-button { width:100%; justify-content:center; }
       .motif.m3 { opacity:.38; transform:scale(.82) rotate(8deg); }
+      .theme-ribbon-track { animation:none; text-align:left; }
+      .theme-trigger { padding:7px 10px; }
+      .theme-panel { padding:10px; }
     }
 
     /* ===== Section-specific portfolio language ===== */
@@ -565,13 +591,73 @@
   let isDownloading = false;
   let navLockUntil = 0;
   let activeTheme = 'sky';
-  const THEME_PRESETS = ['sky', 'cosmic', 'forest', 'sunshine', 'blossom', 'dream'];
+  const THEME_CONTRACT = {
+    sky:{ label:'天空探索', tagline:'天空探索 · 自由想象 · 向光出发', preview:['#315F91','#74B7E8','#F1B84B'] },
+    cosmic:{ label:'宇宙创客', tagline:'星际创想 · 保持好奇 · 勇敢抵达', preview:['#493A8E','#7769D8','#FFCA57'] },
+    forest:{ label:'森林冒险', tagline:'自然生长 · 自由探索 · 温柔坚定', preview:['#2E6650','#6EAD76','#D9A94E'] },
+    sunshine:{ label:'阳光运动', tagline:'阳光运动 · 热烈体验 · 快乐成长', preview:['#C45B34','#F09A4A','#FFD052'] },
+    blossom:{ label:'花漾故事', tagline:'花园漫游 · 自信表达 · 向光盛放', preview:['#A64F76','#DB86A8','#E9B75F'] },
+    dream:{ label:'梦想画室', tagline:'梦想画室 · 收藏灵感 · 闪闪发光', preview:['#5367A4','#9A8BD4','#E8B9CF'] }
+  };
+  const THEME_PRESETS = Object.keys(THEME_CONTRACT);
   const LEGACY_THEME_MAP = { boy_space:'cosmic', boy_forest:'forest', girl_garden:'blossom', girl_rainbow:'dream' };
 
   function applyTheme(requestedTheme, legacyPreference) {
     const normalized = String(requestedTheme || '').toLowerCase();
     activeTheme = THEME_PRESETS.includes(normalized) ? normalized : (LEGACY_THEME_MAP[legacyPreference] || 'sky');
+    [...THEME_PRESETS, ...Object.keys(LEGACY_THEME_MAP)].forEach(id => document.body.classList.remove('theme-' + id));
     document.body.classList.add('theme-' + activeTheme);
+    document.documentElement.dataset.theme = activeTheme;
+    syncThemeControls();
+  }
+
+  function getStoredTheme() {
+    try {
+      const saved = localStorage.getItem('growthPortfolioTheme');
+      return THEME_PRESETS.includes(saved) ? saved : '';
+    } catch (e) { return ''; }
+  }
+
+  function selectTheme(themeId) {
+    if (!THEME_PRESETS.includes(themeId)) return;
+    applyTheme(themeId);
+    try { localStorage.setItem('growthPortfolioTheme', themeId); } catch (e) {}
+    try {
+      const nextUrl = new URL(location.href);
+      nextUrl.searchParams.set('theme', themeId);
+      history.replaceState(null, '', nextUrl);
+    } catch (e) {}
+    const track = document.querySelector('.theme-ribbon-track');
+    if (track) track.textContent = `${THEME_CONTRACT[activeTheme].tagline}　·　阿墨逗儿童成长中心`;
+    toggleThemePanel(false);
+  }
+
+  function syncThemeControls() {
+    document.querySelectorAll('.theme-option').forEach(option => {
+      const selected = option.dataset.theme === activeTheme;
+      option.classList.toggle('active', selected);
+      option.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function toggleThemePanel(force) {
+    const panel = document.getElementById('theme-panel');
+    if (!panel) return;
+    const open = typeof force === 'boolean' ? force : !panel.classList.contains('show');
+    panel.classList.toggle('show', open);
+    panel.setAttribute('aria-hidden', String(!open));
+  }
+
+  function closeThemePanelFromBackdrop(event) {
+    if (event.target.id === 'theme-panel') toggleThemePanel(false);
+  }
+
+  function renderThemeOptions() {
+    return THEME_PRESETS.map(id => {
+      const theme = THEME_CONTRACT[id];
+      const swatches = theme.preview.map(color => `<span style="--swatch:${color}"></span>`).join('');
+      return `<button type="button" class="theme-option${id === activeTheme ? ' active' : ''}" data-theme="${id}" aria-pressed="${id === activeTheme}" onclick="selectTheme('${id}')"><span class="theme-preview">${swatches}</span><strong>${theme.label}</strong><small>${id.toUpperCase()}</small></button>`;
+    }).join('');
   }
 
   // ============================================
@@ -583,7 +669,7 @@
     const requestedTheme = params.get('theme');
     if (params.get('demo') === '1' || location.protocol === 'file:') {
       profile = createDemoProfile();
-      applyTheme(requestedTheme, profile.child.style_preference);
+      applyTheme(requestedTheme || getStoredTheme(), profile.child.style_preference);
       document.title = '成长手册动态演示 - 阿墨逗儿童成长中心';
       render();
       return;
@@ -596,7 +682,7 @@
       if (!data || !data.child) { showError('未找到记录', '该分享链接可能已失效，请联系老师确认'); return; }
       
       profile = data;
-      applyTheme(requestedTheme, data.child.style_preference);
+      applyTheme(requestedTheme || getStoredTheme(), data.child.style_preference);
       document.title = `${data.child.name}的成长手册 - 阿墨逗儿童成长中心`;
       render();
     } catch (e) {
@@ -623,14 +709,7 @@
     function render() {
       const c = profile.child;
       const avatarHtml = c.avatar_url ? `<img src="${getPhotoUrl(c.avatar_url)}">` : (c.gender === 'female' ? '👧' : '👦');
-    const themeCopy = {
-      sky: '天空探索 · 自由想象 · 向光出发',
-      cosmic: '星际创想 · 保持好奇 · 勇敢抵达',
-      forest: '自然生长 · 自由探索 · 温柔坚定',
-      sunshine: '阳光运动 · 热烈体验 · 快乐成长',
-      blossom: '花园漫游 · 自信表达 · 向光盛放',
-      dream: '梦想画室 · 收藏灵感 · 闪闪发光'
-    }[activeTheme];
+    const themeCopy = THEME_CONTRACT[activeTheme].tagline;
     const counts = {
       timeline: (profile.timeline || []).length,
       courses: (profile.courses || []).length,
@@ -686,7 +765,7 @@
           <div class="scroll-cue" aria-label="向下滚动"></div>
         </div>
       </div>
-      <div class="theme-ribbon"><span class="theme-ribbon-track">${themeCopy}　·　阿墨逗儿童成长中心</span></div>
+      <div class="theme-ribbon"><span class="theme-ribbon-track">${themeCopy}　·　阿墨逗儿童成长中心</span><button type="button" class="theme-trigger" onclick="toggleThemePanel(true)">🎨 换个风格</button></div>
 
       <!-- Nav -->
       <div class="nav-bar">
@@ -836,7 +915,19 @@
           下载PPT
         </button>
       </div>
+
+      <div class="theme-panel" id="theme-panel" aria-hidden="true" onclick="closeThemePanelFromBackdrop(event)">
+        <div class="theme-dialog" role="dialog" aria-modal="true" aria-labelledby="theme-dialog-title">
+          <div class="theme-dialog-head">
+            <div><small>PORTFOLIO THEME</small><h3 id="theme-dialog-title">换个成长风格</h3><p>每一种风格都属于每一个独一无二的孩子。</p></div>
+            <button type="button" class="theme-close" aria-label="关闭主题面板" onclick="toggleThemePanel(false)">×</button>
+          </div>
+          <div class="theme-grid">${renderThemeOptions()}</div>
+        </div>
+      </div>
     `;
+    syncThemeControls();
+    document.onkeydown = event => { if (event.key === 'Escape') toggleThemePanel(false); };
 
     // Intersection observer for fade-in
     const observer = new IntersectionObserver((entries) => {
