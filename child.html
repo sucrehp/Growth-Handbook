@@ -683,6 +683,9 @@
       const { data, error } = await db.rpc('get_child_by_token', { p_token: token });
       if (error) throw error;
       if (!data || !data.child) { showError('未找到记录', '该分享链接可能已失效，请联系老师确认'); return; }
+      const { data: metadata, error: metadataError } = await db.rpc('get_growth_record_metadata_by_token', { p_token: token });
+      if (metadataError) console.warn('Growth Record metadata unavailable; using legacy fallback.', metadataError.message);
+      data.metadata = metadata || [];
       
       profile = data;
       applyTheme(requestedTheme || getStoredTheme(), data.child.style_preference);

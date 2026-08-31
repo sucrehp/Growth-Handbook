@@ -471,6 +471,7 @@
             <h2>${c.name}</h2>
             <div class="sub">${c.class_name || ''} · ${STYLES.find(s => s.id === c.style_preference)?.name || '星空探索'}</div>
           </div>
+          <button class="btn btn-accent" onclick="openGrowthRecordModal()">＋ 新增成长记录</button>
         </div>
         <div class="tabs">${tabsHtml}</div>
         <div class="tab-panel" id="tab-panel"></div>
@@ -766,6 +767,66 @@
     achievements: ['title', 'description', 'date', 'photo_url'],
     messages: ['sender_name', 'relationship', 'message', 'date'],
   };
+
+  const GROWTH_RECORD_TYPES = [
+    ['MILESTONE', '成长里程碑'], ['LEARNING', '学习经历'], ['PROJECT', '项目经历'],
+    ['WORK', '作品'], ['ACTIVITY', '活动经历'], ['SKILL', '技能成长'],
+    ['INTEREST', '兴趣发现'], ['ACHIEVEMENT', '成就与荣誉'],
+    ['TEACHER_OBSERVATION', '教师观察'], ['OTHER', '其他成长记录']
+  ];
+
+  function openGrowthRecordModal() {
+    const today = new Date().toISOString().slice(0, 10);
+    openModal(`
+      <h3>新增一条成长记录</h3>
+      <p style="font-size:13px;color:var(--text-light);margin:-10px 0 18px">选择类型后，系统会自动保存到合适的原有业务记录中。</p>
+      <form onsubmit="event.preventDefault();saveUnifiedGrowthRecord(this)">
+        <div class="form-row">
+          <div class="form-group"><label>类型</label><select class="form-input" name="record_type" required>${GROWTH_RECORD_TYPES.map(([value,label]) => `<option value="${value}">${label}</option>`).join('')}</select></div>
+          <div class="form-group"><label>日期</label><input class="form-input" name="event_date" type="date" value="${today}" required></div>
+        </div>
+        <div class="form-group"><label>一句话记录</label><input class="form-input" name="title" maxlength="120" placeholder="例如：第一次独立完成创意搭建" required autofocus></div>
+        <div class="form-group"><label>补充说明（可选）</label><textarea class="form-input" name="detail" rows="3" maxlength="1000" placeholder="补充孩子当时的表现、过程或老师观察"></textarea></div>
+        <div class="form-group"><label>标签（可选）</label><input class="form-input" name="tags" placeholder="例如：专注、合作、表达（用逗号分隔）"></div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-mid)"><input name="featured" type="checkbox"> 设为精选成长记录</label>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" onclick="closeModal()">取消</button>
+          <button class="btn btn-primary" type="submit">保存成长记录</button>
+        </div>
+      </form>
+    `);
+  }
+
+  async function saveUnifiedGrowthRecord(form) {
+    const submit = form.querySelector('[type="submit"]');
+    submit.disabled = true;
+    submit.textContent = '保存中...';
+    const tags = (form.tags.value || '').split(/[,，]/).map(item => item.trim()).filter(Boolean);
+    const { data, error } = await db.rpc('create_institution_growth_record', {
+      p_child_id: currentChild.id,
+      p_record_type: form.record_type.value,
+      p_event_date: form.event_date.value,
+      p_title: form.title.value.trim(),
+      p_detail: form.detail.value.trim() || null,
+      p_tags: [...new Set(tags)],
+      p_featured: form.featured.checked
+    });
+    if (error) {
+      toast('保存失败，未完成统一记录写入：' + error.message, 'error');
+      submit.disabled = false;
+      submit.textContent = '保存成长记录';
+      return;
+    }
+    const tabByTable = {
+      growth_timeline:'timeline', course_records:'courses', teacher_comments:'comments',
+      activity_records:'activities', achievements:'achievements'
+    };
+    await loadChildContent(currentChild.id);
+    activeTab = tabByTable[data && data.source_table] || activeTab;
+    closeModal();
+    toast('成长记录已保存并加入 Portfolio', 'success');
+    renderEditor();
+  }
 
   // --- Modal Generators ---
   function openTimelineModal(editItem, editIdx) {

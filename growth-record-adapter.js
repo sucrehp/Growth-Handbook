@@ -86,9 +86,46 @@
       : TYPES.ACTIVITY;
   }
 
+  function buildMetadataIndex(data, childId) {
+    const index = new Map();
+    (data.metadata || []).forEach(item => {
+      const metadataChild = text(item && item.child_id);
+      if (metadataChild && text(childId) && metadataChild !== text(childId)) return;
+      const table = text(item && item.source_table);
+      const recordId = text(item && item.source_record_id);
+      if (!table || !recordId) return;
+      index.set(`${table}:${recordId}`, item);
+    });
+    return index;
+  }
+
+  function enrichRecord(record, metadataIndex) {
+    const metadata = metadataIndex.get(`${record.legacy.table}:${record.legacy.id}`);
+    if (!metadata) return record;
+    const allowedTypes = Object.values(TYPES);
+    const allowedSources = Object.values(SOURCE);
+    const evidence = Array.isArray(metadata.evidence) ? metadata.evidence.map(item => ({
+      kind: text(item && (item.evidence_type || item.kind || item.type)) || 'document',
+      url: text(item && (item.existing_media_reference || item.url || item.reference)),
+      title: text(item && (item.title || item.label)),
+      date: text(item && item.date),
+      source: allowedSources.includes(text(metadata.source)) ? text(metadata.source) : SOURCE.INSTITUTION_RECORD,
+      legacy: { table: record.legacy.table, id: record.legacy.id }
+    })).filter(item => item.url) : [];
+    record.type = allowedTypes.includes(text(metadata.record_type)) ? text(metadata.record_type) : record.type;
+    record.source = allowedSources.includes(text(metadata.source)) ? text(metadata.source) : record.source;
+    record.status = ['PUBLISHED', 'PENDING_REVIEW'].includes(text(metadata.status)) ? text(metadata.status) : record.status;
+    record.tags = Array.isArray(metadata.tags) ? metadata.tags.map(text).filter(Boolean) : [];
+    record.featured = metadata.featured === true;
+    record.evidence.push(...evidence);
+    record.metadataId = text(metadata.id);
+    return record;
+  }
+
   function adaptLegacyProfile(profile) {
     const data = profile || {};
     const childId = data.child && data.child.id;
+    const metadataIndex = buildMetadataIndex(data, childId);
     const records = [];
 
     (data.timeline || []).forEach((item, index) => records.push(recordBase('growth_timeline', item, index, childId, {
@@ -136,6 +173,7 @@
       detail: item.description
     })));
 
+    records.forEach(record => enrichRecord(record, metadataIndex));
     records.sort((a, b) => {
       const dateOrder = text(b.date).localeCompare(text(a.date));
       if (dateOrder) return dateOrder;
@@ -165,7 +203,8 @@
         achievements: byType[TYPES.ACHIEVEMENT].length,
         evidence: unlinkedEvidence.length + records.reduce((sum, record) => sum + record.evidence.length, 0)
       },
-      mediaGovernance: MEDIA_GOVERNANCE
+      mediaGovernance: MEDIA_GOVERNANCE,
+      metadataApplied: records.filter(record => record.metadataId).length
     };
   }
 
@@ -174,6 +213,7 @@
     SOURCE,
     MEDIA_GOVERNANCE,
     inferActivityType,
+    buildMetadataIndex,
     adaptLegacyProfile
   });
 });
