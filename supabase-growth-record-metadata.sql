@@ -41,22 +41,93 @@ grant select, insert, update, delete on table public.growth_record_metadata to a
 drop policy if exists "authenticated read growth record metadata" on public.growth_record_metadata;
 create policy "authenticated read growth record metadata"
   on public.growth_record_metadata for select to authenticated
-  using (true);
+  using (
+    exists (
+      select 1
+      from public.staff_profiles sp
+      where sp.id = auth.uid()
+        and sp.status = 'active'
+    )
+    and exists (
+      select 1
+      from public.staff_child_access sca
+      where sca.staff_id = auth.uid()
+        and sca.child_id = growth_record_metadata.child_id
+        and sca.access_level in ('view', 'edit', 'manage')
+    )
+  );
 
 drop policy if exists "authenticated insert growth record metadata" on public.growth_record_metadata;
 create policy "authenticated insert growth record metadata"
   on public.growth_record_metadata for insert to authenticated
-  with check (true);
+  with check (
+    exists (
+      select 1
+      from public.staff_profiles sp
+      where sp.id = auth.uid()
+        and sp.status = 'active'
+    )
+    and exists (
+      select 1
+      from public.staff_child_access sca
+      where sca.staff_id = auth.uid()
+        and sca.child_id = growth_record_metadata.child_id
+        and sca.access_level in ('edit', 'manage')
+    )
+  );
 
 drop policy if exists "authenticated update growth record metadata" on public.growth_record_metadata;
 create policy "authenticated update growth record metadata"
   on public.growth_record_metadata for update to authenticated
-  using (true) with check (true);
+  using (
+    exists (
+      select 1
+      from public.staff_profiles sp
+      where sp.id = auth.uid()
+        and sp.status = 'active'
+    )
+    and exists (
+      select 1
+      from public.staff_child_access sca
+      where sca.staff_id = auth.uid()
+        and sca.child_id = growth_record_metadata.child_id
+        and sca.access_level in ('edit', 'manage')
+    )
+  )
+  with check (
+    exists (
+      select 1
+      from public.staff_profiles sp
+      where sp.id = auth.uid()
+        and sp.status = 'active'
+    )
+    and exists (
+      select 1
+      from public.staff_child_access sca
+      where sca.staff_id = auth.uid()
+        and sca.child_id = growth_record_metadata.child_id
+        and sca.access_level in ('edit', 'manage')
+    )
+  );
 
 drop policy if exists "authenticated delete growth record metadata" on public.growth_record_metadata;
 create policy "authenticated delete growth record metadata"
   on public.growth_record_metadata for delete to authenticated
-  using (true);
+  using (
+    exists (
+      select 1
+      from public.staff_profiles sp
+      where sp.id = auth.uid()
+        and sp.status = 'active'
+    )
+    and exists (
+      select 1
+      from public.staff_child_access sca
+      where sca.staff_id = auth.uid()
+        and sca.child_id = growth_record_metadata.child_id
+        and sca.access_level = 'manage'
+    )
+  );
 
 drop trigger if exists trigger_growth_record_metadata_updated_at on public.growth_record_metadata;
 create trigger trigger_growth_record_metadata_updated_at
