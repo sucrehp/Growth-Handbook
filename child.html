@@ -356,6 +356,36 @@
     .nav-item.active { background:transparent; }
     .nav-item.active::after { transform:scaleX(1); }
 
+    .profile-section { background:linear-gradient(145deg,rgba(255,255,255,.96),color-mix(in srgb,var(--art-soft) 68%,white)); }
+    .profile-resume { display:grid; grid-template-columns:minmax(230px,.76fr) minmax(0,1.34fr); gap:20px; }
+    .profile-portrait-card { position:relative; min-height:520px; padding:22px; display:flex; flex-direction:column; border-radius:30px; overflow:hidden; color:#fff; background:linear-gradient(155deg,var(--ink-deep),var(--primary) 62%,var(--primary-light)); box-shadow:0 22px 48px rgba(44,62,107,.18); }
+    .profile-portrait-card::before { content:""; position:absolute; width:190px; height:190px; right:-76px; top:-70px; border-radius:50%; border:1px solid rgba(255,255,255,.22); }
+    .profile-photo { position:relative; height:275px; border:0; border-radius:24px; overflow:hidden; background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; font-size:76px; }
+    .profile-photo img { width:100%; height:100%; object-fit:cover; }
+    .profile-photo::after { content:"PROFILE · 2026"; position:absolute; left:14px; bottom:13px; padding:5px 9px; border-radius:999px; background:rgba(15,20,45,.42); backdrop-filter:blur(10px); font-size:9px; letter-spacing:.14em; }
+    .profile-name { margin-top:22px; font:600 31px/1.25 'Noto Serif SC',serif; letter-spacing:.05em; }
+    .profile-stage { margin-top:7px; color:rgba(255,255,255,.66); font-size:12px; letter-spacing:.08em; }
+    .profile-signature { margin-top:auto; padding-top:20px; border-top:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.78); font-size:13px; line-height:1.85; }
+    .profile-details { min-width:0; padding:8px 2px; }
+    .profile-eyebrow { color:var(--accent); font-size:10px; font-weight:700; letter-spacing:.18em; }
+    .profile-details h3 { margin-top:6px; color:var(--primary); font:600 28px/1.35 'Noto Serif SC',serif; }
+    .profile-about { margin-top:14px; color:var(--text-mid); font-size:14px; line-height:1.95; }
+    .profile-facts { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+    .profile-fact { padding:7px 11px; border-radius:999px; background:color-mix(in srgb,var(--primary) 7%,white); border:1px solid color-mix(in srgb,var(--primary) 12%,white); color:var(--primary); font-size:11px; }
+    .profile-clusters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:18px; }
+    .profile-cluster { padding:17px; border-radius:20px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.95); box-shadow:0 10px 26px rgba(44,62,107,.06); }
+    .profile-cluster h4 { color:var(--primary); font-size:12px; margin-bottom:11px; }
+    .profile-tags { display:flex; flex-wrap:wrap; gap:7px; }
+    .profile-tag { max-width:100%; padding:6px 9px; border-radius:10px; background:color-mix(in srgb,var(--accent-light) 30%,white); color:var(--primary); font-size:11px; overflow-wrap:anywhere; }
+    .profile-journey { margin-top:18px; padding:18px; border-radius:22px; background:color-mix(in srgb,var(--primary) 5%,white); }
+    .profile-journey h4 { color:var(--primary); font:600 14px/1.4 'Noto Serif SC',serif; }
+    .profile-journey-list { display:grid; gap:10px; margin-top:13px; }
+    .profile-journey-item { display:grid; grid-template-columns:74px minmax(0,1fr); gap:12px; align-items:start; font-size:12px; }
+    .profile-journey-item time { color:var(--accent); font-weight:700; }
+    .profile-journey-item span { min-width:0; color:var(--text-mid); overflow-wrap:anywhere; }
+    .profile-teacher-note { margin-top:16px; padding:16px 18px; border-left:3px solid var(--accent); border-radius:0 18px 18px 0; background:#fff; color:var(--text-mid); font-size:12px; line-height:1.8; }
+    .profile-teacher-note strong { display:block; margin-top:7px; color:var(--primary); }
+
     .timeline-section { background:linear-gradient(145deg,color-mix(in srgb,var(--art-soft) 70%,white),rgba(255,255,255,.94)); }
     .timeline-portfolio { position:relative; display:grid; gap:18px; padding:10px 0 6px; }
     .timeline-portfolio::before { content:""; position:absolute; left:55px; top:22px; bottom:24px; width:2px; background:linear-gradient(var(--accent),var(--primary-light),transparent); }
@@ -448,6 +478,9 @@
 
     @media(max-width:768px){
       .chapter-label b { display:none; }
+      .profile-resume { grid-template-columns:1fr; }
+      .profile-portrait-card { min-height:0; }
+      .profile-photo { height:340px; }
       .timeline-portfolio::before { left:29px; }
       .milestone,.milestone:nth-child(even) { grid-template-columns:58px minmax(0,1fr); padding:16px 14px; min-height:0; }
       .milestone-marker { grid-row:1/3; }.milestone-marker strong { width:42px;height:42px; }
@@ -460,6 +493,12 @@
       .interest-node:nth-of-type(2){left:4%;top:13%}.interest-node:nth-of-type(3){right:3%;top:16%}
       .interest-node:nth-of-type(4){left:4%;bottom:14%}.interest-node:nth-of-type(5){right:3%;bottom:12%}
       .report-book-stage { min-height:400px; padding:20px 4px; }
+    }
+    @media(max-width:420px){
+      .profile-portrait-card { padding:16px; border-radius:24px; }
+      .profile-photo { height:285px; }
+      .profile-clusters { grid-template-columns:1fr; }
+      .profile-journey-item { grid-template-columns:64px minmax(0,1fr); }
     }
 
     /* ===== Growth Portfolio Lite information architecture ===== */
@@ -603,6 +642,11 @@
     const growthStage = getGrowthStage(age);
     const heroKeywords = getGrowthKeywords(profile);
     const heroQuote = profile.comments?.[0]?.comment || '每一个被认真记录的瞬间，都会成为未来回望时闪闪发光的成长坐标。';
+    const profilePhoto = c.avatar_url || profile.photos?.[0]?.photo_url || '';
+    const profilePhotoHtml = profilePhoto ? `<img src="${getPhotoUrl(profilePhoto)}" alt="${c.name}的代表照片" loading="lazy">` : (c.gender === 'female' ? '👧' : '👦');
+    const profileInterests = getProfileInterests(profile);
+    const profileSkills = getProfileSkills(profile);
+    const profileJourney = getProfileJourney(profile);
     
     document.getElementById('app').innerHTML = `
       <!-- Hero -->
@@ -647,26 +691,59 @@
       <!-- Nav -->
       <div class="nav-bar">
         <div class="nav-inner">
-          <div class="nav-item active" onclick="scrollTo2('sec-hero',this)"><span class="chapter-label"><b>00</b><i>✦</i>成长主页</span></div>
-          <div class="nav-item" onclick="scrollTo2('sec-timeline',this)"><span class="chapter-label"><b>01</b><i>◷</i>成长轨迹</span></div>
-          <div class="nav-item" onclick="scrollTo2('sec-projects',this)"><span class="chapter-label"><b>02</b><i>◫</i>作品与项目</span></div>
-          <div class="nav-item" onclick="scrollTo2('sec-skills',this)"><span class="chapter-label"><b>03</b><i>✺</i>技能与荣誉</span></div>
-          <div class="nav-item" onclick="scrollTo2('sec-interests',this)"><span class="chapter-label"><b>04</b><i>◎</i>兴趣与成长</span></div>
-          <div class="nav-item" onclick="scrollTo2('sec-report',this)"><span class="chapter-label"><b>05</b><i>▤</i>成长报告</span></div>
+          <div class="nav-item active" onclick="scrollTo2('sec-hero',this)"><span class="chapter-label"><b>01</b><i>✦</i>成长主页</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-profile',this)"><span class="chapter-label"><b>02</b><i>◉</i>个人简介</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-timeline',this)"><span class="chapter-label"><b>03</b><i>◷</i>成长轨迹</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-projects',this)"><span class="chapter-label"><b>04</b><i>◫</i>作品与项目</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-skills',this)"><span class="chapter-label"><b>05</b><i>✺</i>技能与荣誉</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-interests',this)"><span class="chapter-label"><b>06</b><i>◎</i>兴趣与成长</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-report',this)"><span class="chapter-label"><b>07</b><i>▤</i>成长报告</span></div>
         </div>
       </div>
 
       <div class="content">
-        <!-- B · Growth Timeline -->
-        <div class="section timeline-section fade-in" id="sec-timeline" data-no="01">
+        <!-- B · Personal Profile -->
+        <div class="section profile-section fade-in" id="sec-profile" data-no="02">
+          <div class="section-title"><span class="icon">🪪</span> 个人简介</div>
+          <div class="section-sub">一张会随着成长不断丰富的儿童 Portfolio Resume</div>
+          <div class="section-line"></div>
+          <div class="profile-resume">
+            <article class="profile-portrait-card">
+              <div class="profile-photo">${profilePhotoHtml}</div>
+              <div class="profile-name">${c.name}</div>
+              <div class="profile-stage">${age !== null ? `${age}岁 · ` : ''}${c.class_name ? `${c.class_name} · ` : ''}${growthStage}</div>
+              <div class="profile-signature">“${heroQuote}”</div>
+            </article>
+            <div class="profile-details">
+              <div class="profile-eyebrow">ABOUT ME · MY PROFILE</div>
+              <h3>你好，我是${c.name}</h3>
+              <p class="profile-about">${getProfileIntro(c, growthStage, profile)}</p>
+              <div class="profile-facts">
+                ${age !== null ? `<span class="profile-fact">🎈 ${age}岁</span>` : ''}
+                ${c.class_name ? `<span class="profile-fact">📚 ${c.class_name}</span>` : ''}
+                ${c.enrollment_date ? `<span class="profile-fact">🌱 ${formatDate(c.enrollment_date)} 加入机构</span>` : ''}
+              </div>
+              <div class="profile-clusters">
+                ${profileInterests.length ? `<div class="profile-cluster"><h4>兴趣爱好 · INTERESTS</h4><div class="profile-tags">${profileInterests.map(item => `<span class="profile-tag">${item}</span>`).join('')}</div></div>` : ''}
+                ${profileSkills.length ? `<div class="profile-cluster"><h4>学习技能 · SKILLS</h4><div class="profile-tags">${profileSkills.map(item => `<span class="profile-tag">${item}</span>`).join('')}</div></div>` : ''}
+                <div class="profile-cluster"><h4>成长关键词 · KEYWORDS</h4><div class="profile-tags">${heroKeywords.map(item => `<span class="profile-tag">${item}</span>`).join('')}</div></div>
+              </div>
+              ${profileJourney.length ? `<div class="profile-journey"><h4>My Journey · 我的成长历程</h4><div class="profile-journey-list">${profileJourney.map(item => `<div class="profile-journey-item"><time>${item.date ? formatDate(item.date) : '成长中'}</time><span>${item.label}</span></div>`).join('')}</div></div>` : ''}
+              ${profile.comments?.[0]?.comment ? `<div class="profile-teacher-note">${profile.comments[0].comment}<strong>${profile.comments[0].teacher_name || '老师'}${profile.comments[0].semester ? ` · ${profile.comments[0].semester}` : ''}</strong></div>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- C · Growth Timeline -->
+        <div class="section timeline-section fade-in" id="sec-timeline" data-no="03">
           <div class="section-title"><span class="icon">👣</span> 成长轨迹</div>
           <div class="section-sub">沿着时间，看见每一次尝试、突破与闪光</div>
           <div class="section-line"></div>
           ${renderTimeline(profile.timeline, profile.photos, c.birthday)}
         </div>
 
-        <!-- C · Projects & Works -->
-        <div class="section projects-section fade-in" id="sec-projects" data-no="02">
+        <!-- D · Projects & Works -->
+        <div class="section projects-section fade-in" id="sec-projects" data-no="04">
           <div class="section-title"><span class="icon">🎨</span> 作品与项目</div>
           <div class="section-sub">用作品保存想法，用项目记录真实参与</div>
           <div class="section-line"></div>
@@ -682,8 +759,8 @@
           </div>
         </div>
 
-        <!-- D · Skills & Achievements -->
-        <div class="section skills-section fade-in" id="sec-skills" data-no="03">
+        <!-- E · Skills & Achievements -->
+        <div class="section skills-section fade-in" id="sec-skills" data-no="05">
           <div class="section-title"><span class="icon">✨</span> 技能与荣誉</div>
           <div class="section-sub">让课堂表现与高光成就彼此印证</div>
           <div class="section-line"></div>
@@ -701,8 +778,8 @@
           </div>
         </div>
 
-        <!-- E · Interests & Growth -->
-        <div class="section interests-section fade-in" id="sec-interests" data-no="04">
+        <!-- F · Interests & Growth -->
+        <div class="section interests-section fade-in" id="sec-interests" data-no="06">
           <div class="section-title"><span class="icon">🌱</span> 兴趣与成长</div>
           <div class="section-sub">来自老师与家人的观察，共同拼出独特的成长画像</div>
           <div class="section-line"></div>
@@ -723,8 +800,8 @@
           </div>
         </div>
 
-        <!-- F · Growth Report Export -->
-        <div class="section report-section fade-in" id="sec-report" data-no="05">
+        <!-- G · Growth Report Export -->
+        <div class="section report-section fade-in" id="sec-report" data-no="07">
           <div class="section-title"><span class="icon">📖</span> 成长报告</div>
           <div class="section-sub">把珍贵的成长经历，保存为可以长期收藏的完整履历</div>
           <div class="section-line"></div>
@@ -967,6 +1044,39 @@
     ];
     const matched = rules.filter(([pattern]) => pattern.test(source)).map(([, label]) => label);
     return [...matched, '成长进行时', '闪光日常'].slice(0, 3);
+  }
+
+  function getProfileIntro(child, growthStage, data) {
+    const activity = data.activities?.[0]?.activity_name;
+    const course = data.courses?.[0]?.course_name;
+    const focus = activity || course;
+    const classCopy = child.class_name ? `在${child.class_name}` : '在每天的学习与生活中';
+    return `${child.name}${classCopy}进入${growthStage}，喜欢通过观察、体验和表达积累自己的成长故事。${focus ? `最近正在探索“${focus}”。` : ''}`;
+  }
+
+  function getProfileInterests(data) {
+    return [...new Set([
+      ...(data.activities || []).map(item => item.activity_name),
+      ...(data.courses || []).map(item => item.course_name),
+      ...getGrowthKeywords(data)
+    ].filter(Boolean))].slice(0, 6);
+  }
+
+  function getProfileSkills(data) {
+    return [...new Set([
+      ...(data.courses || []).map(item => item.course_name),
+      ...(data.achievements || []).map(item => item.title)
+    ].filter(Boolean))].slice(0, 6);
+  }
+
+  function getProfileJourney(data) {
+    const journey = [];
+    if (data.child?.enrollment_date) journey.push({ date:data.child.enrollment_date, label:'加入阿墨逗儿童成长中心，开启新的成长旅程' });
+    (data.timeline || []).forEach(item => journey.push({ date:item.event_date, label:item.title || item.description || '重要成长节点' }));
+    return journey
+      .filter(item => item.label)
+      .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
+      .slice(-5);
   }
 
   function scrollTo2(id, el) {
