@@ -344,6 +344,120 @@
       .report-button { width:100%; justify-content:center; }
     }
 
+    /* ===== Section-specific portfolio language ===== */
+    .chapter-label { display:flex; align-items:center; gap:7px; }
+    .chapter-label b { font:600 10px/1 'Noto Serif SC',serif; color:var(--accent); letter-spacing:.08em; }
+    .chapter-label i { font-style:normal; font-size:13px; }
+    .nav-item { border-bottom:0; position:relative; }
+    .nav-item::after { content:""; position:absolute; left:16px; right:16px; bottom:8px; height:1px; background:var(--accent); transform:scaleX(0); transition:transform .25s; }
+    .nav-item.active { background:transparent; }
+    .nav-item.active::after { transform:scaleX(1); }
+
+    .timeline-section { background:linear-gradient(145deg,color-mix(in srgb,var(--art-soft) 70%,white),rgba(255,255,255,.94)); }
+    .timeline-portfolio { position:relative; display:grid; gap:18px; padding:10px 0 6px; }
+    .timeline-portfolio::before { content:""; position:absolute; left:55px; top:22px; bottom:24px; width:2px; background:linear-gradient(var(--accent),var(--primary-light),transparent); }
+    .milestone { position:relative; display:grid; grid-template-columns:90px minmax(0,1fr) minmax(180px,260px); gap:18px; align-items:center; min-height:170px; padding:20px; border-radius:26px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.95); box-shadow:0 16px 40px rgba(44,62,107,.07); }
+    .milestone:nth-child(even) { grid-template-columns:90px minmax(180px,260px) minmax(0,1fr); }
+    .milestone:nth-child(even) .milestone-story { order:3; }
+    .milestone:nth-child(even) .milestone-evidence { order:2; }
+    .milestone-marker { position:relative; z-index:2; align-self:stretch; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .milestone-marker strong { width:52px; height:52px; display:grid; place-items:center; border-radius:50%; background:var(--primary); color:#fff; font:600 15px/1 'Noto Serif SC',serif; box-shadow:0 0 0 8px color-mix(in srgb,var(--accent) 13%,white); }
+    .milestone-marker span { margin-top:12px; color:var(--accent); font-size:11px; font-weight:700; text-align:center; }
+    .milestone-story { min-width:0; }
+    .milestone-story .timeline-title { color:var(--primary); font:600 20px/1.45 'Noto Serif SC',serif; }
+    .milestone-story .timeline-desc { margin-top:10px; line-height:1.9; }
+    .milestone-age { display:inline-flex; margin-bottom:10px; padding:5px 9px; border-radius:999px; color:var(--primary); background:color-mix(in srgb,var(--accent) 14%,white); font-size:11px; }
+    .milestone-evidence { height:132px; border-radius:20px; overflow:hidden; background:var(--art-soft); box-shadow:0 12px 28px rgba(44,62,107,.12); transform:rotate(1deg); }
+    .milestone:nth-child(even) .milestone-evidence { transform:rotate(-1deg); }
+    .milestone-evidence img { width:100%; height:100%; object-fit:cover; transition:transform .5s; }
+    .milestone-evidence:hover img { transform:scale(1.05); }
+
+    .projects-section { background:linear-gradient(155deg,rgba(255,255,255,.96),color-mix(in srgb,var(--glow-b) 16%,white)); }
+    .work-editorial { display:grid; gap:16px; }
+    .featured-work { position:relative; min-height:430px; overflow:hidden; border-radius:30px; cursor:pointer; box-shadow:0 24px 58px rgba(44,62,107,.16); }
+    .featured-work img { width:100%; height:100%; min-height:430px; object-fit:cover; transition:transform .7s cubic-bezier(.2,.8,.2,1); }
+    .featured-work:hover img { transform:scale(1.035); }
+    .featured-work::after { content:""; position:absolute; inset:34% 0 0; background:linear-gradient(transparent,rgba(10,18,38,.82)); }
+    .featured-work-copy { position:absolute; z-index:2; left:30px; right:30px; bottom:26px; color:#fff; }
+    .work-index { display:inline-flex; padding:6px 10px; margin-bottom:12px; border-radius:999px; border:1px solid rgba(255,255,255,.32); background:rgba(255,255,255,.13); backdrop-filter:blur(10px); font-size:11px; letter-spacing:.12em; }
+    .featured-work-copy h3 { font:600 clamp(24px,4vw,38px)/1.3 'Noto Serif SC',serif; }
+    .featured-work-copy p { margin-top:8px; color:rgba(255,255,255,.75); font-size:13px; }
+    .work-thumbs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .work-card { display:grid; grid-template-columns:132px minmax(0,1fr); min-height:132px; overflow:hidden; border-radius:22px; background:rgba(255,255,255,.78); border:1px solid rgba(255,255,255,.9); box-shadow:0 12px 28px rgba(44,62,107,.08); cursor:pointer; }
+    .work-card img { width:100%; height:100%; object-fit:cover; }
+    .work-card-copy { display:flex; flex-direction:column; justify-content:center; padding:16px; }
+    .work-card-copy small { color:var(--accent); font-size:10px; letter-spacing:.14em; }
+    .work-card-copy strong { margin-top:7px; color:var(--primary); font:600 16px/1.5 'Noto Serif SC',serif; }
+    .project-stories { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:18px; }
+    .project-story { position:relative; padding:22px; border-radius:22px; background:var(--primary); color:#fff; overflow:hidden; }
+    .project-story:nth-child(even) { background:color-mix(in srgb,var(--primary) 78%,var(--accent)); }
+    .project-story::after { content:"↗"; position:absolute; right:18px; top:14px; color:rgba(255,255,255,.34); font-size:24px; }
+    .project-story .card-title { color:#fff; padding-right:26px; }
+    .project-story .card-meta,.project-story .card-body { color:rgba(255,255,255,.72); }
+
+    .skills-section { background:linear-gradient(145deg,color-mix(in srgb,var(--primary) 7%,white),rgba(255,255,255,.94)); }
+    .skill-collection { display:grid; gap:18px; }
+    .badge-wall { display:flex; flex-wrap:wrap; gap:12px; padding:24px; border-radius:25px; background:color-mix(in srgb,var(--primary) 5%,white); border:1px dashed color-mix(in srgb,var(--primary) 22%,transparent); }
+    .skill-badge { display:inline-flex; align-items:center; gap:10px; padding:11px 15px 11px 11px; border-radius:18px 999px 999px 18px; background:#fff; border:1px solid var(--border); box-shadow:0 9px 22px rgba(44,62,107,.08); color:var(--primary); font-weight:600; }
+    .skill-badge i { width:34px; height:34px; display:grid; place-items:center; border-radius:12px; background:linear-gradient(135deg,var(--accent-light),var(--art-soft)); font-style:normal; }
+    .skill-badge small { display:block; color:var(--text-light); font-weight:400; font-size:10px; }
+    .achievement-showcase { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .trophy-card { position:relative; min-height:180px; padding:25px 24px 22px 92px; border-radius:26px; overflow:hidden; background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary) 70%,var(--accent))); color:#fff; box-shadow:0 18px 38px rgba(44,62,107,.18); }
+    .trophy-card::before { content:"🏆"; position:absolute; left:22px; top:24px; width:52px; height:52px; display:grid; place-items:center; border-radius:18px; background:rgba(255,255,255,.15); font-size:27px; }
+    .trophy-card::after { content:""; position:absolute; width:130px; height:130px; right:-55px; bottom:-65px; border-radius:50%; border:1px solid rgba(255,255,255,.18); }
+    .trophy-card h3 { font:600 18px/1.5 'Noto Serif SC',serif; }
+    .trophy-card time { display:block; margin-top:8px; color:var(--accent-light); font-size:11px; }
+    .trophy-card p { margin-top:12px; color:rgba(255,255,255,.72); font-size:13px; }
+
+    .interests-section { background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--glow-a) 16%,white),rgba(255,255,255,.94) 45%,color-mix(in srgb,var(--art-soft) 60%,white)); }
+    .interest-constellation { position:relative; min-height:330px; display:grid; place-items:center; margin:4px 0 22px; overflow:hidden; border-radius:30px; border:1px solid rgba(255,255,255,.9); }
+    .interest-constellation::before,.interest-constellation::after { content:""; position:absolute; border-radius:50%; border:1px dashed color-mix(in srgb,var(--primary) 20%,transparent); }
+    .interest-constellation::before { width:250px; height:250px; }
+    .interest-constellation::after { width:390px; height:390px; }
+    .interest-core { position:relative; z-index:2; width:126px; height:126px; display:grid; place-items:center; text-align:center; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:#fff; box-shadow:0 18px 42px rgba(44,62,107,.24); font:600 17px/1.5 'Noto Serif SC',serif; }
+    .interest-node { position:absolute; z-index:3; max-width:180px; padding:10px 14px; border-radius:16px; background:#fff; border:1px solid var(--border); box-shadow:0 11px 26px rgba(44,62,107,.1); color:var(--primary); font-size:12px; font-weight:600; }
+    .interest-node:nth-of-type(2){left:8%;top:18%;transform:rotate(-3deg)}
+    .interest-node:nth-of-type(3){right:8%;top:17%;transform:rotate(3deg)}
+    .interest-node:nth-of-type(4){left:12%;bottom:17%;transform:rotate(2deg)}
+    .interest-node:nth-of-type(5){right:10%;bottom:16%;transform:rotate(-2deg)}
+    .growth-notes { display:grid; grid-template-columns:1.1fr .9fr; gap:14px; }
+    .growth-note { position:relative; padding:28px; border-radius:8px 24px 24px 24px; background:#fff; box-shadow:0 16px 36px rgba(44,62,107,.09); }
+    .growth-note.family { transform:rotate(1deg); background:color-mix(in srgb,var(--accent-light) 26%,white); }
+    .growth-note::before { content:attr(data-label); display:block; margin-bottom:14px; color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.12em; }
+    .growth-note p { color:var(--text-mid); line-height:1.9; }
+    .growth-note footer { margin-top:14px; color:var(--primary); font-size:12px; font-weight:600; }
+
+    .report-section { background:linear-gradient(145deg,color-mix(in srgb,var(--primary) 8%,white),color-mix(in srgb,var(--accent) 10%,white)); }
+    .report-book-stage { min-height:440px; display:grid; place-items:center; perspective:1300px; padding:30px; border-radius:30px; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.92),color-mix(in srgb,var(--art-soft) 70%,white)); overflow:hidden; }
+    .report-book { position:relative; width:min(390px,88%); aspect-ratio:.76; transform:rotateY(-7deg) rotateX(2deg); transform-style:preserve-3d; filter:drop-shadow(28px 32px 28px rgba(44,62,107,.24)); transition:transform .45s; }
+    .report-book:hover { transform:rotateY(-2deg) translateY(-5px); }
+    .report-cover { position:absolute; inset:0; display:flex; flex-direction:column; padding:38px 34px; border-radius:7px 22px 22px 7px; background:linear-gradient(155deg,var(--primary),var(--primary-light)); color:#fff; overflow:hidden; }
+    .report-cover::before { content:""; position:absolute; left:14px; top:0; bottom:0; width:1px; background:rgba(255,255,255,.24); box-shadow:4px 0 10px rgba(0,0,0,.12); }
+    .report-cover::after { content:""; position:absolute; width:230px; height:230px; right:-100px; top:-80px; border-radius:50%; border:1px solid rgba(255,255,255,.2); }
+    .report-edition { font-size:10px; letter-spacing:.2em; color:var(--accent-light); }
+    .report-cover h3 { margin-top:44px; font:600 34px/1.4 'Noto Serif SC',serif; }
+    .report-cover h3 small { display:block; margin-top:10px; font:400 13px/1.6 'Noto Sans SC',sans-serif; letter-spacing:.15em; color:rgba(255,255,255,.62); }
+    .report-cover-stats { margin-top:auto; display:flex; gap:18px; }
+    .report-cover-stats span { font-size:11px; color:rgba(255,255,255,.64); }
+    .report-cover-stats strong { display:block; color:#fff; font:600 21px/1.2 'Noto Serif SC',serif; }
+    .report-cover .report-button { margin-top:24px; align-self:flex-start; }
+
+    @media(max-width:768px){
+      .chapter-label b { display:none; }
+      .timeline-portfolio::before { left:29px; }
+      .milestone,.milestone:nth-child(even) { grid-template-columns:58px minmax(0,1fr); padding:16px 14px; min-height:0; }
+      .milestone-marker { grid-row:1/3; }.milestone-marker strong { width:42px;height:42px; }
+      .milestone:nth-child(even) .milestone-story,.milestone:nth-child(even) .milestone-evidence { order:initial; }
+      .milestone-evidence { grid-column:2; height:150px; }
+      .featured-work,.featured-work img { min-height:310px; }
+      .work-thumbs,.project-stories,.achievement-showcase,.growth-notes { grid-template-columns:1fr; }
+      .work-card { grid-template-columns:104px minmax(0,1fr); }
+      .interest-constellation { min-height:360px; }.interest-constellation::after{width:330px;height:330px}
+      .interest-node:nth-of-type(2){left:4%;top:13%}.interest-node:nth-of-type(3){right:3%;top:16%}
+      .interest-node:nth-of-type(4){left:4%;bottom:14%}.interest-node:nth-of-type(5){right:3%;bottom:12%}
+      .report-book-stage { min-height:400px; padding:20px 4px; }
+    }
+
     /* ===== Growth Portfolio Lite information architecture ===== */
     .portfolio-split { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
     .portfolio-subsection { min-width:0; padding:22px; border-radius:20px; background:rgba(255,255,255,.62); border:1px solid var(--border); }
@@ -518,123 +632,100 @@
       <!-- Nav -->
       <div class="nav-bar">
         <div class="nav-inner">
-          <div class="nav-item active" onclick="scrollTo2('sec-hero',this)">成长主页</div>
-          <div class="nav-item" onclick="scrollTo2('sec-timeline',this)">成长轨迹</div>
-          <div class="nav-item" onclick="scrollTo2('sec-projects',this)">作品与项目</div>
-          <div class="nav-item" onclick="scrollTo2('sec-skills',this)">技能与荣誉</div>
-          <div class="nav-item" onclick="scrollTo2('sec-interests',this)">兴趣与成长</div>
-          <div class="nav-item" onclick="scrollTo2('sec-report',this)">成长报告</div>
+          <div class="nav-item active" onclick="scrollTo2('sec-hero',this)"><span class="chapter-label"><b>00</b><i>✦</i>成长主页</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-timeline',this)"><span class="chapter-label"><b>01</b><i>◷</i>成长轨迹</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-projects',this)"><span class="chapter-label"><b>02</b><i>◫</i>作品与项目</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-skills',this)"><span class="chapter-label"><b>03</b><i>✺</i>技能与荣誉</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-interests',this)"><span class="chapter-label"><b>04</b><i>◎</i>兴趣与成长</span></div>
+          <div class="nav-item" onclick="scrollTo2('sec-report',this)"><span class="chapter-label"><b>05</b><i>▤</i>成长报告</span></div>
         </div>
       </div>
 
       <div class="content">
         <!-- B · Growth Timeline -->
-        <div class="section fade-in" id="sec-timeline" data-no="01">
+        <div class="section timeline-section fade-in" id="sec-timeline" data-no="01">
           <div class="section-title"><span class="icon">👣</span> 成长轨迹</div>
           <div class="section-sub">沿着时间，看见每一次尝试、突破与闪光</div>
           <div class="section-line"></div>
-          ${renderTimeline(profile.timeline)}
+          ${renderTimeline(profile.timeline, profile.photos, c.birthday)}
         </div>
 
         <!-- C · Projects & Works -->
-        <div class="section fade-in" id="sec-projects" data-no="02">
+        <div class="section projects-section fade-in" id="sec-projects" data-no="02">
           <div class="section-title"><span class="icon">🎨</span> 作品与项目</div>
           <div class="section-sub">用作品保存想法，用项目记录真实参与</div>
           <div class="section-line"></div>
-          <div class="portfolio-split">
-            <div class="portfolio-subsection wide">
-              <div class="subsection-kicker"><span>📸</span> 精选成长作品</div>
-              ${renderGallery(profile.photos)}
-            </div>
-            <div class="portfolio-subsection wide">
-              <div class="subsection-kicker"><span>🧭</span> 项目与活动经历</div>
-              ${renderCards(profile.activities, (item) => `
-                <div class="card">
-                  <div class="card-title">${item.activity_name || '成长项目'}</div>
-                  <div class="card-meta">
-                    ${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}
-                    ${item.role ? `<span>🎭 ${item.role}</span>` : ''}
-                  </div>
-                  <div class="card-body">${item.description || ''}</div>
-                </div>
-              `)}
-            </div>
+          ${renderProjectGallery(profile.photos)}
+          <div class="project-stories">
+            ${renderCards(profile.activities, (item) => `
+              <article class="project-story">
+                <div class="card-title">${item.activity_name || '成长项目'}</div>
+                <div class="card-meta">${item.date ? `<span>${formatDate(item.date)}</span>` : ''}${item.role ? `<span>${item.role}</span>` : ''}</div>
+                <div class="card-body">${item.description || ''}</div>
+              </article>
+            `)}
           </div>
         </div>
 
         <!-- D · Skills & Achievements -->
-        <div class="section fade-in" id="sec-skills" data-no="03">
+        <div class="section skills-section fade-in" id="sec-skills" data-no="03">
           <div class="section-title"><span class="icon">✨</span> 技能与荣誉</div>
           <div class="section-sub">让课堂表现与高光成就彼此印证</div>
           <div class="section-line"></div>
-          <div class="portfolio-split">
-            <div class="portfolio-subsection">
-              <div class="subsection-kicker"><span>📚</span> 学习与技能表现</div>
-              ${renderCards(profile.courses, (item) => `
-                <div class="card">
-                  <div class="card-title">${item.course_name || '学习经历'}</div>
-                  <div class="card-meta">
-                    ${item.teacher_name ? `<span>👩‍🏫 ${item.teacher_name}</span>` : ''}
-                    ${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}
-                  </div>
-                  <div class="card-body">${item.performance || ''}</div>
-                </div>
-              `)}
-            </div>
-            <div class="portfolio-subsection">
-              <div class="subsection-kicker"><span>🏆</span> 荣誉与高光时刻</div>
+          <div class="skill-collection">
+            <div class="badge-wall">${renderSkillBadges(profile.courses)}</div>
+            <div class="achievement-showcase">
               ${renderCards(profile.achievements, (item) => `
-                <div class="card achievement-card">
-                  <div class="card-title">🏆 ${item.title || '成长荣誉'}</div>
-                  <div class="card-meta">${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}</div>
-                  <div class="card-body">${item.description || ''}</div>
-                </div>
+                <article class="trophy-card">
+                  <h3>${item.title || '成长荣誉'}</h3>
+                  ${item.date ? `<time>${formatDate(item.date)}</time>` : ''}
+                  <p>${item.description || ''}</p>
+                </article>
               `)}
             </div>
           </div>
         </div>
 
         <!-- E · Interests & Growth -->
-        <div class="section fade-in" id="sec-interests" data-no="04">
+        <div class="section interests-section fade-in" id="sec-interests" data-no="04">
           <div class="section-title"><span class="icon">🌱</span> 兴趣与成长</div>
           <div class="section-sub">来自老师与家人的观察，共同拼出独特的成长画像</div>
           <div class="section-line"></div>
-          <div class="portfolio-split">
-            <div class="portfolio-subsection">
-              <div class="subsection-kicker"><span>💬</span> 老师眼中的成长</div>
-              ${renderCards(profile.comments, (item) => `
-                <div class="card message-card">
-                  <div class="card-meta">
-                    ${item.teacher_name ? `<span>👩‍🏫 ${item.teacher_name}</span>` : ''}
-                    ${item.semester ? `<span>📅 ${item.semester}</span>` : ''}
-                  </div>
-                  <div class="card-body">${item.comment || ''}</div>
-                </div>
-              `)}
-            </div>
-            <div class="portfolio-subsection">
-              <div class="subsection-kicker"><span>💌</span> 家人的成长寄语</div>
-              ${renderCards(profile.messages, (item) => `
-                <div class="card message-card">
-                  <div class="card-body">${item.message || ''}</div>
-                  <div class="message-sender">—— ${item.sender_name || '家长'}${item.relationship ? ' (' + item.relationship + ')' : ''}</div>
-                </div>
-              `)}
-            </div>
+          ${renderInterestConstellation(profile, c.name)}
+          <div class="growth-notes">
+            ${renderCards(profile.comments, (item) => `
+              <blockquote class="growth-note" data-label="TEACHER OBSERVATION">
+                <p>${item.comment || ''}</p>
+                <footer>${item.teacher_name || '老师'}${item.semester ? ` · ${item.semester}` : ''}</footer>
+              </blockquote>
+            `)}
+            ${renderCards(profile.messages, (item) => `
+              <blockquote class="growth-note family" data-label="FAMILY NOTE">
+                <p>${item.message || ''}</p>
+                <footer>${item.sender_name || '家长'}${item.relationship ? ` · ${item.relationship}` : ''}</footer>
+              </blockquote>
+            `)}
           </div>
         </div>
 
         <!-- F · Growth Report Export -->
-        <div class="section fade-in" id="sec-report" data-no="05">
+        <div class="section report-section fade-in" id="sec-report" data-no="05">
           <div class="section-title"><span class="icon">📖</span> 成长报告</div>
           <div class="section-sub">把珍贵的成长经历，保存为可以长期收藏的完整履历</div>
           <div class="section-line"></div>
-          <div class="report-panel">
-            <div>
-              <h3>${c.name}的成长故事，值得被认真收藏</h3>
-              <p>当前可直接生成排版完整的成长手册 PPT，网页内容与历史数据保持一致，无需家长重新整理。</p>
+          <div class="report-book-stage">
+            <div class="report-book">
+              <div class="report-cover">
+                <div class="report-edition">GROWTH PORTFOLIO · 2026</div>
+                <h3>${c.name}的<br>年度成长册<small>珍藏每一次探索与闪光</small></h3>
+                <div class="report-cover-stats">
+                  <span><strong>${counts.timeline}</strong>成长记录</span>
+                  <span><strong>${counts.photos}</strong>作品影像</span>
+                  <span><strong>${counts.achievements}</strong>荣誉高光</span>
+                </div>
+                <button class="report-button" onclick="downloadPPT()">生成成长手册 PPT ↓</button>
+              </div>
             </div>
-            <button class="report-button" onclick="downloadPPT()">下载成长手册 PPT ↓</button>
           </div>
         </div>
       </div>
@@ -700,14 +791,18 @@
   // ============================================
   // Section Renderers
   // ============================================
-  function renderTimeline(items) {
+  function renderTimeline(items, photos = [], birthday = null) {
     if (!items || !items.length) return '<div class="empty">暂无成长记录</div>';
-    return '<div class="timeline">' + items.map(item => `
-      <div class="timeline-item">
-        <div class="timeline-date">${formatDate(item.event_date)}</div>
-        <div class="timeline-title">${item.title || ''}</div>
-        <div class="timeline-desc">${item.description || ''}</div>
-      </div>
+    return '<div class="timeline-portfolio">' + items.map((item, index) => `
+      <article class="milestone${index === items.length - 1 ? ' is-highlight' : ''}">
+        <div class="milestone-marker"><strong>${String(index + 1).padStart(2, '0')}</strong><span>${new Date(item.event_date).getFullYear() || ''}</span></div>
+        <div class="milestone-story">
+          <span class="milestone-age">${getAgeAtDate(birthday, item.event_date)}</span>
+          <div class="timeline-title">${item.title || ''}</div>
+          <div class="timeline-desc">${item.description || ''}</div>
+        </div>
+        ${photos[index] ? `<button class="milestone-evidence" onclick="showLightbox('${getPhotoUrl(photos[index].photo_url)}')"><img src="${getPhotoUrl(photos[index].photo_url)}" alt="${photos[index].caption || item.title || ''}" loading="lazy"></button>` : ''}
+      </article>
     `).join('') + '</div>';
   }
 
@@ -734,6 +829,28 @@
     if (path.startsWith('http') || path.startsWith('data:')) return path;
     const { data } = db.storage.from('photos').getPublicUrl(path);
     return data?.publicUrl || '';
+  }
+
+  function renderProjectGallery(photos) {
+    if (!photos || !photos.length) return '<div class="empty">暂无作品</div>';
+    const [featured, ...rest] = photos;
+    return `<div class="work-editorial">
+      <article class="featured-work" onclick="showLightbox('${getPhotoUrl(featured.photo_url)}')">
+        <img src="${getPhotoUrl(featured.photo_url)}" alt="${featured.caption || '精选成长作品'}" loading="lazy">
+        <div class="featured-work-copy"><span class="work-index">FEATURED WORK · 01</span><h3>${featured.caption || '我的精选成长作品'}</h3><p>一份值得被认真收藏的成长证据</p></div>
+      </article>
+      ${rest.length ? `<div class="work-thumbs">${rest.map((item, index) => `<article class="work-card" onclick="showLightbox('${getPhotoUrl(item.photo_url)}')"><img src="${getPhotoUrl(item.photo_url)}" alt="${item.caption || '成长作品'}" loading="lazy"><div class="work-card-copy"><small>WORK · ${String(index + 2).padStart(2, '0')}</small><strong>${item.caption || '成长作品'}</strong></div></article>`).join('')}</div>` : ''}
+    </div>`;
+  }
+
+  function renderSkillBadges(courses) {
+    if (!courses || !courses.length) return '<div class="empty">暂无技能记录</div>';
+    return courses.map((item, index) => `<div class="skill-badge"><i>${['✦','✎','⌁','◎'][index % 4]}</i><span>${item.course_name || '成长技能'}<small>${item.teacher_name || '持续积累中'}</small></span></div>`).join('');
+  }
+
+  function renderInterestConstellation(data, childName) {
+    const labels = [...getGrowthKeywords(data), ...(data.courses || []).map(item => item.course_name), ...(data.activities || []).map(item => item.activity_name)].filter(Boolean).slice(0, 4);
+    return `<div class="interest-constellation"><div class="interest-core">${childName}<br>兴趣星图</div>${labels.map(label => `<span class="interest-node">${label}</span>`).join('')}</div>`;
   }
 
   function createDemoProfile() {
@@ -807,6 +924,16 @@
     if (age <= 9) return '兴趣拓展期';
     if (age <= 12) return '自主进阶期';
     return '青春成长阶段';
+  }
+
+  function getAgeAtDate(birthday, date) {
+    if (!birthday || !date) return '成长里程碑';
+    const birth = new Date(birthday);
+    const eventDate = new Date(date);
+    if (Number.isNaN(birth.getTime()) || Number.isNaN(eventDate.getTime())) return '成长里程碑';
+    let age = eventDate.getFullYear() - birth.getFullYear();
+    if (eventDate.getMonth() < birth.getMonth() || (eventDate.getMonth() === birth.getMonth() && eventDate.getDate() < birth.getDate())) age -= 1;
+    return `${Math.max(0, age)}岁成长节点 · ${formatDate(date)}`;
   }
 
   function getGrowthKeywords(data) {
