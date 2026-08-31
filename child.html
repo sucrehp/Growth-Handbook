@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <script src="growth-record-adapter.js"></script>
   <style>
     :root {
       --primary: #2C3E6B;
@@ -712,12 +713,13 @@
       const c = profile.child;
       const avatarHtml = c.avatar_url ? `<img src="${getPhotoUrl(c.avatar_url)}">` : (c.gender === 'female' ? '👧' : '👦');
     const themeCopy = THEME_CONTRACT[activeTheme].tagline;
+    const portfolio = GrowthRecordAdapter.adaptLegacyProfile(profile);
     const counts = {
-      timeline: (profile.timeline || []).length,
-      courses: (profile.courses || []).length,
-      photos: (profile.photos || []).length,
-      achievements: (profile.achievements || []).length,
-      projects: (profile.activities || []).length
+      timeline: portfolio.counts.records,
+      courses: portfolio.counts.learning,
+      photos: portfolio.counts.evidence,
+      achievements: portfolio.counts.achievements,
+      projects: portfolio.counts.projects
     };
     const age = getAge(c.birthday);
     const growthStage = getGrowthStage(age);
