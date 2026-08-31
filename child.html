@@ -323,6 +323,24 @@
       .theme-ribbon{margin-top:-18px;gap:10px;padding:0 16px}.section:nth-child(n){margin-left:0;margin-right:0}
       .card:nth-child(n){margin-left:0;margin-right:0}
     }
+
+    /* ===== Growth Portfolio Lite information architecture ===== */
+    .portfolio-split { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+    .portfolio-subsection { min-width:0; padding:22px; border-radius:20px; background:rgba(255,255,255,.62); border:1px solid var(--border); }
+    .portfolio-subsection.wide { grid-column:1/-1; }
+    .subsection-kicker { display:flex; align-items:center; gap:9px; margin-bottom:14px; color:var(--primary); font-size:14px; font-weight:700; }
+    .subsection-kicker span { width:30px; height:30px; display:grid; place-items:center; border-radius:10px; background:color-mix(in srgb,var(--accent) 15%,white); }
+    .report-panel { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:28px; align-items:center; padding:30px; border-radius:24px; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:#fff; overflow:hidden; position:relative; }
+    .report-panel::after { content:""; position:absolute; width:180px; height:180px; right:-70px; top:-90px; border-radius:50%; border:1px solid rgba(255,255,255,.2); }
+    .report-panel h3 { font:600 24px/1.4 'Noto Serif SC',serif; margin-bottom:8px; }
+    .report-panel p { color:rgba(255,255,255,.78); font-size:14px; max-width:560px; }
+    .report-button { position:relative; z-index:1; display:inline-flex; align-items:center; gap:8px; border:0; border-radius:999px; padding:13px 20px; background:#fff; color:var(--primary); font:600 14px/1 'Noto Sans SC',sans-serif; cursor:pointer; box-shadow:0 12px 28px rgba(0,0,0,.2); }
+    @media(max-width:768px){
+      .portfolio-split { grid-template-columns:1fr; }
+      .portfolio-subsection.wide { grid-column:auto; }
+      .report-panel { grid-template-columns:1fr; padding:24px 20px; }
+      .report-button { justify-self:start; }
+    }
   </style>
 </head>
 <body>
@@ -410,7 +428,7 @@
     
     document.getElementById('app').innerHTML = `
       <!-- Hero -->
-      <div class="hero">
+      <div class="hero" id="sec-hero">
         <div class="aurora"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
         <div class="motif-field"><span class="motif m1"></span><span class="motif m2"></span><span class="motif m3"></span><span class="motif m4"></span></div>
         <span class="float-symbol one">✦</span><span class="float-symbol two">✧</span>
@@ -442,14 +460,12 @@
       <!-- Nav -->
       <div class="nav-bar">
         <div class="nav-inner">
-          <div class="nav-item active" onclick="scrollTo2('sec-info',this)">基本信息</div>
-          <div class="nav-item" onclick="scrollTo2('sec-timeline',this)">成长足迹</div>
-          <div class="nav-item" onclick="scrollTo2('sec-courses',this)">课程记录</div>
-          <div class="nav-item" onclick="scrollTo2('sec-comments',this)">老师评语</div>
-          <div class="nav-item" onclick="scrollTo2('sec-photos',this)">精彩瞬间</div>
-          <div class="nav-item" onclick="scrollTo2('sec-activities',this)">活动参与</div>
-          <div class="nav-item" onclick="scrollTo2('sec-achievements',this)">荣誉成就</div>
-          <div class="nav-item" onclick="scrollTo2('sec-messages',this)">家长寄语</div>
+          <div class="nav-item active" onclick="scrollTo2('sec-hero',this)">成长主页</div>
+          <div class="nav-item" onclick="scrollTo2('sec-timeline',this)">成长轨迹</div>
+          <div class="nav-item" onclick="scrollTo2('sec-projects',this)">作品与项目</div>
+          <div class="nav-item" onclick="scrollTo2('sec-skills',this)">技能与荣誉</div>
+          <div class="nav-item" onclick="scrollTo2('sec-interests',this)">兴趣与成长</div>
+          <div class="nav-item" onclick="scrollTo2('sec-report',this)">成长报告</div>
         </div>
       </div>
 
@@ -460,110 +476,114 @@
           <div class="overview-item"><strong>${counts.photos}</strong><span>精彩照片</span></div>
           <div class="overview-item"><strong>${counts.achievements}</strong><span>荣誉成就</span></div>
         </div>
-        <!-- 基本信息 -->
-        <div class="section fade-in" id="sec-info" data-no="01">
-          <div class="section-title"><span class="icon">📋</span> 基本信息</div>
-          <div class="section-line"></div>
-          <div class="info-grid">
-            <div class="info-item"><div class="info-label">姓名</div><div class="info-value">${c.name}</div></div>
-            <div class="info-item"><div class="info-label">性别</div><div class="info-value">${c.gender === 'male' ? '男' : c.gender === 'female' ? '女' : '-'}</div></div>
-            <div class="info-item"><div class="info-label">生日</div><div class="info-value">${c.birthday ? formatDate(c.birthday) : '-'}</div></div>
-            <div class="info-item"><div class="info-label">班级</div><div class="info-value">${c.class_name || '-'}</div></div>
-            <div class="info-item"><div class="info-label">入学日期</div><div class="info-value">${c.enrollment_date ? formatDate(c.enrollment_date) : '-'}</div></div>
-          </div>
-        </div>
-
-        <!-- 成长时间线 -->
-        <div class="section fade-in" id="sec-timeline" data-no="02">
-          <div class="section-title"><span class="icon">👣</span> 成长足迹</div>
-          <div class="section-sub">记录每一个重要的成长瞬间</div>
+        <!-- B · Growth Timeline -->
+        <div class="section fade-in" id="sec-timeline" data-no="01">
+          <div class="section-title"><span class="icon">👣</span> 成长轨迹</div>
+          <div class="section-sub">沿着时间，看见每一次尝试、突破与闪光</div>
           <div class="section-line"></div>
           ${renderTimeline(profile.timeline)}
         </div>
 
-        <!-- 课程记录 -->
-        <div class="section fade-in" id="sec-courses" data-no="03">
-          <div class="section-title"><span class="icon">📚</span> 课程记录</div>
-          <div class="section-sub">课堂上的精彩表现</div>
+        <!-- C · Projects & Works -->
+        <div class="section fade-in" id="sec-projects" data-no="02">
+          <div class="section-title"><span class="icon">🎨</span> 作品与项目</div>
+          <div class="section-sub">用作品保存想法，用项目记录真实参与</div>
           <div class="section-line"></div>
-          ${renderCards(profile.courses, (item) => `
-            <div class="card">
-              <div class="card-title">${item.course_name || '课程'}</div>
-              <div class="card-meta">
-                ${item.teacher_name ? `<span>👩‍🏫 ${item.teacher_name}</span>` : ''}
-                ${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}
-              </div>
-              <div class="card-body">${item.performance || ''}</div>
+          <div class="portfolio-split">
+            <div class="portfolio-subsection wide">
+              <div class="subsection-kicker"><span>📸</span> 精选成长作品</div>
+              ${renderGallery(profile.photos)}
             </div>
-          `)}
+            <div class="portfolio-subsection wide">
+              <div class="subsection-kicker"><span>🧭</span> 项目与活动经历</div>
+              ${renderCards(profile.activities, (item) => `
+                <div class="card">
+                  <div class="card-title">${item.activity_name || '成长项目'}</div>
+                  <div class="card-meta">
+                    ${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}
+                    ${item.role ? `<span>🎭 ${item.role}</span>` : ''}
+                  </div>
+                  <div class="card-body">${item.description || ''}</div>
+                </div>
+              `)}
+            </div>
+          </div>
         </div>
 
-        <!-- 老师评语 -->
-        <div class="section fade-in" id="sec-comments" data-no="04">
-          <div class="section-title"><span class="icon">💬</span> 老师评语</div>
-          <div class="section-sub">来自老师的温暖寄语</div>
+        <!-- D · Skills & Achievements -->
+        <div class="section fade-in" id="sec-skills" data-no="03">
+          <div class="section-title"><span class="icon">✨</span> 技能与荣誉</div>
+          <div class="section-sub">让课堂表现与高光成就彼此印证</div>
           <div class="section-line"></div>
-          ${renderCards(profile.comments, (item) => `
-            <div class="card message-card">
-              <div class="card-meta">
-                ${item.teacher_name ? `<span>👩‍🏫 ${item.teacher_name}</span>` : ''}
-                ${item.semester ? `<span>📅 ${item.semester}</span>` : ''}
-              </div>
-              <div class="card-body">${item.comment || ''}</div>
+          <div class="portfolio-split">
+            <div class="portfolio-subsection">
+              <div class="subsection-kicker"><span>📚</span> 学习与技能表现</div>
+              ${renderCards(profile.courses, (item) => `
+                <div class="card">
+                  <div class="card-title">${item.course_name || '学习经历'}</div>
+                  <div class="card-meta">
+                    ${item.teacher_name ? `<span>👩‍🏫 ${item.teacher_name}</span>` : ''}
+                    ${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}
+                  </div>
+                  <div class="card-body">${item.performance || ''}</div>
+                </div>
+              `)}
             </div>
-          `)}
+            <div class="portfolio-subsection">
+              <div class="subsection-kicker"><span>🏆</span> 荣誉与高光时刻</div>
+              ${renderCards(profile.achievements, (item) => `
+                <div class="card achievement-card">
+                  <div class="card-title">🏆 ${item.title || '成长荣誉'}</div>
+                  <div class="card-meta">${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}</div>
+                  <div class="card-body">${item.description || ''}</div>
+                </div>
+              `)}
+            </div>
+          </div>
         </div>
 
-        <!-- 照片库 -->
-        <div class="section fade-in" id="sec-photos" data-no="05">
-          <div class="section-title"><span class="icon">📸</span> 精彩瞬间</div>
-          <div class="section-sub">定格美好的成长记忆</div>
+        <!-- E · Interests & Growth -->
+        <div class="section fade-in" id="sec-interests" data-no="04">
+          <div class="section-title"><span class="icon">🌱</span> 兴趣与成长</div>
+          <div class="section-sub">来自老师与家人的观察，共同拼出独特的成长画像</div>
           <div class="section-line"></div>
-          ${renderGallery(profile.photos)}
+          <div class="portfolio-split">
+            <div class="portfolio-subsection">
+              <div class="subsection-kicker"><span>💬</span> 老师眼中的成长</div>
+              ${renderCards(profile.comments, (item) => `
+                <div class="card message-card">
+                  <div class="card-meta">
+                    ${item.teacher_name ? `<span>👩‍🏫 ${item.teacher_name}</span>` : ''}
+                    ${item.semester ? `<span>📅 ${item.semester}</span>` : ''}
+                  </div>
+                  <div class="card-body">${item.comment || ''}</div>
+                </div>
+              `)}
+            </div>
+            <div class="portfolio-subsection">
+              <div class="subsection-kicker"><span>💌</span> 家人的成长寄语</div>
+              ${renderCards(profile.messages, (item) => `
+                <div class="card message-card">
+                  <div class="card-body">${item.message || ''}</div>
+                  <div class="message-sender">—— ${item.sender_name || '家长'}${item.relationship ? ' (' + item.relationship + ')' : ''}</div>
+                </div>
+              `)}
+            </div>
+          </div>
         </div>
 
-        <!-- 活动记录 -->
-        <div class="section fade-in" id="sec-activities" data-no="06">
-          <div class="section-title"><span class="icon">🎪</span> 活动参与</div>
-          <div class="section-sub">丰富多彩的活动体验</div>
+        <!-- F · Growth Report Export -->
+        <div class="section fade-in" id="sec-report" data-no="05">
+          <div class="section-title"><span class="icon">📖</span> 成长报告</div>
+          <div class="section-sub">把珍贵的成长经历，保存为可以长期收藏的完整履历</div>
           <div class="section-line"></div>
-          ${renderCards(profile.activities, (item) => `
-            <div class="card">
-              <div class="card-title">${item.activity_name || '活动'}</div>
-              <div class="card-meta">
-                ${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}
-                ${item.role ? `<span>🎭 ${item.role}</span>` : ''}
-              </div>
-              <div class="card-body">${item.description || ''}</div>
+          <div class="report-panel">
+            <div>
+              <h3>${c.name}的成长故事，值得被认真收藏</h3>
+              <p>当前可直接生成排版完整的成长手册 PPT，网页内容与历史数据保持一致，无需家长重新整理。</p>
             </div>
-          `)}
-        </div>
-
-        <!-- 获奖成就 -->
-        <div class="section fade-in" id="sec-achievements" data-no="07">
-          <div class="section-title"><span class="icon">🏆</span> 荣誉成就</div>
-          <div class="section-sub">值得骄傲的闪光时刻</div>
-          <div class="section-line"></div>
-          ${renderCards(profile.achievements, (item) => `
-            <div class="card achievement-card">
-              <div class="card-title">🏆 ${item.title || '成就'}</div>
-              <div class="card-meta">${item.date ? `<span>📅 ${formatDate(item.date)}</span>` : ''}</div>
-              <div class="card-body">${item.description || ''}</div>
-            </div>
-          `)}
-        </div>
-
-        <!-- 家长留言 -->
-        <div class="section fade-in" id="sec-messages" data-no="08">
-          <div class="section-title"><span class="icon">💌</span> 家长寄语</div>
-          <div class="section-sub">来自家人的爱与期望</div>
-          <div class="section-line"></div>
-          ${renderCards(profile.messages, (item) => `
-            <div class="card message-card">
-              <div class="card-body">${item.message || ''}</div>
-              <div class="message-sender">—— ${item.sender_name || '家长'}${item.relationship ? ' (' + item.relationship + ')' : ''}</div>
-            </div>
-          `)}
+            <button class="report-button" onclick="downloadPPT()">下载成长手册 PPT ↓</button>
+          </div>
         </div>
       </div>
 
