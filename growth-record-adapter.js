@@ -198,7 +198,7 @@
       unlinkedEvidence,
       counts: {
         records: records.length,
-        projects: byType[TYPES.PROJECT].length + byType[TYPES.ACTIVITY].length,
+        projects: byType[TYPES.PROJECT].length + byType[TYPES.WORK].length + byType[TYPES.ACTIVITY].length,
         learning: byType[TYPES.LEARNING].length + byType[TYPES.SKILL].length,
         achievements: byType[TYPES.ACHIEVEMENT].length,
         evidence: unlinkedEvidence.length + records.reduce((sum, record) => sum + record.evidence.length, 0)
