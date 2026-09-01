@@ -120,6 +120,7 @@
       + (safeDate(evidence.date) ? safeDate(evidence.date).getTime() / 1e13 : 0);
     const seen = new Set();
     return [...linked, ...unlinked]
+      .filter(item => ['image', 'photo', 'certificate', 'document', 'work'].includes(item.kind))
       .sort((a, b) => score(b) - score(a))
       .filter(item => !seen.has(item.url) && seen.add(item.url))
       .slice(0, maximum);
