@@ -555,6 +555,11 @@
     .contribution-field textarea { min-height:96px; resize:vertical; }
     .contribution-field input:focus,.contribution-field select:focus,.contribution-field textarea:focus { border-color:var(--primary-light); box-shadow:0 0 0 3px color-mix(in srgb,var(--primary-light) 14%,transparent); }
     .contribution-hint { color:var(--text-light); font-size:11px; }
+    .contribution-media { padding:14px; border:1px dashed color-mix(in srgb,var(--primary) 28%,var(--border)); border-radius:14px; background:color-mix(in srgb,var(--art-soft) 35%,white); }
+    .contribution-media input[type=file] { padding:0; border:0; background:transparent; font-size:12px; }
+    .contribution-media-options { display:flex; align-items:flex-start; gap:8px; margin-top:10px; color:var(--text-mid); font-size:12px; }
+    .contribution-media-options input { width:auto; margin-top:3px; }
+    .contribution-file-summary { margin-top:8px; color:var(--primary); font-size:12px; }
     .contribution-actions { display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:22px; }
     .contribution-cancel { border:0; padding:11px 15px; background:transparent; color:var(--text-mid); font:500 13px 'Noto Sans SC',sans-serif; cursor:pointer; }
     .contribution-submit { border:0; border-radius:999px; padding:13px 22px; background:var(--primary); color:#fff; font:600 14px 'Noto Sans SC',sans-serif; cursor:pointer; }
@@ -640,6 +645,7 @@
   let activeTheme = 'sky';
   let activeShareToken = '';
   let isDemoMode = false;
+  let parentContributionFiles = [];
   const THEME_CONTRACT = {
     sky:{ label:'天空探索', tagline:'天空探索 · 自由想象 · 向光出发', preview:['#315F91','#74B7E8','#F1B84B'] },
     cosmic:{ label:'宇宙创客', tagline:'星际创想 · 保持好奇 · 勇敢抵达', preview:['#493A8E','#7769D8','#FFCA57'] },
@@ -1000,6 +1006,7 @@
               <div class="contribution-field wide"><label for="contribution-title-input">标题 / 一句话描述</label><input id="contribution-title-input" maxlength="120" required placeholder="例如：第一次独立完成机器人作品"></div>
               <div class="contribution-field wide"><label for="contribution-detail">补充说明 <span>（可选）</span></label><textarea id="contribution-detail" maxlength="1000" placeholder="记录当时的过程、感受或孩子说过的话"></textarea></div>
               <div class="contribution-field wide"><label for="contribution-tags">标签 <span>（可选）</span></label><input id="contribution-tags" maxlength="247" placeholder="创造力, 坚持, 合作"><div class="contribution-hint">最多 8 个标签，用逗号分隔；每月最多提交 5 条。</div></div>
+              <div class="contribution-field wide"><label for="contribution-files">成长图片 <span>（可选）</span></label><div class="contribution-media"><input id="contribution-files" type="file" accept="image/jpeg,image/png,image/webp" multiple onchange="validateParentContributionFiles(event)"><label class="contribution-media-options"><input id="contribution-certificate" type="checkbox">这些图片是证书或含小字材料，优先保留文字清晰度</label><div class="contribution-file-summary" id="contribution-file-summary">最多 3 张；JPEG / PNG / WEBP；原图每张不超过 5MB。</div></div><div class="contribution-hint">提交前在本机压缩，普通图片长边不超过 1600px、约 500KB；证书约 1MB。HEIC、TIFF、BMP、RAW 与视频文件不支持。</div></div>
               <div class="contribution-field wide"><label for="contribution-video">视频链接 <span>（可选）</span></label><input id="contribution-video" type="url" inputmode="url" placeholder="https://..."><div class="contribution-hint">当前仅支持 HTTPS 外部链接，不上传视频文件。</div></div>
             </div>
             <div class="contribution-actions"><button type="button" class="contribution-cancel" onclick="toggleContributionPanel(false)">稍后再填</button><button type="submit" class="contribution-submit" id="contribution-submit">提交机构审核</button></div>
@@ -1077,6 +1084,78 @@
     box.className = `contribution-message show ${type}`;
   }
 
+  function validateParentContributionFiles(event) {
+    const files = Array.from(event.target.files || []);
+    const allowed = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    const invalid = files.find(file => !allowed.has(file.type) || file.size > 5 * 1024 * 1024);
+    if (files.length > 3 || invalid) {
+      parentContributionFiles = [];
+      event.target.value = '';
+      document.getElementById('contribution-file-summary').textContent = files.length > 3
+        ? '每条记录最多选择 3 张图片。'
+        : '图片必须是 JPEG / PNG / WEBP，且原图每张不超过 5MB。';
+      showContributionMessage('请重新选择符合大小和格式要求的图片。', 'error');
+      return;
+    }
+    parentContributionFiles = files;
+    const totalMb = files.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024;
+    document.getElementById('contribution-file-summary').textContent = files.length
+      ? `已选择 ${files.length} 张，原图合计 ${totalMb.toFixed(1)}MB；提交时自动压缩。`
+      : '最多 3 张；JPEG / PNG / WEBP；原图每张不超过 5MB。';
+  }
+
+  async function compressParentContributionImage(file, certificateMode) {
+    const allowed = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    if (!allowed.has(file.type) || file.size > 5 * 1024 * 1024) throw new Error('UNSUPPORTED_PARENT_IMAGE');
+    const bitmap = await createImageBitmap(file);
+    const sourceLongEdge = Math.max(bitmap.width, bitmap.height);
+    const scale = Math.min(1, 1600 / sourceLongEdge);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext('2d', { alpha:false });
+    context.fillStyle = '#fff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+
+    const targetBytes = certificateMode ? 900 * 1024 : 500 * 1024;
+    let quality = certificateMode ? .9 : .84;
+    let blob = null;
+    for (let attempt = 0; attempt < 7; attempt += 1) {
+      blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+      if (!blob) throw new Error('IMAGE_COMPRESSION_FAILED');
+      if (blob.size <= targetBytes) break;
+      quality = Math.max(.5, quality - .07);
+    }
+    if (blob.size > 1024 * 1024) throw new Error('COMPRESSED_IMAGE_TOO_LARGE');
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    return { dataUrl, mimeType: 'image/webp', sourceSize: file.size, kind: certificateMode ? 'certificate' : 'image' };
+  }
+
+  async function uploadParentContributionMedia(contributionId, files, certificateMode) {
+    if (!files.length) return { uploaded:0 };
+    const compressed = [];
+    for (let index = 0; index < files.length; index += 1) {
+      document.getElementById('contribution-submit').textContent = `正在压缩 ${index + 1}/${files.length}…`;
+      compressed.push(await compressParentContributionImage(files[index], certificateMode));
+    }
+    document.getElementById('contribution-submit').textContent = '正在安全上传…';
+    const response = await fetch('/api/parent-contribution-media', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify({ token:activeShareToken, contributionId, files:compressed })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || 'MEDIA_UPLOAD_FAILED');
+    return payload;
+  }
+
   async function submitParentContribution(event) {
     event.preventDefault();
     const submitButton = document.getElementById('contribution-submit');
@@ -1101,7 +1180,7 @@
     submitButton.disabled = true;
     submitButton.textContent = '正在提交…';
     try {
-      const { error } = await db.rpc('submit_parent_contribution_by_token', {
+      const { data, error } = await db.rpc('submit_parent_contribution_by_token', {
         p_token: activeShareToken,
         p_record_type: document.getElementById('contribution-type').value,
         p_event_date: document.getElementById('contribution-date').value,
@@ -1111,13 +1190,21 @@
         p_external_video_url: videoUrl || null
       });
       if (error) throw error;
+      const contributionId = data?.contribution_id || data?.[0]?.contribution_id;
+      if (parentContributionFiles.length) {
+        if (!contributionId) throw new Error('CONTRIBUTION_ID_MISSING');
+        await uploadParentContributionMedia(contributionId, parentContributionFiles, document.getElementById('contribution-certificate').checked);
+      }
       event.target.reset();
+      parentContributionFiles = [];
       document.getElementById('contribution-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('contribution-file-summary').textContent = '最多 3 张；JPEG / PNG / WEBP；原图每张不超过 5MB。';
       showContributionMessage('提交成功！机构审核后会展示在成长主页。', 'success');
     } catch (error) {
       console.error(error);
       const monthlyLimit = /monthly contribution limit/i.test(error?.message || '');
-      showContributionMessage(monthlyLimit ? '本月已提交 5 条成长记录，请下个月再补充。' : '提交未成功，请稍后重试或联系机构。', 'error');
+      const mediaError = /IMAGE|MEDIA|图片|媒体|空间|上传|CONTRIBUTION_ID/i.test(error?.message || '');
+      showContributionMessage(monthlyLimit ? '本月已提交 5 条成长记录，请下个月再补充。' : mediaError ? '文字记录已进入审核，但图片未能上传，请联系机构补充处理。' : '提交未成功，请稍后重试或联系机构。', 'error');
     } finally {
       submitButton.disabled = false;
       submitButton.textContent = '提交机构审核';
