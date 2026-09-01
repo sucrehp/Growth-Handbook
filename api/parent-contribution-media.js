@@ -124,12 +124,70 @@ async function patchRows(table, id, payload) {
   });
 }
 
+async function requireAuthenticatedOperator(req) {
+  const authorization = String(req.headers.authorization || "");
+  if (!authorization.startsWith("Bearer ")) throw fail("请先登录管理后台", 401);
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: serviceHeaders({ Authorization: authorization })
+  });
+  if (!response.ok) throw fail("管理员登录已过期", 401);
+  return response.json();
+}
+
+async function authorizeMediaRead(req, path) {
+  if (!/^[0-9a-f-]{36}\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i.test(path)) {
+    throw fail("媒体路径无效");
+  }
+  const childId = path.split("/")[0];
+  const authorization = String(req.headers.authorization || "");
+  let tokenScoped = false;
+  if (authorization.startsWith("Bearer ")) {
+    await requireAuthenticatedOperator(req);
+  } else {
+    const token = String(req.query?.token || "").trim();
+    const child = await getChildByToken(token);
+    if (child.id !== childId) throw fail("媒体不属于当前成长档案", 403);
+    tokenScoped = true;
+  }
+
+  const metadataRows = await rest(`parent_contribution_metadata?select=parent_upload_id,evidence&child_id=eq.${encodeURIComponent(childId)}`);
+  const owner = metadataRows.find(row => Array.isArray(row.evidence) && row.evidence.some(item => item.path === path));
+  if (!owner) throw fail("媒体记录不存在", 404);
+  if (tokenScoped) {
+    const uploads = await rest(`parent_uploads?select=audit_status,visible_in_handbook&id=eq.${encodeURIComponent(owner.parent_upload_id)}&limit=1`);
+    if (!uploads.length || uploads[0].audit_status !== "approved" || !uploads[0].visible_in_handbook) {
+      throw fail("媒体尚未发布", 403);
+    }
+  }
+}
+
+async function servePrivateMedia(req, res) {
+  const path = String(req.query?.path || "").trim();
+  await authorizeMediaRead(req, path);
+  const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    headers: serviceHeaders()
+  });
+  if (!response.ok) throw fail("媒体文件不存在", 404);
+  const contentType = response.headers.get("content-type") || "application/octet-stream";
+  const bytes = Buffer.from(await response.arrayBuffer());
+  res.status(200);
+  res.setHeader("Content-Type", contentType);
+  res.setHeader("Cache-Control", "private, max-age=300");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.end(bytes);
+}
+
 module.exports = async function handler(req, res) {
   const uploadedPaths = [];
   let previousEvidence = [];
   let previousPhotoUrls = [];
   let contributionId = "";
   try {
+    if (req.method === "GET") {
+      configured();
+      await servePrivateMedia(req, res);
+      return;
+    }
     if (req.method !== "POST") throw fail("请求方式不支持", 405);
     configured();
     const body = req.body || {};
@@ -173,4 +231,3 @@ module.exports = async function handler(req, res) {
     send(res, error.statusCode || 500, { error: error.message || "媒体上传失败" });
   }
 };
-

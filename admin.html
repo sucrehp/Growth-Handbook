@@ -135,6 +135,24 @@
     .photo-upload-btn { aspect-ratio:1; border:2px dashed var(--border); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; color:var(--text-light); font-size:13px; gap:4px; }
     .photo-upload-btn:hover { border-color:var(--accent); color:var(--accent); }
     .photo-upload-btn svg { width:24px; height:24px; }
+
+    /* ===== Parent Contribution Review ===== */
+    .review-list { display:grid; gap:14px; }
+    .review-card { padding:18px; border:1px solid var(--border); border-radius:14px; background:var(--bg); }
+    .review-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+    .review-head h4 { font-size:15px; margin-bottom:4px; }
+    .review-meta { color:var(--text-light); font-size:12px; }
+    .review-status { flex:0 0 auto; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:600; }
+    .review-status.pending { background:#fff4d7; color:#93691f; }
+    .review-status.approved { background:#e8f6ed; color:#33704c; }
+    .review-status.rejected { background:#fdeceb; color:#a64a44; }
+    .review-detail { margin-top:10px; color:var(--text-mid); font-size:13px; white-space:pre-wrap; }
+    .review-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+    .review-tags span { padding:3px 8px; border-radius:999px; background:#fff; color:var(--primary); font-size:11px; }
+    .review-media { display:grid; grid-template-columns:repeat(3,minmax(0,120px)); gap:8px; margin-top:12px; }
+    .review-media img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; background:var(--border); }
+    .review-video { display:inline-flex; margin-top:10px; color:var(--primary); font-size:12px; }
+    .review-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
     
     /* ===== Modal ===== */
     .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
@@ -243,6 +261,10 @@
     return new Date(d).toLocaleDateString('zh-CN');
   }
 
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[character]));
+  }
+
   function getPhotoUrl(path) {
     if (!path) return '';
     if (path.startsWith('http')) return path;
@@ -317,6 +339,17 @@
     keys.forEach((k, i) => {
       currentContent[k] = results[i].data || [];
     });
+    const uploadsResult = await db.from('parent_uploads').select('*').eq('child_id', childId).order('created_at', { ascending:false });
+    const uploads = uploadsResult.data || [];
+    const uploadIds = uploads.map(item => item.id);
+    let metadata = [];
+    if (uploadIds.length) {
+      const metadataResult = await db.from('parent_contribution_metadata').select('*').in('parent_upload_id', uploadIds);
+      if (metadataResult.error) console.warn('Parent contribution metadata unavailable.', metadataResult.error.message);
+      metadata = metadataResult.data || [];
+    }
+    const metadataByUpload = new Map(metadata.map(item => [item.parent_upload_id, item]));
+    currentContent.contributions = uploads.filter(item => metadataByUpload.has(item.id)).map(item => ({ ...item, metadata:metadataByUpload.get(item.id) }));
   }
 
   // ============================================
@@ -443,6 +476,7 @@
       { id: 'activities', label: '活动记录' },
       { id: 'achievements', label: '获奖成就' },
       { id: 'messages', label: '家长留言' },
+      { id: 'contributions', label: `家长投稿${(currentContent.contributions || []).some(item => item.audit_status === 'pending') ? ' · 待审核' : ''}` },
     ];
 
     const tabsHtml = tabDefs.map(t =>
@@ -501,6 +535,7 @@
       case 'activities': renderListTab(panel, 'activities', '活动记录', activityItemHtml, 'activityModal'); break;
       case 'achievements': renderListTab(panel, 'achievements', '获奖成就', achievementItemHtml, 'achievementModal'); break;
       case 'messages': renderListTab(panel, 'messages', '家长留言', messageItemHtml, 'messageModal'); break;
+      case 'contributions': renderContributionsTab(panel); break;
     }
   }
 
@@ -721,6 +756,62 @@
         <div class="item-meta">${formatDate(item.date)}</div>
       </div>
     `;
+  }
+
+  function renderContributionsTab(panel) {
+    const items = currentContent.contributions || [];
+    const typeLabels = { LEARNING:'学习经历', PROJECT:'项目经历', WORK:'作品成果', ACTIVITY:'活动体验', SKILL:'技能成长', INTEREST:'兴趣发现', ACHIEVEMENT:'成就荣誉', TEACHER_OBSERVATION:'教师观察', MILESTONE:'成长节点', OTHER:'其他记录' };
+    const statusLabels = { pending:'待审核', approved:'已发布', rejected:'已驳回' };
+    panel.innerHTML = `
+      <h3>家长投稿审核 (${items.filter(item => item.audit_status === 'pending').length} 条待处理)</h3>
+      <div class="review-list">${items.length ? items.map(item => {
+        const metadata = item.metadata || {};
+        const evidence = Array.isArray(metadata.evidence) ? metadata.evidence : [];
+        return `<article class="review-card">
+          <div class="review-head"><div><h4>${escapeHtml(item.title || '未命名成长记录')}</h4><div class="review-meta">${escapeHtml(typeLabels[metadata.record_type] || metadata.record_type || '成长记录')} · ${escapeHtml(formatDate(item.event_date))} · 家长提供</div></div><span class="review-status ${escapeHtml(item.audit_status)}">${escapeHtml(statusLabels[item.audit_status] || item.audit_status)}</span></div>
+          ${item.description ? `<div class="review-detail">${escapeHtml(item.description)}</div>` : ''}
+          ${Array.isArray(metadata.tags) && metadata.tags.length ? `<div class="review-tags">${metadata.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+          ${evidence.length ? `<div class="review-media">${evidence.map(media => `<img data-review-path="${escapeHtml(media.path)}" alt="家长提交的成长图片">`).join('')}</div>` : ''}
+          ${metadata.external_video_url ? `<a class="review-video" href="${escapeHtml(metadata.external_video_url)}" target="_blank" rel="noopener noreferrer">查看外部视频链接 ↗</a>` : ''}
+          ${item.audit_remark ? `<div class="review-detail">审核备注：${escapeHtml(item.audit_remark)}</div>` : ''}
+          ${item.audit_status === 'pending' ? `<div class="review-actions"><button class="btn btn-danger btn-sm" onclick="reviewParentContribution('${item.id}','REJECT')">驳回</button><button class="btn btn-primary btn-sm" onclick="reviewParentContribution('${item.id}','APPROVE')">通过并发布</button></div>` : ''}
+        </article>`;
+      }).join('') : '<div class="empty-state"><div class="icon">🌱</div><p>暂无家长成长投稿</p></div>'}</div>`;
+    loadParentReviewMedia();
+  }
+
+  async function loadParentReviewMedia() {
+    const { data:{ session } } = await db.auth.getSession();
+    if (!session) return;
+    await Promise.all(Array.from(document.querySelectorAll('img[data-review-path]')).map(async image => {
+      try {
+        const response = await fetch(`/api/parent-contribution-media?path=${encodeURIComponent(image.dataset.reviewPath)}`, { headers:{ Authorization:`Bearer ${session.access_token}` } });
+        if (!response.ok) throw new Error('preview unavailable');
+        image.src = URL.createObjectURL(await response.blob());
+      } catch (error) {
+        image.alt = '图片暂时无法预览';
+      }
+    }));
+  }
+
+  async function reviewParentContribution(contributionId, decision) {
+    const approving = decision === 'APPROVE';
+    if (!confirm(approving ? '确认通过并发布这条家长成长记录吗？' : '确认驳回这条家长成长记录吗？')) return;
+    const remark = prompt(approving ? '审核备注（可留空）' : '请输入简短驳回原因（可留空）', '') ?? '';
+    if (remark.length > 500) { toast('审核备注不能超过 500 个字', 'error'); return; }
+    const { data:{ session } } = await db.auth.getSession();
+    if (!session) { toast('登录已过期，请重新登录', 'error'); return; }
+    const response = await fetch('/api/parent-contribution-review', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${session.access_token}` },
+      body:JSON.stringify({ contributionId, decision, remark })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) { toast(result.error || '审核失败，请稍后重试', 'error'); return; }
+    await loadChildContent(currentChild.id);
+    activeTab = 'contributions';
+    toast(approving ? '已通过并发布到成长主页' : result.rejectedMediaCleanup === 'PENDING' ? '已驳回，媒体清理待重试' : '已驳回并清理投稿媒体', 'success');
+    renderEditor();
   }
 
   // --- Photos Tab ---

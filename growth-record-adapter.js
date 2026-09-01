@@ -24,12 +24,14 @@
   });
 
   const MEDIA_GOVERNANCE = Object.freeze({
-    uploadImplemented: false,
-    numericLimitsFrozen: false,
-    requiresHumanDecision: true,
-    preferredVideoContainer: 'MP4',
-    preferredVideoCodecs: 'H.264/AAC',
-    note: 'GP-L3 前须核验 Supabase 免费额度、当前占用及 300+ 学员预测；本适配器不上传、转码或扩容。'
+    uploadImplemented: true,
+    numericLimitsFrozen: true,
+    requiresHumanDecision: false,
+    imageLimitPerRecord: 3,
+    sourceImageLimitMb: 5,
+    childQuotaMb: 20,
+    videoFileUpload: false,
+    note: '家长图片使用私有 parent-uploads；视频仅允许 HTTPS 外链。'
   });
 
   function text(value) {
@@ -106,7 +108,7 @@
     const allowedSources = Object.values(SOURCE);
     const evidence = Array.isArray(metadata.evidence) ? metadata.evidence.map(item => ({
       kind: text(item && (item.evidence_type || item.kind || item.type)) || 'document',
-      url: text(item && (item.existing_media_reference || item.url || item.reference)),
+      url: text(item && (item.existing_media_reference || item.url || item.reference || item.path)),
       title: text(item && (item.title || item.label)),
       date: text(item && item.date),
       source: allowedSources.includes(text(metadata.source)) ? text(metadata.source) : SOURCE.INSTITUTION_RECORD,
