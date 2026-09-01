@@ -529,6 +529,51 @@
       .profile-journey-item { grid-template-columns:64px minmax(0,1fr); }
     }
 
+    /* ===== Parent contribution lite ===== */
+    .contribution-invite { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:24px; align-items:center; margin-bottom:24px; padding:24px 26px; border-radius:24px; background:linear-gradient(135deg,color-mix(in srgb,var(--glow-a) 18%,white),color-mix(in srgb,var(--accent-light) 22%,white)); border:1px solid color-mix(in srgb,var(--primary) 12%,var(--border)); box-shadow:var(--shadow); }
+    .contribution-invite small { display:block; margin-bottom:5px; color:var(--primary); font-size:11px; font-weight:700; letter-spacing:.16em; }
+    .contribution-invite h3 { margin-bottom:5px; color:var(--ink-deep,var(--primary)); font:600 20px/1.45 'Noto Serif SC',serif; }
+    .contribution-invite p { color:var(--text-mid); font-size:13px; }
+    .contribution-button { border:0; border-radius:999px; padding:13px 20px; background:var(--primary); color:#fff; font:600 14px/1 'Noto Sans SC',sans-serif; cursor:pointer; box-shadow:0 10px 24px color-mix(in srgb,var(--primary) 24%,transparent); white-space:nowrap; }
+    .contribution-button:hover { transform:translateY(-1px); }
+    .contribution-panel { position:fixed; inset:0; z-index:400; display:none; align-items:flex-end; justify-content:center; padding:20px; background:rgba(20,27,46,.54); backdrop-filter:blur(8px); }
+    .contribution-panel.show { display:flex; }
+    body.contribution-open { overflow:hidden; }
+    .contribution-dialog { width:min(620px,100%); max-height:min(88vh,780px); overflow:auto; border-radius:28px; background:var(--bg-card); box-shadow:0 30px 80px rgba(20,27,46,.3); }
+    .contribution-dialog-head { display:flex; justify-content:space-between; gap:20px; padding:25px 26px 18px; border-bottom:1px solid var(--border); }
+    .contribution-dialog-head small { color:var(--accent); font-size:10px; font-weight:700; letter-spacing:.18em; }
+    .contribution-dialog-head h3 { color:var(--primary); font:700 24px/1.4 'Noto Serif SC',serif; }
+    .contribution-dialog-head p { margin-top:4px; color:var(--text-mid); font-size:13px; }
+    .contribution-close { width:36px; height:36px; flex:0 0 auto; border:1px solid var(--border); border-radius:50%; background:#fff; color:var(--text-mid); font-size:22px; cursor:pointer; }
+    .contribution-form { padding:22px 26px 26px; }
+    .contribution-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .contribution-field { display:grid; gap:7px; min-width:0; }
+    .contribution-field.wide { grid-column:1/-1; }
+    .contribution-field label { color:var(--text); font-size:13px; font-weight:600; }
+    .contribution-field label span { color:var(--text-light); font-weight:400; }
+    .contribution-field input,.contribution-field select,.contribution-field textarea { width:100%; border:1px solid var(--border); border-radius:13px; padding:12px 13px; background:#fff; color:var(--text); font:400 14px/1.5 'Noto Sans SC',sans-serif; outline:none; }
+    .contribution-field textarea { min-height:96px; resize:vertical; }
+    .contribution-field input:focus,.contribution-field select:focus,.contribution-field textarea:focus { border-color:var(--primary-light); box-shadow:0 0 0 3px color-mix(in srgb,var(--primary-light) 14%,transparent); }
+    .contribution-hint { color:var(--text-light); font-size:11px; }
+    .contribution-actions { display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:22px; }
+    .contribution-cancel { border:0; padding:11px 15px; background:transparent; color:var(--text-mid); font:500 13px 'Noto Sans SC',sans-serif; cursor:pointer; }
+    .contribution-submit { border:0; border-radius:999px; padding:13px 22px; background:var(--primary); color:#fff; font:600 14px 'Noto Sans SC',sans-serif; cursor:pointer; }
+    .contribution-submit:disabled { opacity:.58; cursor:wait; }
+    .contribution-message { display:none; margin-bottom:16px; padding:12px 14px; border-radius:13px; font-size:13px; }
+    .contribution-message.show { display:block; }
+    .contribution-message.success { color:#24573f; background:#e9f6ef; }
+    .contribution-message.error { color:#93433c; background:#fff0ef; }
+    @media(min-width:769px){ .contribution-panel { align-items:center; } }
+    @media(max-width:600px){
+      .contribution-invite { grid-template-columns:1fr; padding:20px; }
+      .contribution-button { justify-self:start; }
+      .contribution-panel { padding:0; }
+      .contribution-dialog { max-height:94vh; border-radius:26px 26px 0 0; }
+      .contribution-grid { grid-template-columns:1fr; }
+      .contribution-field.wide { grid-column:auto; }
+      .contribution-dialog-head,.contribution-form { padding-left:20px; padding-right:20px; }
+    }
+
     /* ===== Growth Portfolio Lite information architecture ===== */
     .portfolio-split { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
     .portfolio-subsection { min-width:0; padding:22px; border-radius:20px; background:rgba(255,255,255,.62); border:1px solid var(--border); }
@@ -593,6 +638,8 @@
   let isDownloading = false;
   let navLockUntil = 0;
   let activeTheme = 'sky';
+  let activeShareToken = '';
+  let isDemoMode = false;
   const THEME_CONTRACT = {
     sky:{ label:'天空探索', tagline:'天空探索 · 自由想象 · 向光出发', preview:['#315F91','#74B7E8','#F1B84B'] },
     cosmic:{ label:'宇宙创客', tagline:'星际创想 · 保持好奇 · 勇敢抵达', preview:['#493A8E','#7769D8','#FFCA57'] },
@@ -669,8 +716,10 @@
   async function init() {
     const params = new URLSearchParams(location.search);
     const token = params.get('t');
+    activeShareToken = token || '';
     const requestedTheme = params.get('theme');
     if (params.get('demo') === '1' || location.protocol === 'file:') {
+      isDemoMode = true;
       profile = createDemoProfile();
       applyTheme(requestedTheme || getStoredTheme(), profile.child.style_preference);
       document.title = '成长手册动态演示 - 阿墨逗儿童成长中心';
@@ -891,6 +940,10 @@
           <div class="section-title"><span class="icon">📖</span> 成长报告</div>
           <div class="section-sub">把珍贵的成长经历，保存为可以长期收藏的完整履历</div>
           <div class="section-line"></div>
+          <div class="contribution-invite">
+            <div><small>FAMILY CONTRIBUTION</small><h3>一起补充成长记忆</h3><p>家长可以提交一条成长经历，机构审核后再展示在成长主页。</p></div>
+            <button type="button" class="contribution-button" onclick="toggleContributionPanel(true)">＋ 补充成长记录</button>
+          </div>
           <div class="report-book-stage">
             <div class="report-book">
               <div class="report-cover">
@@ -932,9 +985,30 @@
           <div class="theme-grid">${renderThemeOptions()}</div>
         </div>
       </div>
+
+      <div class="contribution-panel" id="contribution-panel" aria-hidden="true" onclick="closeContributionFromBackdrop(event)">
+        <div class="contribution-dialog" role="dialog" aria-modal="true" aria-labelledby="contribution-title">
+          <div class="contribution-dialog-head">
+            <div><small>FAMILY GROWTH NOTE</small><h3 id="contribution-title">补充一条成长记录</h3><p>只需填写三个必填项，提交后由机构审核。</p></div>
+            <button type="button" class="contribution-close" aria-label="关闭投稿面板" onclick="toggleContributionPanel(false)">×</button>
+          </div>
+          <form class="contribution-form" id="contribution-form" onsubmit="submitParentContribution(event)">
+            <div class="contribution-message" id="contribution-message" role="status"></div>
+            <div class="contribution-grid">
+              <div class="contribution-field"><label for="contribution-type">记录类型</label><select id="contribution-type" required><option value="">请选择</option><option value="MILESTONE">成长节点</option><option value="LEARNING">学习经历</option><option value="PROJECT">项目经历</option><option value="WORK">作品成果</option><option value="ACTIVITY">活动体验</option><option value="SKILL">技能成长</option><option value="INTEREST">兴趣发现</option><option value="ACHIEVEMENT">成就荣誉</option><option value="OTHER">其他记录</option></select></div>
+              <div class="contribution-field"><label for="contribution-date">发生日期</label><input id="contribution-date" type="date" required></div>
+              <div class="contribution-field wide"><label for="contribution-title-input">标题 / 一句话描述</label><input id="contribution-title-input" maxlength="120" required placeholder="例如：第一次独立完成机器人作品"></div>
+              <div class="contribution-field wide"><label for="contribution-detail">补充说明 <span>（可选）</span></label><textarea id="contribution-detail" maxlength="1000" placeholder="记录当时的过程、感受或孩子说过的话"></textarea></div>
+              <div class="contribution-field wide"><label for="contribution-tags">标签 <span>（可选）</span></label><input id="contribution-tags" maxlength="247" placeholder="创造力, 坚持, 合作"><div class="contribution-hint">最多 8 个标签，用逗号分隔；每月最多提交 5 条。</div></div>
+              <div class="contribution-field wide"><label for="contribution-video">视频链接 <span>（可选）</span></label><input id="contribution-video" type="url" inputmode="url" placeholder="https://..."><div class="contribution-hint">当前仅支持 HTTPS 外部链接，不上传视频文件。</div></div>
+            </div>
+            <div class="contribution-actions"><button type="button" class="contribution-cancel" onclick="toggleContributionPanel(false)">稍后再填</button><button type="submit" class="contribution-submit" id="contribution-submit">提交机构审核</button></div>
+          </form>
+        </div>
+      </div>
     `;
     syncThemeControls();
-    document.onkeydown = event => { if (event.key === 'Escape') toggleThemePanel(false); };
+    document.onkeydown = event => { if (event.key === 'Escape') { toggleThemePanel(false); toggleContributionPanel(false); } };
 
     // Intersection observer for fade-in
     const observer = new IntersectionObserver((entries) => {
@@ -975,6 +1049,78 @@
         tiltCard.style.transform = `perspective(1200px) rotateY(${x * 4}deg) rotateX(${-y * 4}deg) translateY(${scrollY * .04}px)`;
       });
       tiltCard.addEventListener('pointerleave', () => { tiltCard.style.transform = ''; });
+    }
+  }
+
+  function toggleContributionPanel(force) {
+    const panel = document.getElementById('contribution-panel');
+    if (!panel) return;
+    const open = typeof force === 'boolean' ? force : !panel.classList.contains('show');
+    panel.classList.toggle('show', open);
+    panel.setAttribute('aria-hidden', String(!open));
+    document.body.classList.toggle('contribution-open', open);
+    if (open) {
+      const dateInput = document.getElementById('contribution-date');
+      if (dateInput && !dateInput.value) dateInput.value = new Date().toISOString().slice(0, 10);
+      setTimeout(() => document.getElementById('contribution-type')?.focus(), 20);
+    }
+  }
+
+  function closeContributionFromBackdrop(event) {
+    if (event.target.id === 'contribution-panel') toggleContributionPanel(false);
+  }
+
+  function showContributionMessage(message, type) {
+    const box = document.getElementById('contribution-message');
+    if (!box) return;
+    box.textContent = message;
+    box.className = `contribution-message show ${type}`;
+  }
+
+  async function submitParentContribution(event) {
+    event.preventDefault();
+    const submitButton = document.getElementById('contribution-submit');
+    const tags = document.getElementById('contribution-tags').value.split(/[,，]/).map(tag => tag.trim()).filter(Boolean);
+    if (tags.length > 8 || tags.some(tag => tag.length > 30)) {
+      showContributionMessage('标签最多 8 个，且每个标签不超过 30 个字。', 'error');
+      return;
+    }
+    const videoUrl = document.getElementById('contribution-video').value.trim();
+    if (videoUrl && !/^https:\/\//i.test(videoUrl)) {
+      showContributionMessage('视频链接必须以 https:// 开头。', 'error');
+      return;
+    }
+    if (isDemoMode) {
+      showContributionMessage('演示模式不会真实提交；正式分享链接将进入机构待审核列表。', 'success');
+      return;
+    }
+    if (!activeShareToken) {
+      showContributionMessage('当前分享链接无效，请联系机构重新获取。', 'error');
+      return;
+    }
+    submitButton.disabled = true;
+    submitButton.textContent = '正在提交…';
+    try {
+      const { error } = await db.rpc('submit_parent_contribution_by_token', {
+        p_token: activeShareToken,
+        p_record_type: document.getElementById('contribution-type').value,
+        p_event_date: document.getElementById('contribution-date').value,
+        p_title: document.getElementById('contribution-title-input').value.trim(),
+        p_detail: document.getElementById('contribution-detail').value.trim() || null,
+        p_tags: tags,
+        p_external_video_url: videoUrl || null
+      });
+      if (error) throw error;
+      event.target.reset();
+      document.getElementById('contribution-date').value = new Date().toISOString().slice(0, 10);
+      showContributionMessage('提交成功！机构审核后会展示在成长主页。', 'success');
+    } catch (error) {
+      console.error(error);
+      const monthlyLimit = /monthly contribution limit/i.test(error?.message || '');
+      showContributionMessage(monthlyLimit ? '本月已提交 5 条成长记录，请下个月再补充。' : '提交未成功，请稍后重试或联系机构。', 'error');
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = '提交机构审核';
     }
   }
 
