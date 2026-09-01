@@ -151,8 +151,12 @@
     pages.push(...sectionPages('timeline', model.timeline, 5));
     pages.push(...sectionPages('project', model.projectsWorks, 2));
     pages.push(...sectionPages('gallery', model.evidence, 4));
-    if (model.skills.length) pages.push({ type:'skills', items:model.skills.slice(0, 10) });
-    pages.push(...sectionPages('achievement', model.achievements, 4));
+    if (model.skills.length && model.achievements.length && model.skills.length + model.achievements.length <= 6) {
+      pages.push({ type:'skills-achievements', items:[], skills:model.skills, achievements:model.achievements });
+    } else {
+      if (model.skills.length) pages.push({ type:'skills', items:model.skills.slice(0, 10) });
+      pages.push(...sectionPages('achievement', model.achievements, 4));
+    }
     if (model.interests.length) pages.push({ type:'interest', items:model.interests.slice(0, 8) });
     pages.push(...sectionPages('teacher-observation', model.teacherObservations, 2));
     pages.push({ type:'summary', items:[] }, { type:'closing', items:[] });

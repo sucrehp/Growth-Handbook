@@ -1483,10 +1483,33 @@
   }
 
   async function resolveReportAsset(url) {
-    if (/^data:/i.test(url)) return { data:url };
     const response = await fetch(url, { credentials:'same-origin' });
     if (!response.ok) throw new Error(`ASSET_HTTP_${response.status}`);
-    const blob = await response.blob();
+    let blob = await response.blob();
+    if (!/^image\/(png|jpeg|gif)$/i.test(blob.type)) {
+      let bitmap;
+      let objectUrl = '';
+      try {
+        bitmap = await createImageBitmap(blob);
+      } catch (error) {
+        objectUrl = URL.createObjectURL(blob);
+        bitmap = new Image();
+        bitmap.src = objectUrl;
+        await bitmap.decode();
+      }
+      const sourceWidth = bitmap.width || bitmap.naturalWidth;
+      const sourceHeight = bitmap.height || bitmap.naturalHeight;
+      const maximumSide = 1600;
+      const scale = Math.min(1, maximumSide / Math.max(sourceWidth, sourceHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+      canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+      const context = canvas.getContext('2d');
+      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      if (typeof bitmap.close === 'function') bitmap.close();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('ASSET_RASTERIZE_FAILED')), 'image/png'));
+    }
     const data = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);

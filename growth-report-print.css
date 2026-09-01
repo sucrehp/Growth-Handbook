@@ -102,6 +102,11 @@
 .gpr-skills p { margin:0; color:var(--gpr-muted); font-size:8.5pt; }
 .gpr-achievements section { min-height:68mm; }
 .gpr-achievements b { float:right; color:var(--gpr-accent); font-size:25pt; }
+.gpr-skill-achievement { display:grid; grid-template-columns:1fr 1fr; gap:9mm; }
+.gpr-skill-achievement > section > h3 { margin:0 0 5mm; color:var(--gpr-primary); font-size:15pt; }
+.gpr-skill-achievement .gpr-skills,.gpr-skill-achievement .gpr-achievements { grid-template-columns:1fr; gap:4mm; }
+.gpr-skill-achievement .gpr-skills section { min-height:27mm; }
+.gpr-skill-achievement .gpr-achievements section { min-height:50mm; }
 
 .gpr-interest-map { position:relative; width:158mm; height:158mm; margin:9mm auto; border:1mm dashed var(--gpr-soft); border-radius:50%; }
 .gpr-interest-map > strong { position:absolute; left:50%; top:50%; display:grid; place-items:center; width:47mm; height:47mm; transform:translate(-50%,-50%); border-radius:50%; color:#fff; background:var(--gpr-primary); font-size:16pt; text-align:center; }

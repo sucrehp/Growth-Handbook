@@ -111,6 +111,13 @@
     return pageShell(model, page, body);
   }
 
+  function renderSkillsAchievements(model, page) {
+    const body = `${heading('积累与高光，构成完整的成长证据', 'SKILLS & ACHIEVEMENTS')}
+      <div class="gpr-skill-achievement"><section><h3>技能积累</h3><div class="gpr-skills">${page.skills.map((item, index) => `<section><b>${String(index + 1).padStart(2, '0')}</b><h3>${escapeHtml(item.name)}</h3><p>${item.evidenceCount} 条成长记录</p></section>`).join('')}</div></section>
+      <section><h3>荣誉高光</h3><div class="gpr-achievements">${page.achievements.map(item => `<section><b>${escapeHtml(model.theme.motif)}</b><time>${formatDate(item.date)}</time><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.detail)}</p></section>`).join('')}</div></section></div>`;
+    return pageShell(model, page, body);
+  }
+
   function renderInterests(model, page) {
     const body = `${heading('好奇心正在画出自己的星图', 'INTERESTS & GROWTH')}
       <div class="gpr-interest-map"><strong>${escapeHtml(model.child.name)}<small>兴趣星图</small></strong>${page.items.map((item, index) => `<span style="--i:${index};--n:${page.items.length}">${escapeHtml(item)}</span>`).join('')}</div>`;
@@ -148,6 +155,7 @@
     if (page.type === 'project') return renderProjects(model, page);
     if (page.type === 'gallery') return renderGallery(model, page);
     if (page.type === 'skills') return renderSkills(model, page);
+    if (page.type === 'skills-achievements') return renderSkillsAchievements(model, page);
     if (page.type === 'achievement') return renderAchievements(model, page);
     if (page.type === 'interest') return renderInterests(model, page);
     if (page.type === 'teacher-observation') return renderObservations(model, page);

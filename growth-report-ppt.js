@@ -53,8 +53,8 @@
   function addBackground(slide, pptx, theme, dark) {
     slide.background = { color: dark ? theme.primary : theme.background };
     addShape(slide, pptx, 'rect', { x:0, y:0, w:0.09, h:H, line:{ color:theme.accent, transparency:100 }, fill:{ color:theme.accent } });
-    addShape(slide, pptx, 'ellipse', { x:10.5, y:-1.55, w:4.2, h:4.2, line:{ color:dark ? theme.secondary : theme.soft, transparency:100 }, fill:{ color:dark ? theme.secondary : theme.soft, transparency:dark ? 78 : 10 } });
-    addShape(slide, pptx, 'ellipse', { x:-1.25, y:5.55, w:3.1, h:3.1, line:{ color:theme.accent, transparency:100 }, fill:{ color:theme.accent, transparency:dark ? 82 : 72 } });
+    addShape(slide, pptx, 'ellipse', { x:10.65, y:0, w:2.68, h:2.25, line:{ color:dark ? theme.secondary : theme.soft, transparency:100 }, fill:{ color:dark ? theme.secondary : theme.soft, transparency:dark ? 78 : 10 } });
+    addShape(slide, pptx, 'ellipse', { x:0, y:5.95, w:1.65, h:1.55, line:{ color:theme.accent, transparency:100 }, fill:{ color:theme.accent, transparency:dark ? 82 : 72 } });
     addThemeAtmosphere(slide, theme, dark);
   }
 
@@ -235,6 +235,26 @@
     });
   }
 
+  function renderSkillsAchievements(pptx, model, page) {
+    const slide = pptx.addSlide();
+    addHeader(slide, pptx, model, page, '积累与高光，构成完整的成长证据', 'SKILLS & ACHIEVEMENTS');
+    slide.addText('技能积累', { x:.75, y:1.78, w:4.9, h:.4, fontFace:FONT, fontSize:20, bold:true, color:model.theme.primary, margin:0 });
+    page.skills.slice(0, 4).forEach((skill, index) => {
+      const y = 2.42 + index * .86;
+      addShape(slide, pptx, 'roundRect', { x:.75, y, w:5.65, h:.65, rectRadius:.05, line:{ color:model.theme.soft, width:1 }, fill:{ color:model.theme.paper } });
+      slide.addText(short(skill.name, 24), { x:1.02, y:y + .17, w:4.2, h:.26, fontFace:FONT, fontSize:15, bold:true, color:model.theme.ink, margin:0, fit:'shrink' });
+      slide.addText(`${skill.evidenceCount} 条`, { x:5.25, y:y + .18, w:.75, h:.23, fontFace:FONT, fontSize:10, color:model.theme.secondary, align:'right', margin:0 });
+    });
+    slide.addText('荣誉高光', { x:6.92, y:1.78, w:4.9, h:.4, fontFace:FONT, fontSize:20, bold:true, color:model.theme.primary, margin:0 });
+    page.achievements.slice(0, 2).forEach((item, index) => {
+      const y = 2.42 + index * 1.82;
+      addShape(slide, pptx, 'roundRect', { x:6.92, y, w:5.65, h:1.48, rectRadius:.07, line:{ color:model.theme.accent, transparency:45, width:1 }, fill:{ color:model.theme.paper } });
+      slide.addText(model.theme.motif, { x:7.2, y:y + .25, w:.5, h:.4, fontFace:FONT, fontSize:22, color:model.theme.accent, margin:0 });
+      slide.addText(short(item.title, 24), { x:7.82, y:y + .25, w:4.3, h:.34, fontFace:FONT, fontSize:17, bold:true, color:model.theme.primary, margin:0, fit:'shrink' });
+      slide.addText(`${formatDate(item.date)}  ${short(item.detail, 48)}`, { x:7.82, y:y + .78, w:4.25, h:.38, fontFace:FONT, fontSize:11, color:model.theme.muted, margin:0, fit:'shrink' });
+    });
+  }
+
   function renderInterests(pptx, model, page) {
     const slide = pptx.addSlide();
     addHeader(slide, pptx, model, page, '好奇心正在画出自己的星图', '兴趣与成长');
@@ -306,6 +326,7 @@
       else if (page.type === 'project') renderProjects(pptx, model, page, assets);
       else if (page.type === 'gallery') renderGallery(pptx, model, page, assets);
       else if (page.type === 'skills') renderSkills(pptx, model, page);
+      else if (page.type === 'skills-achievements') renderSkillsAchievements(pptx, model, page);
       else if (page.type === 'achievement') renderAchievements(pptx, model, page);
       else if (page.type === 'interest') renderInterests(pptx, model, page);
       else if (page.type === 'teacher-observation') renderObservations(pptx, model, page);
