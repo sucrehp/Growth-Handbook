@@ -18,12 +18,12 @@
   };
 
   const THEMES = Object.freeze({
-    sky: Object.freeze({ id:'sky', label:'天空探索', tagline:'自由想象，向光出发', primary:'315F91', secondary:'74B7E8', accent:'F1B84B', background:'F1F8FC', paper:'FFFFFF', ink:'153A64', muted:'6E8095', soft:'E4F4FC', motif:'☁' }),
-    cosmic: Object.freeze({ id:'cosmic', label:'宇宙创客', tagline:'保持好奇，勇敢抵达', primary:'493A8E', secondary:'7769D8', accent:'FFCA57', background:'F4F1FC', paper:'FFFFFF', ink:'1D174D', muted:'716C8D', soft:'ECE8FF', motif:'✦' }),
-    forest: Object.freeze({ id:'forest', label:'森林冒险', tagline:'自然生长，温柔坚定', primary:'2E6650', secondary:'6EAD76', accent:'D9A94E', background:'F1F7F0', paper:'FFFFFF', ink:'173D32', muted:'667D72', soft:'E4F2E4', motif:'❧' }),
-    sunshine: Object.freeze({ id:'sunshine', label:'阳光运动', tagline:'热烈体验，快乐成长', primary:'C45B34', secondary:'F09A4A', accent:'FFD052', background:'FFF8ED', paper:'FFFFFF', ink:'71331F', muted:'8A7268', soft:'FFF0D5', motif:'☀' }),
-    blossom: Object.freeze({ id:'blossom', label:'花漾故事', tagline:'自信表达，向光盛放', primary:'A64F76', secondary:'DB86A8', accent:'E9B75F', background:'FFF5F7', paper:'FFFFFF', ink:'61334F', muted:'8D7180', soft:'FBE8EF', motif:'✿' }),
-    dream: Object.freeze({ id:'dream', label:'梦想画室', tagline:'收藏灵感，闪闪发光', primary:'5367A4', secondary:'9A8BD4', accent:'E8B9CF', background:'F7F4FC', paper:'FFFFFF', ink:'30365F', muted:'757993', soft:'EEEBFA', motif:'◒' })
+    sky: Object.freeze({ id:'sky', label:'天空探索', eyebrow:'SKY EXPLORER', tagline:'自由想象，向光出发', primary:'315F91', secondary:'74B7E8', accent:'F1B84B', background:'F1F8FC', paper:'FFFFFF', ink:'153A64', muted:'6E8095', soft:'E4F4FC', motif:'☁', motifSecondary:'⌁' }),
+    cosmic: Object.freeze({ id:'cosmic', label:'宇宙创客', eyebrow:'COSMIC MAKER', tagline:'保持好奇，勇敢抵达', primary:'493A8E', secondary:'7769D8', accent:'FFCA57', background:'F4F1FC', paper:'FFFFFF', ink:'1D174D', muted:'716C8D', soft:'ECE8FF', motif:'✦', motifSecondary:'◌' }),
+    forest: Object.freeze({ id:'forest', label:'森林冒险', eyebrow:'FOREST ADVENTURE', tagline:'自然生长，温柔坚定', primary:'2E6650', secondary:'6EAD76', accent:'D9A94E', background:'F1F7F0', paper:'FFFFFF', ink:'173D32', muted:'667D72', soft:'E4F2E4', motif:'❧', motifSecondary:'⌁' }),
+    sunshine: Object.freeze({ id:'sunshine', label:'阳光运动', eyebrow:'SUNSHINE MOTION', tagline:'热烈体验，快乐成长', primary:'C45B34', secondary:'F09A4A', accent:'FFD052', background:'FFF8ED', paper:'FFFFFF', ink:'71331F', muted:'8A7268', soft:'FFF0D5', motif:'☀', motifSecondary:'➜' }),
+    blossom: Object.freeze({ id:'blossom', label:'花漾故事', eyebrow:'BLOSSOM STORY', tagline:'自信表达，向光盛放', primary:'A64F76', secondary:'DB86A8', accent:'E9B75F', background:'FFF5F7', paper:'FFFFFF', ink:'61334F', muted:'8D7180', soft:'FBE8EF', motif:'✿', motifSecondary:'❀' }),
+    dream: Object.freeze({ id:'dream', label:'梦想画室', eyebrow:'DREAM STUDIO', tagline:'收藏灵感，闪闪发光', primary:'5367A4', secondary:'9A8BD4', accent:'E8B9CF', background:'F7F4FC', paper:'FFFFFF', ink:'30365F', muted:'757993', soft:'EEEBFA', motif:'◒', motifSecondary:'✦' })
   });
 
   const LEGACY_THEME_MAP = Object.freeze({

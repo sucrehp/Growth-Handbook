@@ -35,11 +35,27 @@
     slide.addShape(pptx.ShapeType[shape] || shape, options);
   }
 
+  function addThemeAtmosphere(slide, theme, dark) {
+    const color = dark ? 'FFFFFF' : theme.secondary;
+    const accents = {
+      sky:[['☁',10.8,.35,30],['⌁',9.75,6.18,30]],
+      cosmic:[['✦',10.9,.35,25],['◌',9.82,6.2,28],['·',12.15,1.25,30]],
+      forest:[['❧',10.85,.38,28],['⌁',9.7,6.18,28]],
+      sunshine:[['☀',10.82,.35,28],['➜',9.72,6.22,26]],
+      blossom:[['✿',10.82,.38,27],['❀',9.72,6.18,26]],
+      dream:[['◒',10.85,.36,29],['✦',9.74,6.18,26]]
+    };
+    (accents[theme.id] || accents.sky).forEach(item => slide.addText(item[0], {
+      x:item[1], y:item[2], w:.8, h:.48, fontFace:FONT, fontSize:item[3], color, transparency:dark ? 55 : 35, margin:0, align:'center'
+    }));
+  }
+
   function addBackground(slide, pptx, theme, dark) {
     slide.background = { color: dark ? theme.primary : theme.background };
     addShape(slide, pptx, 'rect', { x:0, y:0, w:0.09, h:H, line:{ color:theme.accent, transparency:100 }, fill:{ color:theme.accent } });
     addShape(slide, pptx, 'ellipse', { x:10.5, y:-1.55, w:4.2, h:4.2, line:{ color:dark ? theme.secondary : theme.soft, transparency:100 }, fill:{ color:dark ? theme.secondary : theme.soft, transparency:dark ? 78 : 10 } });
     addShape(slide, pptx, 'ellipse', { x:-1.25, y:5.55, w:3.1, h:3.1, line:{ color:theme.accent, transparency:100 }, fill:{ color:theme.accent, transparency:dark ? 82 : 72 } });
+    addThemeAtmosphere(slide, theme, dark);
   }
 
   function addFooter(slide, model, page) {
@@ -116,7 +132,7 @@
     const slide = pptx.addSlide();
     addBackground(slide, pptx, model.theme, true);
     slide.addText(model.theme.motif, { x:.75, y:.55, w:1, h:.75, fontFace:FONT, fontSize:40, color:model.theme.accent, margin:0 });
-    slide.addText('GROWTH PORTFOLIO', { x:.8, y:1.55, w:6.8, h:.34, fontFace:FONT, fontSize:16, bold:true, color:model.theme.accent, charSpacing:2.5, margin:0 });
+    slide.addText(`${model.theme.eyebrow} · GROWTH PORTFOLIO`, { x:.8, y:1.55, w:6.8, h:.34, fontFace:FONT, fontSize:16, bold:true, color:model.theme.accent, charSpacing:2.1, margin:0, fit:'shrink' });
     slide.addText(`${short(model.child.name, 16)}的成长履历`, { x:.78, y:2.05, w:7.15, h:1.2, fontFace:FONT, fontSize:52, bold:true, color:'FFFFFF', margin:0, breakLine:false, fit:'shrink' });
     slide.addText(model.child.introduction, { x:.82, y:3.5, w:6.65, h:1.1, fontFace:FONT, fontSize:18, color:'FFFFFF', breakLine:false, fit:'shrink', margin:0, transparency:12 });
     let x = .8;
@@ -265,7 +281,7 @@
   function renderClosing(pptx, model) {
     const slide = pptx.addSlide();
     addBackground(slide, pptx, model.theme, true);
-    slide.addText(model.theme.motif, { x:5.78, y:1.05, w:1.8, h:1, fontFace:FONT, fontSize:54, color:model.theme.accent, align:'center', margin:0 });
+    slide.addText(`${model.theme.motif}  ${model.theme.motifSecondary}`, { x:5.28, y:1.05, w:2.8, h:1, fontFace:FONT, fontSize:48, color:model.theme.accent, align:'center', margin:0 });
     slide.addText('愿每一次好奇，都被温柔收藏', { x:1.1, y:2.5, w:11.1, h:.9, fontFace:FONT, fontSize:42, bold:true, color:'FFFFFF', align:'center', margin:0, fit:'shrink' });
     slide.addText(`${short(model.child.name, 16)} · ${model.theme.tagline}`, { x:2, y:3.7, w:9.3, h:.42, fontFace:FONT, fontSize:18, color:model.theme.accent, align:'center', margin:0 });
     slide.addText('阿墨逗儿童成长中心', { x:2, y:5.85, w:9.3, h:.3, fontFace:FONT, fontSize:14, color:'FFFFFF', align:'center', margin:0 });
