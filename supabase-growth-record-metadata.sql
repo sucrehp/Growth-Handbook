@@ -38,96 +38,34 @@ alter table public.growth_record_metadata enable row level security;
 revoke all on table public.growth_record_metadata from anon;
 grant select, insert, update, delete on table public.growth_record_metadata to authenticated;
 
+-- TEMPORARY V1 AUTH BOUNDARY: public sign-up, anonymous sign-in, and manual
+-- linking are disabled in the single-organization Production project, so an
+-- authenticated session currently represents a controlled institution operator.
+-- LEGACY_AUTH_HARDENING_REQUIRED: MUST_BE_HARDENED_BEFORE PARENT_AUTH OR
+-- EXTERNAL_ORGANIZATION_ROLLOUT, including SaaS or multi-tenant operation.
+-- GP-L5 P0 SECURITY DEBT: legacy Growth Handbook tables still have anonymous
+-- read policies; that separate issue is intentionally outside this migration.
+
 drop policy if exists "authenticated read growth record metadata" on public.growth_record_metadata;
 create policy "authenticated read growth record metadata"
   on public.growth_record_metadata for select to authenticated
-  using (
-    exists (
-      select 1
-      from public.staff_profiles sp
-      where sp.id = auth.uid()
-        and sp.status = 'active'
-    )
-    and exists (
-      select 1
-      from public.staff_child_access sca
-      where sca.staff_id = auth.uid()
-        and sca.child_id = growth_record_metadata.child_id
-        and sca.access_level in ('view', 'edit', 'manage')
-    )
-  );
+  using (auth.role() = 'authenticated');
 
 drop policy if exists "authenticated insert growth record metadata" on public.growth_record_metadata;
 create policy "authenticated insert growth record metadata"
   on public.growth_record_metadata for insert to authenticated
-  with check (
-    exists (
-      select 1
-      from public.staff_profiles sp
-      where sp.id = auth.uid()
-        and sp.status = 'active'
-    )
-    and exists (
-      select 1
-      from public.staff_child_access sca
-      where sca.staff_id = auth.uid()
-        and sca.child_id = growth_record_metadata.child_id
-        and sca.access_level in ('edit', 'manage')
-    )
-  );
+  with check (auth.role() = 'authenticated');
 
 drop policy if exists "authenticated update growth record metadata" on public.growth_record_metadata;
 create policy "authenticated update growth record metadata"
   on public.growth_record_metadata for update to authenticated
-  using (
-    exists (
-      select 1
-      from public.staff_profiles sp
-      where sp.id = auth.uid()
-        and sp.status = 'active'
-    )
-    and exists (
-      select 1
-      from public.staff_child_access sca
-      where sca.staff_id = auth.uid()
-        and sca.child_id = growth_record_metadata.child_id
-        and sca.access_level in ('edit', 'manage')
-    )
-  )
-  with check (
-    exists (
-      select 1
-      from public.staff_profiles sp
-      where sp.id = auth.uid()
-        and sp.status = 'active'
-    )
-    and exists (
-      select 1
-      from public.staff_child_access sca
-      where sca.staff_id = auth.uid()
-        and sca.child_id = growth_record_metadata.child_id
-        and sca.access_level in ('edit', 'manage')
-    )
-  );
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
 
 drop policy if exists "authenticated delete growth record metadata" on public.growth_record_metadata;
 create policy "authenticated delete growth record metadata"
   on public.growth_record_metadata for delete to authenticated
-  using (
-    exists (
-      select 1
-      from public.staff_profiles sp
-      where sp.id = auth.uid()
-        and sp.status = 'active'
-    )
-    and exists (
-      select 1
-      from public.staff_child_access sca
-      where sca.staff_id = auth.uid()
-        and sca.child_id = growth_record_metadata.child_id
-        and sca.access_level = 'manage'
-    )
-  );
+  using (auth.role() = 'authenticated');
 
 drop trigger if exists trigger_growth_record_metadata_updated_at on public.growth_record_metadata;
 create trigger trigger_growth_record_metadata_updated_at
