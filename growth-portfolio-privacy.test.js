@@ -6,6 +6,7 @@ const fs = require('fs');
 const sql = fs.readFileSync('supabase-growth-portfolio-privacy.sql', 'utf8');
 const childHtml = fs.readFileSync('child.html', 'utf8');
 const adminHtml = fs.readFileSync('admin.html', 'utf8');
+const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
 
 const legacyTables = [
   'children', 'growth_timeline', 'course_records', 'teacher_comments',
@@ -62,6 +63,14 @@ assert.match(adminHtml, /db\.from\(table\)\.delete/);
 assert.match(childHtml, /params\.get\('demo'\) === '1'/);
 assert.match(childHtml, /GrowthRecordAdapter\.adaptLegacyProfile/);
 assert.match(childHtml, /GrowthReportComposer\.buildReportModel/);
+
+const deployedFunctionFiles = fs.readdirSync('api').filter(name => name.endsWith('.js'));
+assert.equal(deployedFunctionFiles.length <= 12, true, 'Vercel Hobby deployment must stay within 12 function files');
+const rewriteMap = new Map(vercelConfig.rewrites.map(rewrite => [rewrite.source, rewrite.destination]));
+for (const operation of ['children', 'photos', 'parent-contribution-media', 'parent-contribution-review']) {
+  assert.equal(rewriteMap.get(`/api/${operation}`), `/api/operations?__operation=${operation}`);
+  assert.equal(fs.existsSync(`server/handlers/${operation}.js`), true);
+}
 
 for (const destructive of [/drop table/i, /truncate/i, /delete\s+from\s+public\.(children|growth_timeline|course_records|teacher_comments|activity_records|achievements|photo_records)/i, /update\s+public\.(children|growth_timeline|course_records|teacher_comments|activity_records|achievements|photo_records)/i]) {
   assert.doesNotMatch(sql, destructive);

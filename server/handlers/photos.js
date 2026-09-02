@@ -1,4 +1,4 @@
-const { send, handleError, requireMethod, requireUser, db } = require("./_lib");
+const { send, handleError, requireMethod, requireUser, db } = require("../../api/_lib");
 
 module.exports = async function handler(req, res) {
   try {
