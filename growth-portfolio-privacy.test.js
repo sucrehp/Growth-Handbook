@@ -1,0 +1,70 @@
+'use strict';
+
+const assert = require('assert');
+const fs = require('fs');
+
+const sql = fs.readFileSync('supabase-growth-portfolio-privacy.sql', 'utf8');
+const childHtml = fs.readFileSync('child.html', 'utf8');
+const adminHtml = fs.readFileSync('admin.html', 'utf8');
+
+const legacyTables = [
+  'children', 'growth_timeline', 'course_records', 'teacher_comments',
+  'activity_records', 'achievements', 'photo_records', 'parent_messages',
+  'parent_uploads', 'parent_replies', 'parent_bindings'
+];
+
+function compact(value) {
+  return value.replace(/\s+/g, ' ').toLowerCase();
+}
+
+const normalized = compact(sql);
+
+assert.match(normalized, /begin;/);
+assert.match(normalized, /commit;/);
+assert.match(normalized, /create or replace function public\.get_growth_portfolio_by_token\(p_token text\)/);
+assert.match(normalized, /security definer set search_path = public, pg_temp/);
+assert.match(normalized, /grant execute on function public\.get_growth_portfolio_by_token\(text\) to anon, authenticated/);
+assert.match(normalized, /revoke all on function public\.get_child_full_profile\(uuid\) from public, anon, authenticated/);
+assert.match(normalized, /revoke all on function public\.get_child_by_token\(text\) from public, anon, authenticated/);
+
+for (const table of legacyTables) {
+  assert.match(normalized, new RegExp(`public\\.${table}`), `${table} must be governed`);
+}
+
+assert.match(normalized, /revoke all privileges on table[\s\S]*from anon/);
+assert.match(normalized, /revoke all privileges on table[\s\S]*from public/);
+assert.match(normalized, /grant select, insert, update, delete on table[\s\S]*to authenticated/);
+assert.equal((normalized.match(/where child_id = v_child_id/g) || []).length >= 8, true);
+assert.match(normalized, /where c\.share_token = nullif\(trim\(coalesce\(p_token, ''\)\), ''\)/);
+assert.match(normalized, /if v_child_id is null then return null/);
+assert.match(normalized, /where child_id = v_child_id and status = 'published'/);
+assert.match(normalized, /visible_to_parent/);
+
+for (const forbiddenField of ['parent_name', 'parent_phone', 'parent_wechat', 'family_address', 'emergency_contact', 'emergency_phone', "'share_token', c.share_token", "'notes', c.notes"]) {
+  assert.equal(normalized.includes(forbiddenField), false, `public projection leaked ${forbiddenField}`);
+}
+
+assert.match(childHtml, /db\.rpc\('get_growth_portfolio_by_token', \{ p_token: token \}\)/);
+assert.match(childHtml, /primary\.error\.code === 'PGRST202'/);
+assert.match(childHtml, /Deployment bridge only: remove after the Production GP-L5\.1 migration is verified/);
+assert.match(childHtml, /const legacy = await db\.rpc\('get_child_by_token'/);
+assert.match(childHtml, /if \(!functionPending\) throw primary\.error/);
+
+assert.match(adminHtml, /auth\.signInWithPassword/);
+assert.match(adminHtml, /db\.from\('children'\)\.select/);
+assert.match(adminHtml, /db\.from\(table\)\.insert/);
+assert.match(adminHtml, /db\.from\(table\)\.update/);
+assert.match(adminHtml, /db\.from\(table\)\.delete/);
+assert.match(childHtml, /params\.get\('demo'\) === '1'/);
+assert.match(childHtml, /GrowthRecordAdapter\.adaptLegacyProfile/);
+assert.match(childHtml, /GrowthReportComposer\.buildReportModel/);
+
+for (const destructive of [/drop table/i, /truncate/i, /delete\s+from\s+public\.(children|growth_timeline|course_records|teacher_comments|activity_records|achievements|photo_records)/i, /update\s+public\.(children|growth_timeline|course_records|teacher_comments|activity_records|achievements|photo_records)/i]) {
+  assert.doesNotMatch(sql, destructive);
+}
+
+console.log('GP-L5.1 PRIVACY STATIC VERIFICATION PASS');
+console.log(`governed tables: ${legacyTables.length}`);
+console.log('token projection: CHILD_SCOPED');
+console.log('legacy anon direct read: REVOKED');
+console.log('authenticated admin CRUD: PRESERVED');

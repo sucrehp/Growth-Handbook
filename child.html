@@ -739,6 +739,24 @@
   // ============================================
   // Init
   // ============================================
+  async function loadGrowthPortfolioByToken(token) {
+    const primary = await db.rpc('get_growth_portfolio_by_token', { p_token: token });
+    if (!primary.error) return primary.data;
+
+    const functionPending = primary.error.code === 'PGRST202'
+      || /get_growth_portfolio_by_token|schema cache|could not find the function/i.test(primary.error.message || '');
+    if (!functionPending) throw primary.error;
+
+    // Deployment bridge only: remove after the Production GP-L5.1 migration is verified.
+    const legacy = await db.rpc('get_child_by_token', { p_token: token });
+    if (legacy.error) throw legacy.error;
+    if (!legacy.data?.child) return legacy.data;
+    const metadata = await db.rpc('get_growth_record_metadata_by_token', { p_token: token });
+    if (metadata.error) throw metadata.error;
+    legacy.data.metadata = metadata.data || [];
+    return legacy.data;
+  }
+
   async function init() {
     const params = new URLSearchParams(location.search);
     const token = params.get('t');
@@ -755,13 +773,9 @@
     if (!token) { showError('链接无效', '缺少分享令牌参数'); return; }
 
     try {
-      const { data, error } = await db.rpc('get_child_by_token', { p_token: token });
-      if (error) throw error;
+      const data = await loadGrowthPortfolioByToken(token);
       if (!data || !data.child) { showError('未找到记录', '该分享链接可能已失效，请联系老师确认'); return; }
-      const { data: metadata, error: metadataError } = await db.rpc('get_growth_record_metadata_by_token', { p_token: token });
-      if (metadataError) console.warn('Growth Record metadata unavailable; using legacy fallback.', metadataError.message);
-      data.metadata = metadata || [];
-      
+
       profile = data;
       applyTheme(requestedTheme || getStoredTheme(), data.child.style_preference);
       document.title = `${data.child.name}的成长手册 - 阿墨逗儿童成长中心`;
