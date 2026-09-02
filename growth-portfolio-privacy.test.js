@@ -40,15 +40,19 @@ assert.match(normalized, /if v_child_id is null then return null/);
 assert.match(normalized, /where child_id = v_child_id and status = 'published'/);
 assert.match(normalized, /visible_to_parent/);
 
+for (const key of ['child', 'timeline', 'courses', 'comments', 'activities', 'achievements', 'photos', 'messages', 'metadata']) {
+  assert.match(normalized, new RegExp(`'${key}', \\(`), `token projection must include ${key}`);
+}
+
 for (const forbiddenField of ['parent_name', 'parent_phone', 'parent_wechat', 'family_address', 'emergency_contact', 'emergency_phone', "'share_token', c.share_token", "'notes', c.notes"]) {
   assert.equal(normalized.includes(forbiddenField), false, `public projection leaked ${forbiddenField}`);
 }
 
 assert.match(childHtml, /db\.rpc\('get_growth_portfolio_by_token', \{ p_token: token \}\)/);
-assert.match(childHtml, /primary\.error\.code === 'PGRST202'/);
-assert.match(childHtml, /Deployment bridge only: remove after the Production GP-L5\.1 migration is verified/);
-assert.match(childHtml, /const legacy = await db\.rpc\('get_child_by_token'/);
-assert.match(childHtml, /if \(!functionPending\) throw primary\.error/);
+assert.doesNotMatch(childHtml, /db\.rpc\('get_child_by_token'/);
+assert.doesNotMatch(childHtml, /db\.rpc\('get_child_full_profile'/);
+assert.doesNotMatch(childHtml, /db\.rpc\('get_growth_record_metadata_by_token'/);
+assert.doesNotMatch(childHtml, /db\.from\('(children|growth_timeline|course_records|teacher_comments|activity_records|achievements|photo_records|parent_messages|parent_uploads|parent_replies|parent_bindings)'/);
 
 assert.match(adminHtml, /auth\.signInWithPassword/);
 assert.match(adminHtml, /db\.from\('children'\)\.select/);

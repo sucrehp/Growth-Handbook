@@ -740,21 +740,9 @@
   // Init
   // ============================================
   async function loadGrowthPortfolioByToken(token) {
-    const primary = await db.rpc('get_growth_portfolio_by_token', { p_token: token });
-    if (!primary.error) return primary.data;
-
-    const functionPending = primary.error.code === 'PGRST202'
-      || /get_growth_portfolio_by_token|schema cache|could not find the function/i.test(primary.error.message || '');
-    if (!functionPending) throw primary.error;
-
-    // Deployment bridge only: remove after the Production GP-L5.1 migration is verified.
-    const legacy = await db.rpc('get_child_by_token', { p_token: token });
-    if (legacy.error) throw legacy.error;
-    if (!legacy.data?.child) return legacy.data;
-    const metadata = await db.rpc('get_growth_record_metadata_by_token', { p_token: token });
-    if (metadata.error) throw metadata.error;
-    legacy.data.metadata = metadata.data || [];
-    return legacy.data;
+    const { data, error } = await db.rpc('get_growth_portfolio_by_token', { p_token: token });
+    if (error) throw error;
+    return data;
   }
 
   async function init() {
