@@ -168,8 +168,8 @@
     .toast.error { background:var(--danger); }
     
     /* ===== Share Dialog ===== */
-    .share-url-box { display:flex; gap:8px; align-items:center; background:var(--bg); border-radius:8px; padding:8px 12px; margin-top:8px; }
-    .share-url-box input { flex:1; border:none; background:transparent; font-size:13px; color:var(--text); outline:none; font-family:inherit; }
+    .share-url-box { display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--bg); border-radius:8px; padding:8px 12px; margin-top:8px; }
+    .share-url-box input { flex:1 1 280px; min-width:0; border:none; background:transparent; font-size:13px; color:var(--text); outline:none; font-family:inherit; }
     .share-url-box .btn { flex-shrink:0; }
     
     /* ===== Style Selector ===== */
@@ -194,6 +194,7 @@
       .tabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
       .editor-wrap { padding:16px; }
       .style-options { grid-template-columns:1fr; }
+      .share-url-box input { flex-basis:100%; }
     }
   </style>
 </head>
@@ -604,10 +605,11 @@
         <h3 style="border:none;padding:0;margin-bottom:12px">分享链接</h3>
         <div class="share-url-box">
           <input value="${location.origin}/child.html?t=${c.share_token}" readonly id="shareUrlInput">
-          <button class="btn btn-accent btn-sm" onclick="copyLink('${location.origin}/child.html?t=${c.share_token}')">复制链接</button>
+          <button class="btn btn-accent btn-sm" onclick="copyCurrentShareLink()">复制链接</button>
           <button class="btn btn-outline btn-sm" onclick="previewChild()">预览</button>
+          <button class="btn btn-outline btn-sm" id="rotateShareTokenBtn" onclick="rotateShareToken()">重新生成分享链接</button>
         </div>
-        <p style="font-size:12px;color:var(--text-light);margin-top:8px">将此链接发送给家长，即可查看孩子的成长手册</p>
+        <p style="font-size:12px;color:var(--text-light);margin-top:8px">将此链接发送给家长，即可查看孩子的成长手册。重新生成后，旧链接将立即失效。</p>
       </div>
     `;
   }
@@ -1167,6 +1169,46 @@
     navigator.clipboard.writeText(url).then(() => toast('链接已复制', 'success')).catch(() => {
       prompt('请手动复制以下链接:', url);
     });
+  }
+
+  function copyCurrentShareLink() {
+    const input = document.getElementById('shareUrlInput');
+    if (!input?.value) { toast('当前分享链接不可用', 'error'); return; }
+    copyLink(input.value);
+  }
+
+  async function rotateShareToken() {
+    if (!currentChild?.id) { toast('未找到孩子信息', 'error'); return; }
+    if (!confirm('重新生成后，旧分享链接将立即失效，是否继续？')) return;
+
+    const button = document.getElementById('rotateShareTokenBtn');
+    if (button) {
+      button.disabled = true;
+      button.textContent = '生成中...';
+    }
+
+    try {
+      const { data: newToken, error } = await db.rpc('rotate_child_share_token', {
+        p_child_id: currentChild.id,
+      });
+      if (error) throw error;
+      if (typeof newToken !== 'string' || !newToken) throw new Error('未返回新的分享链接');
+
+      currentChild.share_token = newToken;
+      const child = children.find(item => item.id === currentChild.id);
+      if (child) child.share_token = newToken;
+
+      const input = document.getElementById('shareUrlInput');
+      if (input) input.value = `${location.origin}/child.html?t=${encodeURIComponent(newToken)}`;
+      toast('分享链接已重新生成，旧链接已失效', 'success');
+    } catch (error) {
+      toast('重新生成失败: ' + (error?.message || '请稍后重试'), 'error');
+    } finally {
+      if (button?.isConnected) {
+        button.disabled = false;
+        button.textContent = '重新生成分享链接';
+      }
+    }
   }
 
   function editShare(id, token) {
