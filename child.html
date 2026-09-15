@@ -1488,29 +1488,30 @@
     const response = await fetch(url, { credentials:'same-origin' });
     if (!response.ok) throw new Error(`ASSET_HTTP_${response.status}`);
     let blob = await response.blob();
-    if (!/^image\/(png|jpeg|gif)$/i.test(blob.type)) {
-      let bitmap;
-      let objectUrl = '';
-      try {
-        bitmap = await createImageBitmap(blob);
-      } catch (error) {
-        objectUrl = URL.createObjectURL(blob);
-        bitmap = new Image();
-        bitmap.src = objectUrl;
-        await bitmap.decode();
+    const objectUrl = URL.createObjectURL(blob);
+    const image = new Image();
+    let sourceWidth;
+    let sourceHeight;
+    try {
+      image.src = objectUrl;
+      await image.decode();
+      sourceWidth = image.naturalWidth;
+      sourceHeight = image.naturalHeight;
+      if (!(sourceWidth > 0 && sourceHeight > 0)) throw new Error('ASSET_DIMENSIONS_UNAVAILABLE');
+      if (!/^image\/(png|jpeg|gif)$/i.test(blob.type)) {
+        const maximumSide = 1600;
+        const scale = Math.min(1, maximumSide / Math.max(sourceWidth, sourceHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+        canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+        const context = canvas.getContext('2d');
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('ASSET_RASTERIZE_FAILED')), 'image/png'));
+        sourceWidth = canvas.width;
+        sourceHeight = canvas.height;
       }
-      const sourceWidth = bitmap.width || bitmap.naturalWidth;
-      const sourceHeight = bitmap.height || bitmap.naturalHeight;
-      const maximumSide = 1600;
-      const scale = Math.min(1, maximumSide / Math.max(sourceWidth, sourceHeight));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(sourceWidth * scale));
-      canvas.height = Math.max(1, Math.round(sourceHeight * scale));
-      const context = canvas.getContext('2d');
-      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      if (typeof bitmap.close === 'function') bitmap.close();
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-      blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('ASSET_RASTERIZE_FAILED')), 'image/png'));
+    } finally {
+      URL.revokeObjectURL(objectUrl);
     }
     const data = await new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -1518,7 +1519,7 @@
       reader.onerror = () => reject(new Error('ASSET_READ_FAILED'));
       reader.readAsDataURL(blob);
     });
-    return { data };
+    return { data, width:sourceWidth, height:sourceHeight };
   }
 
   async function downloadPPT() {

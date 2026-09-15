@@ -81,12 +81,17 @@
 
   function imageOptions(asset, frame, mode) {
     const source = asset && asset.data ? { data:asset.data } : { path:asset && asset.path ? asset.path : '' };
-    return { ...source, x:frame.x, y:frame.y, w:frame.w, h:frame.h, sizing:{ type:mode || 'cover', w:frame.w, h:frame.h } };
+    // PptxGenJS 3.12 reads addImage w/h as the SOURCE ratio when sizing is set.
+    // Passing the target frame ratio here turns cover/contain into a stretch.
+    const sourceWidth = frame.w;
+    const sourceHeight = sourceWidth * asset.height / asset.width;
+    return { ...source, x:frame.x, y:frame.y, w:sourceWidth, h:sourceHeight,
+      sizing:{ type:mode || 'cover', w:frame.w, h:frame.h } };
   }
 
   function addImageFrame(slide, pptx, asset, frame, theme, mode, label) {
     addShape(slide, pptx, 'roundRect', { x:frame.x, y:frame.y, w:frame.w, h:frame.h, rectRadius:.08, line:{ color:theme.soft, width:1 }, fill:{ color:theme.soft } });
-    if (asset && (asset.data || asset.path)) {
+    if (asset && (asset.data || asset.path) && asset.width > 0 && asset.height > 0) {
       slide.addImage(imageOptions(asset, frame, mode));
       return;
     }
@@ -118,7 +123,8 @@
         const url = urls[index];
         try {
           const asset = resolver ? await resolver(url) : (/^data:/i.test(url) ? { data:url } : { path:url });
-          if (asset && (asset.data || asset.path)) assets.set(url, asset);
+          if (asset && (asset.data || asset.path) && asset.width > 0 && asset.height > 0) assets.set(url, asset);
+          else assets.set(url, { error:'ASSET_DIMENSIONS_UNAVAILABLE' });
         } catch (error) {
           assets.set(url, { error:text(error && error.message) || 'ASSET_LOAD_FAILED' });
         }
