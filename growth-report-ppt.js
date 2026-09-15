@@ -1,8 +1,10 @@
 (function (root, factory) {
-  const api = factory();
+  const composer = typeof module === 'object' && module.exports
+    ? require('./growth-report-composer') : root.GrowthReportComposer;
+  const api = factory(composer);
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.GrowthReportPpt = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (GrowthReportComposer) {
   'use strict';
 
   const FONT = 'Microsoft YaHei';
@@ -188,14 +190,45 @@
 
   function renderProjects(pptx, model, page, assets) {
     const slide = pptx.addSlide();
-    addHeader(slide, pptx, model, page, '想法在作品里慢慢长大', `作品与项目${page.total > 1 ? ` · ${page.index}/${page.total}` : ''}`);
+    addHeader(slide, pptx, model, page, '作品里的成长经历', `PROJECTS & GROWTH STORIES${page.total > 1 ? ` · ${page.index}/${page.total}` : ''}`);
+    if (page.items.length === 1) {
+      const record = page.items[0];
+      const story = GrowthReportComposer.growthStoryView(record, evidenceForRecord(model, record.id));
+      if (story) {
+        const evidence = story.evidence[0];
+        addImageFrame(slide, pptx, assets.get(evidence.url), { x:.72, y:1.76, w:7.15, h:4.86 }, model.theme,
+          ['certificate','document'].includes(String(evidence.kind || '').toLowerCase()) ? 'contain' : 'cover', story.title);
+        slide.addText('GROWTH STORY', { x:8.26, y:1.84, w:3.2, h:.28, fontFace:FONT, fontSize:12, bold:true, color:model.theme.secondary, charSpacing:1.4, margin:0 });
+        slide.addText(formatDate(story.date), { x:8.26, y:2.27, w:4.25, h:.25, fontFace:FONT, fontSize:12, color:model.theme.muted, margin:0 });
+        slide.addText(short(story.title, 32), { x:8.24, y:2.78, w:4.28, h:.82, fontFace:FONT, fontSize:29, bold:true, color:model.theme.primary, margin:0, fit:'shrink' });
+        addShape(slide, pptx, 'rect', { x:8.26, y:3.76, w:.85, h:.055, line:{ color:model.theme.accent, transparency:100 }, fill:{ color:model.theme.accent } });
+        if (story.detail) slide.addText(short(story.detail, 130), { x:8.26, y:4.05, w:4.05, h:1.05, fontFace:FONT, fontSize:17, color:model.theme.ink, margin:0, fit:'shrink' });
+        if (story.teacherObservation) slide.addText(`老师观察：${short(story.teacherObservation, 90)}`, { x:8.26, y:5.33, w:4.02, h:.52, fontFace:FONT, fontSize:12, color:model.theme.muted, margin:0, fit:'shrink' });
+        if (story.tags.length) slide.addText(story.tags.slice(0, 3).join('  /  '), { x:8.26, y:6.03, w:4.05, h:.28, fontFace:FONT, fontSize:12, bold:true, color:model.theme.secondary, margin:0, fit:'shrink' });
+        if (record.source === 'PARENT_PROVIDED') addPill(slide, pptx, '家长补充 · 已审核', 8.26, 6.42, model.theme, 2.18);
+        return;
+      }
+    }
     page.items.forEach((record, index) => {
       const y = 1.72 + index * 2.55;
       const evidence = evidenceForRecord(model, record.id)[0];
-      addImageFrame(slide, pptx, evidence && assets.get(evidence.url), { x:.72, y, w:3.65, h:2.15 }, model.theme, evidence && ['certificate','document'].includes(evidence.kind) ? 'contain' : 'cover', record.title);
-      slide.addText(short(record.title, 30), { x:4.72, y:y + .05, w:7.55, h:.4, fontFace:FONT, fontSize:21, bold:true, color:model.theme.primary, margin:0, fit:'shrink' });
-      slide.addText(formatDate(record.date), { x:4.74, y:y + .58, w:2, h:.25, fontFace:FONT, fontSize:12, color:model.theme.secondary, margin:0 });
-      slide.addText(short(record.detail, 120), { x:4.74, y:y + .98, w:7.55, h:.88, fontFace:FONT, fontSize:16, color:model.theme.ink, margin:0, fit:'shrink' });
+      const story = GrowthReportComposer.growthStoryView(record, evidenceForRecord(model, record.id));
+      if (story) {
+        addImageFrame(slide, pptx, assets.get(evidence.url), { x:.72, y, w:4.65, h:2.17 }, model.theme,
+          ['certificate','document'].includes(String(evidence.kind || '').toLowerCase()) ? 'contain' : 'cover', record.title);
+        slide.addText('GROWTH STORY', { x:5.72, y:y + .04, w:2.5, h:.23, fontFace:FONT, fontSize:10, bold:true, color:model.theme.secondary, charSpacing:1.3, margin:0 });
+        slide.addText(formatDate(story.date), { x:10.5, y:y + .04, w:1.8, h:.23, fontFace:FONT, fontSize:10, color:model.theme.muted, align:'right', margin:0 });
+        slide.addText(short(story.title, 28), { x:5.72, y:y + .39, w:6.6, h:.44, fontFace:FONT, fontSize:21, bold:true, color:model.theme.primary, margin:0, fit:'shrink' });
+        if (story.detail) slide.addText(short(story.detail, 90), { x:5.72, y:y + .94, w:6.45, h:.55, fontFace:FONT, fontSize:14, color:model.theme.ink, margin:0, fit:'shrink' });
+        if (story.teacherObservation) slide.addText(`老师观察：${short(story.teacherObservation, 55)}`, { x:5.72, y:y + 1.57, w:6.35, h:.3, fontFace:FONT, fontSize:11, color:model.theme.muted, margin:0, fit:'shrink' });
+        if (story.tags.length) slide.addText(story.tags.slice(0, 3).join('  /  '), { x:5.72, y:y + 1.95, w:6.25, h:.2, fontFace:FONT, fontSize:10, bold:true, color:model.theme.secondary, margin:0, fit:'shrink' });
+      } else {
+        addImageFrame(slide, pptx, evidence && assets.get(evidence.url), { x:.72, y, w:3.65, h:2.15 }, model.theme,
+          evidence && ['certificate','document'].includes(String(evidence.kind || '').toLowerCase()) ? 'contain' : 'cover', record.title);
+        slide.addText(short(record.title, 30), { x:4.72, y:y + .05, w:7.55, h:.4, fontFace:FONT, fontSize:21, bold:true, color:model.theme.primary, margin:0, fit:'shrink' });
+        slide.addText(formatDate(record.date), { x:4.74, y:y + .58, w:2, h:.25, fontFace:FONT, fontSize:12, color:model.theme.secondary, margin:0 });
+        slide.addText(short(record.detail || record.teacherObservation, 120), { x:4.74, y:y + .98, w:7.55, h:.88, fontFace:FONT, fontSize:16, color:model.theme.ink, margin:0, fit:'shrink' });
+      }
       if (record.source === 'PARENT_PROVIDED') addPill(slide, pptx, '家长补充 · 已审核', 10.1, y + 1.75, model.theme, 2.18);
     });
   }

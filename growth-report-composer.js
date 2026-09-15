@@ -172,6 +172,22 @@
     };
   }
 
+  function growthStoryView(record, evidence) {
+    const item = record || {};
+    const visualEvidence = array(evidence === undefined ? item.evidence : evidence)
+      .filter(asset => asset && ['image', 'photo', 'work', 'certificate', 'document'].includes(text(asset.kind).toLowerCase()) && text(asset.url))
+      .slice(0, 3);
+    const detail = text(item.detail);
+    const observation = text(item.teacherObservation);
+    if (!visualEvidence.length || (!detail && !observation)) return null;
+    return {
+      title:text(item.title), date:text(item.date), detail,
+      teacherObservation:observation && observation !== detail ? observation : '',
+      tags:unique(item.tags).slice(0, 4), evidence:visualEvidence,
+      source:text(item.source)
+    };
+  }
+
   function buildReportModel(profile, options) {
     if (!GrowthRecordAdapter || typeof GrowthRecordAdapter.adaptLegacyProfile !== 'function') {
       throw new Error('GROWTH_RECORD_ADAPTER_REQUIRED');
@@ -248,6 +264,7 @@
     paginate,
     selectEvidence,
     buildPagePlan,
-    buildReportModel
+    buildReportModel,
+    growthStoryView
   });
 });

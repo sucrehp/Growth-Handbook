@@ -1,12 +1,19 @@
 (function (root, factory) {
-  const api = factory();
+  const composer = typeof module === 'object' && module.exports
+    ? require('./growth-report-composer') : root.GrowthReportComposer;
+  const api = factory(composer);
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.GrowthReportPrint = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (GrowthReportComposer) {
   'use strict';
 
   function text(value) {
     return value === null || value === undefined ? '' : String(value).trim();
+  }
+
+  function short(value, maximum) {
+    const source = text(value);
+    return source.length > maximum ? `${source.slice(0, maximum - 1)}…` : source;
   }
 
   function escapeHtml(value) {
@@ -84,11 +91,13 @@
   }
 
   function renderProjects(model, page) {
-    const body = `${heading('想法在作品里慢慢长大', `PROJECTS & WORKS${page.total > 1 ? ` · ${page.index}/${page.total}` : ''}`)}
+    const body = `${heading('作品里的成长经历', `PROJECTS & GROWTH STORIES${page.total > 1 ? ` · ${page.index}/${page.total}` : ''}`)}
       <div class="gpr-projects">${page.items.map(record => {
         const evidence = evidenceForRecord(model, record.id)[0];
-        const contain = evidence && ['certificate','document'].includes(evidence.kind) ? 'gpr-contain' : '';
-        return `<section><div class="gpr-project-image">${img(evidence && evidence.url, record.title, contain)}</div><div><time>${formatDate(record.date)}</time><h3>${escapeHtml(record.title)}</h3><p>${escapeHtml(record.detail)}</p>${record.source === 'PARENT_PROVIDED' ? '<small>家长补充 · 机构已审核</small>' : ''}</div></section>`;
+        const contain = evidence && ['certificate','document'].includes(String(evidence.kind || '').toLowerCase()) ? 'gpr-contain' : '';
+        const story = GrowthReportComposer.growthStoryView(record, evidenceForRecord(model, record.id));
+        if (story) return `<section class="gpr-growth-story${page.items.length === 1 ? ' gpr-story-featured' : ''}"><div class="gpr-project-image">${img(evidence.url, story.title, contain)}</div><div class="gpr-story-copy"><div class="gpr-story-meta"><b>GROWTH STORY</b><time>${formatDate(story.date)}</time></div><h3>${escapeHtml(short(story.title, 35))}</h3>${story.detail ? `<p>${escapeHtml(short(story.detail, 180))}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(short(story.teacherObservation, 95))}</blockquote>` : ''}${story.tags.length ? `<div class="gpr-story-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}${story.source === 'PARENT_PROVIDED' ? '<small>家长补充 · 机构已审核</small>' : ''}</div></section>`;
+        return `<section><div class="gpr-project-image">${img(evidence && evidence.url, record.title, contain)}</div><div><time>${formatDate(record.date)}</time><h3>${escapeHtml(record.title)}</h3><p>${escapeHtml(record.detail || record.teacherObservation)}</p>${record.source === 'PARENT_PROVIDED' ? '<small>家长补充 · 机构已审核</small>' : ''}</div></section>`;
       }).join('')}</div>`;
     return pageShell(model, page, body);
   }

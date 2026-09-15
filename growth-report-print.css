@@ -83,6 +83,18 @@
 .gpr-projects h3,.gpr-achievements h3 { margin:3mm 0; font-size:16pt; color:var(--gpr-primary); }
 .gpr-projects p,.gpr-achievements p { margin:0; color:var(--gpr-muted); font-size:10pt; line-height:1.75; }
 .gpr-projects small { display:inline-block; margin-top:5mm; padding:2mm 3mm; border-radius:999px; color:var(--gpr-primary); background:var(--gpr-soft); }
+.gpr-projects section.gpr-growth-story { grid-template-columns:78mm 1fr; min-height:82mm; overflow:hidden; align-items:stretch; border-radius:4mm; background:#fff; box-shadow:0 2mm 8mm rgba(25,45,74,.08); }
+.gpr-growth-story .gpr-project-image { height:82mm; border-radius:0; }
+.gpr-projects section.gpr-story-featured { grid-template-columns:1fr; }
+.gpr-story-featured .gpr-project-image { height:132mm; }
+.gpr-story-copy { min-width:0; padding:6mm 7mm; }
+.gpr-story-meta { display:flex; gap:4mm; align-items:center; color:var(--gpr-secondary); font-size:8pt; }
+.gpr-story-meta b { letter-spacing:.13em; }
+.gpr-story-copy h3 { margin:4mm 0 3mm; font-size:16pt; }
+.gpr-story-copy p { font-size:9pt; line-height:1.65; }
+.gpr-story-copy blockquote { margin:3mm 0 0; padding-left:3mm; border-left:.8mm solid var(--gpr-accent); color:var(--gpr-muted); font-size:8pt; line-height:1.55; }
+.gpr-story-tags { display:flex; flex-wrap:wrap; gap:3mm; margin-top:4mm; }
+.gpr-story-tags span { color:var(--gpr-secondary); font-size:8pt; font-weight:700; }
 
 .gpr-gallery { display:grid; gap:5mm; height:183mm; }
 .gpr-gallery-1 { grid-template-columns:1fr; }

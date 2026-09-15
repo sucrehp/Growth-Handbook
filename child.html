@@ -460,6 +460,18 @@
     .project-story::after { content:"↗"; position:absolute; right:18px; top:14px; color:rgba(255,255,255,.34); font-size:24px; }
     .project-story .card-title { color:#fff; padding-right:26px; }
     .project-story .card-meta,.project-story .card-body { color:rgba(255,255,255,.72); }
+    .project-growth-story { grid-column:1/-1; display:grid; grid-template-columns:minmax(0,45%) minmax(0,1fr); min-height:300px; overflow:hidden; border-radius:28px; background:var(--bg-card); box-shadow:0 18px 42px rgba(44,62,107,.12); }
+    .project-growth-story figure { min-height:300px; overflow:hidden; background:var(--art-soft); }
+    .project-growth-story figure img { width:100%; height:100%; object-fit:cover; }
+    .project-growth-story figure img.story-contain { object-fit:contain; background:#fff; }
+    .project-growth-copy { display:flex; flex-direction:column; padding:28px 30px; min-width:0; }
+    .project-growth-copy .story-meta { display:flex; gap:12px; align-items:center; color:var(--text-light); font-size:11px; }
+    .project-growth-copy .story-meta b { color:var(--accent); letter-spacing:.14em; }
+    .project-growth-copy h3 { margin:12px 0 9px; color:var(--primary); font:600 clamp(19px,2.5vw,27px)/1.42 'Noto Serif SC',serif; }
+    .project-growth-copy p { color:var(--text-mid); font-size:13px; line-height:1.85; }
+    .project-growth-copy blockquote { margin-top:13px; padding-left:13px; border-left:2px solid var(--accent); color:var(--text-mid); font-size:12px; line-height:1.75; }
+    .project-growth-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; padding-top:14px; }
+    .project-growth-tags span { color:var(--primary); font-size:11px; font-weight:600; }
 
     .skills-section { background:linear-gradient(145deg,color-mix(in srgb,var(--primary) 7%,white),rgba(255,255,255,.94)); }
     .skill-collection { display:grid; gap:18px; }
@@ -505,6 +517,13 @@
     .family-record-tags span { padding:3px 8px; border-radius:999px; background:var(--bg); color:var(--primary); font-size:10px; }
     .family-record-media { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:11px; }
     .family-record-media img { width:100%; aspect-ratio:1.2; object-fit:cover; border-radius:10px; }
+    .family-growth-story { display:grid; grid-template-columns:minmax(0,35%) minmax(0,1fr); padding:0; overflow:hidden; }
+    .family-growth-story figure { min-height:190px; background:var(--art-soft); }
+    .family-growth-story figure img { width:100%; height:100%; object-fit:cover; }
+    .family-growth-story figure img.story-contain { object-fit:contain; background:#fff; }
+    .family-growth-story .family-story-copy { padding:18px; }
+    .family-growth-story .family-story-label { display:block; margin-bottom:5px; color:var(--accent); font-size:10px; font-weight:700; letter-spacing:.14em; }
+    .family-growth-story blockquote { margin-top:9px; padding-left:10px; border-left:2px solid var(--accent); color:var(--text-mid); font-size:12px; }
     .family-video-link { display:inline-flex; margin-top:10px; color:var(--primary); font-size:12px; }
 
     .report-section { background:linear-gradient(145deg,color-mix(in srgb,var(--primary) 8%,white),color-mix(in srgb,var(--accent) 10%,white)); }
@@ -536,6 +555,10 @@
       .featured-work,.featured-work img { min-height:310px; }
       .work-thumbs,.project-stories,.achievement-showcase,.growth-notes { grid-template-columns:1fr; }
       .work-card { grid-template-columns:104px minmax(0,1fr); }
+      .project-growth-story,.family-growth-story { grid-template-columns:1fr; }
+      .project-growth-story figure { min-height:230px; height:230px; }
+      .project-growth-copy { padding:22px; }
+      .family-growth-story figure { min-height:190px; height:190px; }
       .interest-constellation { min-height:360px; }.interest-constellation::after{width:330px;height:330px}
       .interest-node:nth-of-type(2){left:4%;top:13%}.interest-node:nth-of-type(3){right:3%;top:16%}
       .interest-node:nth-of-type(4){left:4%;bottom:14%}.interest-node:nth-of-type(5){right:3%;bottom:12%}
@@ -908,18 +931,12 @@
 
         <!-- D · Projects & Works -->
         <div class="section projects-section fade-in" id="sec-projects" data-no="04">
-          <div class="section-title"><span class="icon">🎨</span> 作品与项目</div>
-          <div class="section-sub">用作品保存想法，用项目记录真实参与</div>
+          <div class="section-title"><span class="icon">🎨</span> 作品与成长故事</div>
+          <div class="section-sub">用作品保存想法，也看见项目中的真实参与</div>
           <div class="section-line"></div>
           ${renderProjectGallery(profile.photos)}
           <div class="project-stories">
-            ${renderCards(profile.activities, (item) => `
-              <article class="project-story">
-                <div class="card-title">${escapeHtml(item.activity_name || '成长项目')}</div>
-                <div class="card-meta">${item.date ? `<span>${formatDate(item.date)}</span>` : ''}${item.role ? `<span>${escapeHtml(item.role)}</span>` : ''}</div>
-                <div class="card-body">${escapeHtml(item.description || '')}</div>
-              </article>
-            `)}
+            ${renderPortfolioProjects(portfolio.records)}
           </div>
         </div>
 
@@ -1294,6 +1311,20 @@
     </div>`;
   }
 
+  function renderPortfolioProjects(records) {
+    const projects = (records || []).filter(record => record.status === 'PUBLISHED'
+      && record.source !== 'PARENT_PROVIDED'
+      && ['PROJECT','WORK','ACTIVITY'].includes(record.type));
+    if (!projects.length) return '<div class="empty">暂无项目记录</div>';
+    return projects.map(record => {
+      const story = GrowthReportComposer.growthStoryView(record);
+      if (!story) return `<article class="project-story"><div class="card-title">${escapeHtml(record.title || '成长项目')}</div><div class="card-meta">${record.date ? `<span>${escapeHtml(formatDate(record.date))}</span>` : ''}${record.legacy?.raw?.role ? `<span>${escapeHtml(record.legacy.raw.role)}</span>` : ''}</div>${record.detail ? `<div class="card-body">${escapeHtml(record.detail)}</div>` : ''}</article>`;
+      const photo = story.evidence[0];
+      const contain = ['certificate','document'].includes(String(photo.kind || '').toLowerCase()) ? 'story-contain' : '';
+      return `<article class="project-growth-story"><figure><img class="${contain}" src="${escapeHtml(getPhotoUrl(photo.url))}" alt="${escapeHtml(story.title || '成长证据')}" loading="lazy"></figure><div class="project-growth-copy"><div class="story-meta"><b>GROWTH STORY</b>${story.date ? `<time>${escapeHtml(formatDate(story.date))}</time>` : ''}</div><h3>${escapeHtml(story.title || '成长故事')}</h3>${record.legacy?.raw?.role ? `<p>参与角色：${escapeHtml(record.legacy.raw.role)}</p>` : ''}${story.detail ? `<p>${escapeHtml(story.detail)}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(story.teacherObservation)}</blockquote>` : ''}${story.tags.length ? `<div class="project-growth-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}</div></article>`;
+    }).join('');
+  }
+
   function renderSkillBadges(courses) {
     if (!courses || !courses.length) return '<div class="empty">暂无技能记录</div>';
     return courses.map((item, index) => `<div class="skill-badge"><i>${['✦','✎','⌁','◎'][index % 4]}</i><span>${escapeHtml(item.course_name || '成长技能')}<small>${escapeHtml(item.teacher_name || '持续积累中')}</small></span></div>`).join('');
@@ -1320,6 +1351,12 @@
     return `<section class="family-records"><div class="family-records-head"><div><h3>来自家人的成长补充</h3><span>FAMILY CONTRIBUTION · INSTITUTION REVIEWED</span></div><strong>${records.length}</strong></div><div class="family-record-list">${records.map(record => {
       const images = (record.evidence || []).filter(item => item.kind !== 'video_link' && parentEvidenceUrl(item));
       const videos = (record.evidence || []).filter(item => item.kind === 'video_link' && /^https:\/\//i.test(item.url || ''));
+      const story = GrowthReportComposer.growthStoryView(record, images);
+      if (story) {
+        const photo = story.evidence[0];
+        const contain = ['certificate','document'].includes(String(photo.kind || '').toLowerCase()) ? 'story-contain' : '';
+        return `<article class="family-record family-growth-story"><figure><img class="${contain}" src="${escapeHtml(parentEvidenceUrl(photo))}" alt="${escapeHtml(story.title || '家庭成长证据')}" loading="lazy"></figure><div class="family-story-copy"><span class="family-story-label">GROWTH STORY · 家长补充已审核</span>${story.date ? `<time>${escapeHtml(formatDate(story.date))}</time>` : ''}<h4>${escapeHtml(story.title || '成长记录')}</h4>${story.detail ? `<p>${escapeHtml(story.detail)}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(story.teacherObservation)}</blockquote>` : ''}${story.tags.length ? `<div class="family-record-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}${videos.map(item => `<a class="family-video-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">查看家庭视频记录 ↗</a>`).join('')}</div></article>`;
+      }
       return `<article class="family-record"><time>${escapeHtml(formatDate(record.date))}</time><h4>${escapeHtml(record.title || '成长记录')}</h4>${record.detail ? `<p>${escapeHtml(record.detail)}</p>` : ''}${record.tags?.length ? `<div class="family-record-tags">${record.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}${images.length ? `<div class="family-record-media">${images.map(item => `<img src="${escapeHtml(parentEvidenceUrl(item))}" alt="${escapeHtml(record.title || '家庭成长图片')}" loading="lazy">`).join('')}</div>` : ''}${videos.map(item => `<a class="family-video-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">查看家庭视频记录 ↗</a>`).join('')}</article>`;
     }).join('')}</div></section>`;
   }
@@ -1336,6 +1373,7 @@
       </svg>`;
       return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     };
+    const forestProjectImage = art('森林创意搭建','#f28a72','#f7c45c','🌳');
     return {
       child: {
         name: '果果', gender: 'female', birthday: '2020-05-18', class_name: '星星探索班',
@@ -1354,14 +1392,14 @@
         { teacher_name:'白雪老师', semester:'2026夏季', comment:'果果对新鲜事物始终保持好奇。比答案更珍贵的，是她已经开始相信自己的观察与判断。' }
       ],
       photos: [
-        { photo_url:art('森林创意搭建','#f28a72','#f7c45c','🌳'), caption:'一起设计森林里的秘密基地' },
+        { photo_url:forestProjectImage, caption:'一起设计森林里的秘密基地' },
         { photo_url:art('勇敢表达','#6fbad3','#7c8bd8','🎤'), caption:'向大家介绍自己的作品' },
         { photo_url:art('合作时刻','#6fbf8f','#b1d36d','🤝'), caption:'和伙伴共同解决难题' },
         { photo_url:art('星光作品','#a17bd1','#e58ab0','✨'), caption:'每一份作品都有独特想法' },
         { photo_url:art('快乐课堂','#ee8a9c','#f5b36b','🌈'), caption:'在探索中收获快乐' }
       ],
       activities: [
-        { activity_name:'夏日自然探索营', date:'2026-07-20', role:'小小观察员', description:'记录叶片形状，和伙伴一起完成自然色彩地图。' }
+        { activity_name:'夏日自然探索营', date:'2026-07-20', role:'小小观察员', description:'记录叶片形状，和伙伴一起完成自然色彩地图。', photo_url:forestProjectImage }
       ],
       achievements: [
         { title:'本月勇敢表达之星', date:'2026-07-25', description:'能够在集体面前完整介绍自己的发现与作品。' }
