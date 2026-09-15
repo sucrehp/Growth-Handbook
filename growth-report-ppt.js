@@ -10,6 +10,10 @@
   const FONT = 'Microsoft YaHei';
   const W = 13.333;
   const H = 7.5;
+  const OBSERVATION_ART = [
+    'report-assets/teacher-observation-explore.png',
+    'report-assets/teacher-observation-curiosity.png'
+  ];
 
   function text(value) {
     return value === null || value === undefined ? '' : String(value).trim();
@@ -27,9 +31,10 @@
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   }
 
-  function addNotes(slide) {
+  function addNotes(slide, includesDecorativeArtwork) {
     if (typeof slide.addNotes === 'function') {
-      slide.addNotes('[Sources]\n- Growth Portfolio records supplied by the institution and family.');
+      slide.addNotes('[Sources]\n- Growth Portfolio records supplied by the institution and family.'
+        + (includesDecorativeArtwork ? '\n- Original AI-generated decorative illustration; not a photo or evidence of the child.' : ''));
     }
   }
 
@@ -65,13 +70,13 @@
     slide.addText(`${page.pageNumber} / ${model.pages.length}`, { x:11.75, y:7.08, w:1, h:.18, fontFace:FONT, fontSize:8.5, color:model.theme.muted, align:'right', margin:0 });
   }
 
-  function addHeader(slide, pptx, model, page, title, subtitle) {
+  function addHeader(slide, pptx, model, page, title, subtitle, includesDecorativeArtwork) {
     addBackground(slide, pptx, model.theme, false);
     slide.addText(title, { x:.58, y:.38, w:8.9, h:.52, fontFace:FONT, fontSize:35, bold:true, color:model.theme.ink, margin:0, breakLine:false, fit:'shrink' });
     if (subtitle) slide.addText(subtitle, { x:.6, y:1.02, w:9.6, h:.3, fontFace:FONT, fontSize:16, color:model.theme.muted, margin:0 });
     addShape(slide, pptx, 'rect', { x:.6, y:1.43, w:1.35, h:.055, line:{ color:model.theme.accent, transparency:100 }, fill:{ color:model.theme.accent } });
     addFooter(slide, model, page);
-    addNotes(slide);
+    addNotes(slide, includesDecorativeArtwork);
   }
 
   function addPill(slide, pptx, label, x, y, theme, width) {
@@ -110,6 +115,7 @@
   function collectUrls(model) {
     return [...new Set([
       text(model.child.avatarUrl),
+      ...(model.pages.some(page => page.type === 'teacher-observation') ? OBSERVATION_ART : []),
       ...model.evidence.map(item => text(item.url)),
       ...model.projectsWorks.flatMap(item => (item.evidence || []).map(evidence => text(evidence.url)))
     ].filter(Boolean))];
@@ -306,16 +312,65 @@
     });
   }
 
-  function renderObservations(pptx, model, page) {
+  function observationSegments(value) {
+    const source = short(value, 150);
+    if (source.length < 18) return [source];
+    const midpoint = source.length / 2;
+    const candidates = pattern => [...source.matchAll(pattern)]
+      .map(match => match.index + 1)
+      .filter(index => index > source.length * .27 && index < source.length * .73);
+    const strong = candidates(/[。！？]/g);
+    const options = strong.length ? strong : candidates(/[，；]/g);
+    const boundary = options.length
+      ? options.reduce((best, index) => Math.abs(index - midpoint) < Math.abs(best - midpoint) ? index : best)
+      : Math.round(midpoint);
+    return [source.slice(0, boundary), source.slice(boundary)];
+  }
+
+  function observationAttribution(item) {
+    return [short(item.title, 22), formatDate(item.date)].filter(Boolean).join(' · ');
+  }
+
+  function renderObservations(pptx, model, page, assets) {
     const slide = pptx.addSlide();
-    addHeader(slide, pptx, model, page, '被看见，是成长最温暖的礼物', `教师观察${page.total > 1 ? ` · ${page.index}/${page.total}` : ''}`);
+    addHeader(slide, pptx, model, page, '被看见，是成长最温暖的礼物', `教师观察${page.total > 1 ? ` · ${page.index}/${page.total}` : ''}`, true);
+    const artUrl = OBSERVATION_ART[(page.index - 1) % OBSERVATION_ART.length];
+    const art = assets.get(artUrl);
+    if (art && (art.data || art.path) && art.width > 0 && art.height > 0) {
+      const frame = page.items.length === 1
+        ? { x:.68, y:1.63, w:4.55, h:5.14 }
+        : { x:8.27, y:1.68, w:4.35, h:5.03 };
+      slide.addImage(imageOptions(art, frame, 'contain'));
+    }
+    if (page.items.length === 1) {
+      const item = page.items[0];
+      const source = short(item.teacherObservation || item.detail, 150);
+      const segments = observationSegments(source);
+      const x = art && !art.error ? 5.55 : 1.05;
+      const width = art && !art.error ? 6.72 : 10.95;
+      slide.addText('“', { x:x - .47, y:1.76, w:.8, h:.92, fontFace:FONT, fontSize:66, color:model.theme.accent, margin:0 });
+      if (source.length > 90) {
+        slide.addText(source, { x, y:2.45, w:width, h:2.4, fontFace:FONT, fontSize:18, color:model.theme.ink, margin:0, fit:'shrink' });
+      } else {
+        slide.addText(segments[0], { x, y:2.47, w:width, h:1.05, fontFace:FONT, fontSize:27, color:model.theme.ink, margin:0, fit:'shrink' });
+        if (segments[1]) slide.addText(segments[1], { x:x + .44, y:3.7, w:width - .1, h:1.05, fontFace:FONT, fontSize:27, color:model.theme.primary, margin:0, fit:'shrink' });
+      }
+      slide.addText(observationAttribution(item), { x:x + 2.13, y:5.38, w:width - 2.28, h:.31, fontFace:FONT, fontSize:13, color:model.theme.muted, align:'right', margin:0, fit:'shrink' });
+      return;
+    }
     page.items.forEach((item, index) => {
-      const y = 1.82 + index * 2.28;
-      addShape(slide, pptx, 'roundRect', { x:.78, y, w:11.75, h:1.82, rectRadius:.08, line:{ color:model.theme.soft, width:1 }, fill:{ color:model.theme.paper } });
-      addShape(slide, pptx, 'rect', { x:.78, y, w:.08, h:1.82, line:{ color:model.theme.accent, transparency:100 }, fill:{ color:model.theme.accent } });
-      slide.addText('“', { x:1.1, y:y + .1, w:.6, h:.65, fontFace:FONT, fontSize:42, bold:true, color:model.theme.accent, margin:0 });
-      slide.addText(short(item.teacherObservation || item.detail, 150), { x:1.72, y:y + .28, w:9.95, h:.92, fontFace:FONT, fontSize:18, color:model.theme.ink, margin:0, fit:'shrink' });
-      slide.addText(`${short(item.title, 22)} · ${formatDate(item.date)}`, { x:8.2, y:y + 1.34, w:3.4, h:.24, fontFace:FONT, fontSize:11, color:model.theme.muted, align:'right', margin:0 });
+      const source = short(item.teacherObservation || item.detail, 150);
+      const segments = observationSegments(source);
+      const baseY = index === 0 ? 1.75 : 4.19;
+      const baseX = index === 0 ? 1.1 : 1.79;
+      slide.addText('“', { x:baseX - .39, y:baseY, w:.7, h:.73, fontFace:FONT, fontSize:54, color:model.theme.accent, margin:0 });
+      if (source.length > 66) {
+        slide.addText(source, { x:baseX, y:baseY + .43, w:6.53, h:1.52, fontFace:FONT, fontSize:17, color:model.theme.ink, margin:0, fit:'shrink' });
+      } else {
+        slide.addText(segments[0], { x:baseX, y:baseY + .43, w:6.53, h:.72, fontFace:FONT, fontSize:21, color:model.theme.ink, margin:0, fit:'shrink' });
+        if (segments[1]) slide.addText(segments[1], { x:baseX + .56, y:baseY + 1.22, w:5.97, h:.68, fontFace:FONT, fontSize:21, color:model.theme.primary, margin:0, fit:'shrink' });
+      }
+      slide.addText(observationAttribution(item), { x:baseX + 2.63, y:baseY + 2.05, w:3.9, h:.27, fontFace:FONT, fontSize:11, color:model.theme.muted, align:'right', margin:0, fit:'shrink' });
     });
   }
 
@@ -368,7 +423,7 @@
       else if (page.type === 'skills-achievements') renderSkillsAchievements(pptx, model, page);
       else if (page.type === 'achievement') renderAchievements(pptx, model, page);
       else if (page.type === 'interest') renderInterests(pptx, model, page);
-      else if (page.type === 'teacher-observation') renderObservations(pptx, model, page);
+      else if (page.type === 'teacher-observation') renderObservations(pptx, model, page, assets);
       else if (page.type === 'summary') renderSummary(pptx, model, page);
       else if (page.type === 'closing') renderClosing(pptx, model, page);
     });
@@ -377,7 +432,9 @@
 
   return Object.freeze({
     FONT,
+    OBSERVATION_ART,
     galleryFrames,
+    observationSegments,
     prepareAssets,
     composePpt
   });
