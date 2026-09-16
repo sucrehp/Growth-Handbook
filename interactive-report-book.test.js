@@ -26,9 +26,11 @@ assert.match(child, /book\.classList\.toggle\('is-open', open\)/);
 assert.match(child, /element\.inert = hidden/);
 assert.match(child, /setAttribute\('aria-expanded', String\(open\)\)/);
 
-for (const section of ['我的成长关键词', '成长轨迹', '作品与成长故事', '技能与兴趣', '荣誉与高光', '老师眼中的闪光']) {
+for (const section of ['ABOUT ME · 基本信息', '你好，我是', '我的成长关键词', '成长轨迹', '作品与成长故事', '技能与兴趣', '荣誉与高光', '老师眼中的闪光']) {
   assert(child.includes(section), `${section} book page missing`);
 }
+assert.match(child, /child\.enrollment_date \? `\$\{formatDate\(child\.enrollment_date\)\}加入机构`/);
+assert.match(child, /profileIntro:getProfileIntro\(c, growthStage, profile\)/);
 assert.match(child, /record\.status === 'PUBLISHED'/);
 assert.match(child, /chunkReportBookItems\(timeline, 3\)/);
 assert.match(child, /chunkReportBookItems\(projects, 2\)/);

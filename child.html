@@ -551,6 +551,11 @@
     .report-book-page h3 { margin:7px 0 4px; color:var(--primary); font:700 22px/1.25 'Noto Serif SC',serif; }
     .report-page-intro { color:var(--text-light); font-size:9px; line-height:1.5; }
     .report-page-profile { display:grid; place-items:center; flex:1; text-align:center; }
+    .report-page-basic { display:grid; grid-template-columns:92px minmax(0,1fr); gap:16px; align-items:center; margin-top:20px; }
+    .report-page-basic-copy h4 { color:var(--primary); font:700 18px/1.35 'Noto Serif SC',serif; }
+    .report-page-basic-copy p { margin-top:8px; color:var(--text-mid); font-size:10px; line-height:1.7; }
+    .report-page-facts { display:flex; flex-wrap:wrap; gap:6px; margin-top:13px; }
+    .report-page-facts span { padding:5px 8px; border-radius:999px; background:#fff; border:1px solid color-mix(in srgb,var(--primary) 10%,transparent); color:var(--primary); font-size:9px; }
     .report-page-avatar { width:84px; height:84px; display:grid; place-items:center; border-radius:50%; overflow:hidden; background:var(--art-soft); border:4px solid #fff; box-shadow:0 10px 26px rgba(44,62,107,.14); font-size:36px; }
     .report-page-avatar img { width:100%; height:100%; object-fit:cover; }
     .report-page-tags { display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-top:12px; }
@@ -644,6 +649,7 @@
       .report-cover-front h3 { margin-top:30px; font-size:31px; }
       .report-book-inside { padding:27px 23px 22px; }
       .report-page-leaf-face { padding:27px 23px 22px; }
+      .report-page-basic { grid-template-columns:82px minmax(0,1fr); gap:13px; }
       .report-highlight { min-height:62px; }
     }
     @media(max-width:420px){
@@ -866,7 +872,22 @@
     const records = context.publishedRecords || [];
     const keywords = context.keywords || [];
     const profileQuote = context.teacherComments?.[0]?.comment || '';
+    const age = getAge(child.birthday);
+    const stage = getGrowthStage(age);
+    const facts = [
+      age !== null ? `${age}岁` : '',
+      child.class_name || '',
+      stage,
+      child.enrollment_date ? `${formatDate(child.enrollment_date)}加入机构` : ''
+    ].filter(Boolean);
     pages.push({
+      type:'basic-info',
+      eyebrow:'ABOUT ME · 基本信息',
+      title:`你好，我是${escapeHtml(child.name || '成长中的我')}`,
+      intro:'先认识我，再翻开这一年的成长故事',
+      body:`<div class="report-page-basic"><div class="report-page-avatar">${context.avatarHtml}</div><div class="report-page-basic-copy"><h4>${escapeHtml(child.name || '成长中的我')}</h4><div class="report-page-facts">${facts.map(item => `<span>${escapeHtml(item)}</span>`).join('')}</div>${context.profileIntro ? `<p>${escapeHtml(context.profileIntro)}</p>` : ''}</div></div>`
+    });
+    if (keywords.length || profileQuote) pages.push({
       type:'profile',
       eyebrow:`${escapeHtml(child.name || '我的')} · MY GROWTH`,
       title:'我的成长关键词',
@@ -1126,6 +1147,7 @@
       interests:reportBookInterests,
       skills:reportBookSkills,
       avatarHtml:profilePhotoHtml,
+      profileIntro:getProfileIntro(c, growthStage, profile),
       teacherComments:profile.comments || [],
       counts
     });
