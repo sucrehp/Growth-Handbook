@@ -505,6 +505,17 @@
     .growth-note::before { content:attr(data-label); display:block; margin-bottom:14px; color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.12em; }
     .growth-note p { color:var(--text-mid); line-height:1.9; }
     .growth-note footer { margin-top:14px; color:var(--primary); font-size:12px; font-weight:600; }
+    .teacher-observation-showcase { display:grid; gap:18px; margin:24px 0; }
+    .teacher-observation-board { position:relative; min-height:300px; display:grid; grid-template-columns:minmax(0,1fr) 230px; gap:22px; align-items:center; padding:30px 32px; overflow:hidden; border-radius:28px; background:linear-gradient(145deg,#fff,color-mix(in srgb,var(--art-soft) 62%,white)); border:1px solid color-mix(in srgb,var(--primary) 10%,transparent); box-shadow:0 18px 42px rgba(44,62,107,.08); }
+    .teacher-observation-board:nth-child(even) { grid-template-columns:230px minmax(0,1fr); }
+    .teacher-observation-board:nth-child(even) .teacher-observation-art { order:-1; }
+    .teacher-observation-board::before { content:"TEACHER OBSERVATION"; position:absolute; top:18px; left:28px; color:var(--accent); font-size:9px; font-weight:700; letter-spacing:.16em; }
+    .teacher-observation-copy { display:grid; gap:18px; padding-top:14px; }
+    .teacher-observation-copy blockquote { position:relative; padding-left:23px; color:var(--text-mid); font:500 15px/1.9 'Noto Serif SC',serif; }
+    .teacher-observation-copy blockquote::before { content:"“"; position:absolute; left:0; top:-9px; color:var(--accent); font-size:34px; line-height:1; }
+    .teacher-observation-copy footer { margin-top:8px; color:var(--primary); font:600 11px/1.6 'Noto Sans SC',sans-serif; }
+    .teacher-observation-art { width:100%; max-height:245px; object-fit:contain; align-self:end; }
+    .teacher-observation-board.no-art { grid-template-columns:1fr; min-height:0; }
     .family-records { margin-top:22px; padding:22px; border-radius:24px; background:color-mix(in srgb,var(--art-soft) 55%,white); border:1px solid var(--border); }
     .family-records-head { display:flex; justify-content:space-between; gap:14px; align-items:end; margin-bottom:14px; }
     .family-records-head h3 { color:var(--primary); font:600 19px/1.4 'Noto Serif SC',serif; }
@@ -572,6 +583,9 @@
     .report-page-cluster h4 { margin-bottom:6px; color:var(--primary); font-size:10px; }
     .report-page-note { margin-top:11px; padding:11px 12px; border-left:2px solid var(--accent); border-radius:0 12px 12px 0; color:var(--text-mid); background:color-mix(in srgb,var(--accent-light) 16%,transparent); font-size:10px; line-height:1.65; }
     .report-page-note strong { display:block; margin-top:5px; color:var(--primary); font-size:8px; }
+    .report-page-observation { display:grid; grid-template-columns:minmax(0,1fr) 86px; gap:10px; align-items:end; flex:1; min-height:0; }
+    .report-page-observation-copy { align-self:start; }
+    .report-page-observation-art { width:100%; max-height:190px; object-fit:contain; filter:drop-shadow(0 8px 12px rgba(44,62,107,.1)); }
     .report-book-controls { display:none; align-items:center; justify-content:center; gap:12px; min-height:36px; }
     .report-book.is-open + .report-book-controls { display:flex; }
     .report-book-controls button { min-width:78px; border:1px solid color-mix(in srgb,var(--primary) 16%,transparent); border-radius:999px; padding:8px 12px; background:#fff; color:var(--primary); font:600 10px 'Noto Sans SC',sans-serif; cursor:pointer; }
@@ -635,6 +649,8 @@
       .milestone-evidence { grid-column:2; height:150px; }
       .featured-work,.featured-work img { min-height:310px; }
       .work-thumbs,.project-stories,.achievement-showcase,.growth-notes { grid-template-columns:1fr; }
+      .teacher-observation-board,.teacher-observation-board:nth-child(even) { grid-template-columns:minmax(0,1fr) 150px; padding:27px 24px; }
+      .teacher-observation-board:nth-child(even) .teacher-observation-art { order:initial; }
       .work-card { grid-template-columns:104px minmax(0,1fr); }
       .project-growth-story,.family-growth-story { grid-template-columns:1fr; }
       .project-growth-story figure { min-height:230px; height:230px; }
@@ -651,6 +667,7 @@
       .report-page-leaf-face { padding:27px 23px 22px; }
       .report-page-basic { grid-template-columns:82px minmax(0,1fr); gap:13px; }
       .report-highlight { min-height:62px; }
+      .report-page-observation { grid-template-columns:minmax(0,1fr) 80px; }
     }
     @media(max-width:420px){
       .profile-portrait-card { padding:16px; border-radius:24px; }
@@ -665,6 +682,8 @@
       .report-page-leaf-face { padding:26px 20px 20px; }
       .report-highlight-grid { gap:6px; }
       .report-highlight { padding:8px; }
+      .teacher-observation-board,.teacher-observation-board:nth-child(even) { grid-template-columns:1fr; min-height:0; padding:27px 22px 20px; }
+      .teacher-observation-art,.teacher-observation-board:nth-child(even) .teacher-observation-art { order:initial; width:138px; justify-self:end; }
     }
 
     /* ===== Parent contribution lite ===== */
@@ -790,6 +809,10 @@
   let reportBookPageIndex = 0;
   let reportBookSwipeStartX = null;
   let reportBookTurning = false;
+  const TEACHER_OBSERVATION_ART = [
+    'report-assets/teacher-observation-explore.png',
+    'report-assets/teacher-observation-curiosity.png'
+  ];
   const THEME_CONTRACT = {
     sky:{ label:'天空探索', tagline:'天空探索 · 自由想象 · 向光出发', preview:['#315F91','#74B7E8','#F1B84B'] },
     cosmic:{ label:'宇宙创客', tagline:'星际创想 · 保持好奇 · 勇敢抵达', preview:['#493A8E','#7769D8','#FFCA57'] },
@@ -871,7 +894,7 @@
     const child = context.child || {};
     const records = context.publishedRecords || [];
     const keywords = context.keywords || [];
-    const profileQuote = context.teacherComments?.[0]?.comment || '';
+    const profileQuote = context.teacherObservations?.[0]?.text || '';
     const age = getAge(child.birthday);
     const stage = getGrowthStage(age);
     const facts = [
@@ -926,10 +949,10 @@
       body:`<div class="report-page-list">${items.map(item => `<article class="report-page-card"><small>${escapeHtml(formatDate(item.date))}</small><h4>${escapeHtml(item.title)}</h4>${item.detail ? `<p>${escapeHtml(item.detail)}</p>` : ''}</article>`).join('')}</div>`
     }));
 
-    chunkReportBookItems((context.teacherComments || []).filter(item => item.comment), 2).forEach((items, index, groups) => pages.push({
+    chunkReportBookItems(context.teacherObservations || [], 2).forEach((items, index, groups) => pages.push({
       type:'teacher-note', eyebrow:`TEACHER OBSERVATION${groups.length > 1 ? ` · ${index + 1}/${groups.length}` : ''}`,
       title:'老师眼中的闪光', intro:'这些文字，记录成长发生时的样子',
-      body:`${items.map(item => `<blockquote class="report-page-note">“${escapeHtml(item.comment)}”<strong>${escapeHtml(item.teacher_name || '老师')}${item.semester ? ` · ${escapeHtml(item.semester)}` : ''}</strong></blockquote>`).join('')}`
+      body:`<div class="report-page-observation"><div class="report-page-observation-copy">${items.map(item => `<blockquote class="report-page-note">“${escapeHtml(item.text)}”<strong>${escapeHtml(item.attribution)}</strong></blockquote>`).join('')}</div>${TEACHER_OBSERVATION_ART[index] ? `<img class="report-page-observation-art" src="${TEACHER_OBSERVATION_ART[index]}" alt="" aria-hidden="true">` : ''}</div>`
     }));
     return pages;
   }
@@ -1126,6 +1149,7 @@
     const profileSkills = getProfileSkills(profile);
     const profileJourney = getProfileJourney(profile);
     const publishedRecords = portfolio.records.filter(record => record.status === 'PUBLISHED');
+    const teacherObservations = getTeacherObservationItems(publishedRecords);
     const reportBookKeywords = heroKeywords.filter(item => !['成长进行时','闪光日常'].includes(item));
     const reportBookSkills = [...new Set([
       ...(profile.courses || []).map(item => item.course_name),
@@ -1148,7 +1172,7 @@
       skills:reportBookSkills,
       avatarHtml:profilePhotoHtml,
       profileIntro:getProfileIntro(c, growthStage, profile),
-      teacherComments:profile.comments || [],
+      teacherObservations,
       counts
     });
     reportBookPageIndex = 0;
@@ -1283,20 +1307,15 @@
           <div class="section-sub">来自老师与家人的观察，共同拼出独特的成长画像</div>
           <div class="section-line"></div>
           ${renderInterestConstellation(profile, c.name)}
-          <div class="growth-notes">
-            ${renderCards(profile.comments, (item) => `
-              <blockquote class="growth-note" data-label="TEACHER OBSERVATION">
-                <p>${escapeHtml(item.comment || '')}</p>
-                <footer>${escapeHtml(item.teacher_name || '老师')}${item.semester ? ` · ${escapeHtml(item.semester)}` : ''}</footer>
-              </blockquote>
-            `)}
+          ${renderTeacherObservationShowcase(teacherObservations)}
+          ${(profile.messages || []).length ? `<div class="growth-notes">
             ${renderCards(profile.messages, (item) => `
               <blockquote class="growth-note family" data-label="FAMILY NOTE">
                 <p>${escapeHtml(item.message || '')}</p>
                 <footer>${escapeHtml(item.sender_name || '家长')}${item.relationship ? ` · ${escapeHtml(item.relationship)}` : ''}</footer>
               </blockquote>
             `)}
-          </div>
+          </div>` : ''}
           ${renderParentGrowthRecords(parentRecords)}
         </div>
 
@@ -1679,6 +1698,31 @@
   function renderInterestConstellation(data, childName) {
     const labels = [...getGrowthKeywords(data), ...(data.courses || []).map(item => item.course_name), ...(data.activities || []).map(item => item.activity_name)].filter(Boolean).slice(0, 4);
     return `<div class="interest-constellation"><div class="interest-core">${escapeHtml(childName)}<br>兴趣星图</div>${labels.map(label => `<span class="interest-node">${escapeHtml(label)}</span>`).join('')}</div>`;
+  }
+
+  function getTeacherObservationItems(records) {
+    const seen = new Set();
+    return (records || []).filter(record => record.teacherObservation).map(record => {
+      const raw = record.legacy?.raw || {};
+      const observation = String(record.teacherObservation || '').trim();
+      if (!observation || seen.has(observation)) return null;
+      seen.add(observation);
+      const attribution = [...new Set([
+        raw.teacher_name,
+        record.title,
+        record.date ? formatDate(record.date) : ''
+      ].filter(Boolean))].join(' · ');
+      return { text:observation, attribution:attribution || '教师观察', title:record.title || '教师观察', date:record.date || '' };
+    }).filter(Boolean);
+  }
+
+  function renderTeacherObservationShowcase(items) {
+    if (!items.length) return '';
+    const groups = chunkReportBookItems(items, 2);
+    return `<section class="teacher-observation-showcase" aria-label="教师观察">${groups.map((group, index) => {
+      const art = TEACHER_OBSERVATION_ART[index] || '';
+      return `<article class="teacher-observation-board${art ? '' : ' no-art'}"><div class="teacher-observation-copy">${group.map(item => `<blockquote><p>${escapeHtml(item.text)}</p><footer>${escapeHtml(item.attribution)}</footer></blockquote>`).join('')}</div>${art ? `<img class="teacher-observation-art" src="${art}" alt="" aria-hidden="true" loading="lazy">` : ''}</article>`;
+    }).join('')}</section>`;
   }
 
   function escapeHtml(value) {

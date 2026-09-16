@@ -31,6 +31,13 @@ for (const section of ['ABOUT ME · 基本信息', '你好，我是', '我的成
 }
 assert.match(child, /child\.enrollment_date \? `\$\{formatDate\(child\.enrollment_date\)\}加入机构`/);
 assert.match(child, /profileIntro:getProfileIntro\(c, growthStage, profile\)/);
+assert.match(child, /const teacherObservations = getTeacherObservationItems\(publishedRecords\)/);
+assert.match(child, /teacherObservations,/);
+assert.match(child, /function renderTeacherObservationShowcase\(items\)/);
+assert.match(child, /class="teacher-observation-art"/);
+assert.match(child, /class="report-page-observation-art"/);
+assert.match(child, /report-assets\/teacher-observation-explore\.png/);
+assert.match(child, /report-assets\/teacher-observation-curiosity\.png/);
 assert.match(child, /record\.status === 'PUBLISHED'/);
 assert.match(child, /chunkReportBookItems\(timeline, 3\)/);
 assert.match(child, /chunkReportBookItems\(projects, 2\)/);

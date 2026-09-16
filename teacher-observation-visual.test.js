@@ -23,11 +23,12 @@ const quotes = [
   '果果对新鲜事物始终保持好奇。比答案更珍贵的，是她已经开始相信自己的观察与判断。'
 ];
 const profile = {
-  child:{ id:'child-visual', name:'果果' }, timeline:[], courses:[], activities:[],
-  achievements:[], photos:[], messages:[], comments:quotes.map((comment, index) => ({
-    id:`comment-${index}`, date:index === 2 ? '' : '2026-07-18', semester:index === 2 ? '2026夏季' : '',
-    teacher_name:index === 0 ? '森林搭建老师' : '', comment
-  }))
+  child:{ id:'child-visual', name:'果果' }, timeline:[], activities:[], achievements:[], photos:[], messages:[],
+  courses:[
+    { id:'course-1', course_name:'森林建造师 PBL', teacher_name:'森林搭建老师', date:'2026-07-18', performance:quotes[0] },
+    { id:'course-2', course_name:'故事英语剧场', teacher_name:'英语老师', date:'2026-07-11', performance:quotes[1] }
+  ],
+  comments:[{ id:'comment-1', date:'', semester:'2026夏季', teacher_name:'白雪老师', comment:quotes[2] }]
 };
 
 async function run() {
@@ -69,9 +70,7 @@ async function run() {
     assert(!slides[1].items.some(item => item.kind === 'text' && / · $/.test(item.value)),
       'missing dates must not leave a dangling separator');
   }
-  const longModel = Composer.buildReportModel({ ...profile, comments:profile.comments.map((item, index) => (
-    index === 2 ? { ...item, comment: lengthy } : item
-  )) });
+  const longModel = Composer.buildReportModel({ ...profile, comments:profile.comments.map(item => ({ ...item, comment:lengthy })) });
   const longPage = longModel.pages.find(page => page.type === 'teacher-observation' && page.items.length === 1);
   const longResult = await Ppt.composePpt(MockPptxGenJS, longModel);
   const longSlide = longResult.pptx.slides[longModel.pages.indexOf(longPage)];
