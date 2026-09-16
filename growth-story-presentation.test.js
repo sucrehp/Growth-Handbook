@@ -42,11 +42,13 @@ async function run() {
   assert.equal(Composer.growthStoryView({ ...source, evidence:[{kind:'video_link', url:'https://example.com/video'}] }), null);
   assert.equal(Composer.growthStoryView({ ...source, source:'PARENT_PROVIDED' }).source, 'PARENT_PROVIDED');
 
-  const rich = Composer.buildReportModel(profile([{
+  const richActivity = {
     id:'activity-rich', child_id:'child-1', activity_name:'自然观察项目', date:'2026-07-20',
     description:'观察树叶并制作色彩地图。', photo_url:evidence.url
-  }], [{ id:'metadata-rich', child_id:'child-1', source_table:'activity_records', source_record_id:'activity-rich',
-    record_type:'PROJECT', source:'INSTITUTION_RECORD', status:'PUBLISHED', tags:['自然观察','表达'] }]));
+  };
+  const richMetadata = { id:'metadata-rich', child_id:'child-1', source_table:'activity_records', source_record_id:'activity-rich',
+    record_type:'PROJECT', source:'INSTITUTION_RECORD', status:'PUBLISHED', tags:['自然观察','表达'] };
+  const rich = Composer.buildReportModel(profile([richActivity], [richMetadata]));
   rich.projectsWorks[0].teacherObservation = source.teacherObservation;
   const projectPage = rich.pages.find(page => page.type === 'project');
   assert(projectPage);
@@ -63,6 +65,20 @@ async function run() {
   assert(projectSlide.items.some(item => item.kind === 'text' && item.value.includes('老师观察：')));
   assert(projectSlide.items.some(item => item.kind === 'image' && item.options.sizing.type === 'cover'));
   assert(projectSlide.items.some(item => item.kind === 'image' && item.options.sizing.w > 7 && item.options.sizing.h > 4));
+
+  for (const themeId of Object.keys(Composer.THEMES)) {
+    const themed = Composer.buildReportModel(profile([richActivity], [richMetadata]), { themeId });
+    themed.projectsWorks[0].teacherObservation = source.teacherObservation;
+    const themedPage = themed.pages.find(page => page.type === 'project');
+    assert(themedPage, `${themeId}: project page`);
+    assert.match(Print.renderReportHtml(themed), /class="gpr-growth-story gpr-story-featured"/, `${themeId}: print story`);
+    const themedPpt = await Ppt.composePpt(MockPptxGenJS, themed, {
+      resolveAsset:async url => ({ data:url, width:1600, height:900 })
+    });
+    const themedSlide = themedPpt.pptx.slides[themed.pages.indexOf(themedPage)];
+    assert(themedSlide.items.some(item => item.kind === 'text' && item.value === 'GROWTH STORY'), `${themeId}: ppt story`);
+    assert(themedSlide.items.some(item => item.kind === 'image' && item.options.sizing.type === 'cover'), `${themeId}: ppt evidence`);
+  }
 
   const sparse = Composer.buildReportModel(profile([{
     id:'activity-sparse', child_id:'child-1', activity_name:'普通活动', date:'2026-07-21', description:'参加活动。'
@@ -91,7 +107,7 @@ async function run() {
     'main navigation must not grow');
   assert.match(fs.readFileSync('growth-report-print.css', 'utf8'), /\.gpr-growth-story \.gpr-project-image/);
   console.log('P1.2 GROWTH STORY PRESENTATION PASS');
-  console.log('rich record: WEB/PPT/PDF story; sparse record: ordinary card; pending: omitted');
+  console.log('rich record: WEB/PPT/PDF story across 6 themes; sparse record: ordinary card; pending: omitted');
 }
 
 run().catch(error => { console.error(error); process.exitCode = 1; });
