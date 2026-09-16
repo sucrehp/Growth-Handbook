@@ -408,7 +408,8 @@
     .profile-cluster { padding:17px; border-radius:20px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.95); box-shadow:0 10px 26px rgba(44,62,107,.06); }
     .profile-cluster h4 { color:var(--primary); font-size:12px; margin-bottom:11px; }
     .profile-tags { display:flex; flex-wrap:wrap; gap:7px; }
-    .profile-tag { max-width:100%; padding:6px 9px; border-radius:10px; background:color-mix(in srgb,var(--accent-light) 30%,white); color:var(--primary); font-size:11px; overflow-wrap:anywhere; }
+    .profile-tag { max-width:100%; padding:6px 10px 6px 7px; border-radius:12px; background:color-mix(in srgb,var(--accent-light) 30%,white); color:var(--primary); font-size:11px; overflow-wrap:anywhere; display:inline-flex; align-items:center; gap:6px; }
+    .profile-tag-icon { width:24px; height:24px; flex:0 0 24px; display:grid; place-items:center; border-radius:9px; background:rgba(255,255,255,.82); box-shadow:0 4px 10px rgba(44,62,107,.08); font-size:14px; line-height:1; }
     .profile-journey { margin-top:18px; padding:18px; border-radius:22px; background:color-mix(in srgb,var(--primary) 5%,white); }
     .profile-journey h4 { color:var(--primary); font:600 14px/1.4 'Noto Serif SC',serif; }
     .profile-journey-list { display:grid; gap:10px; margin-top:13px; }
@@ -433,6 +434,9 @@
     .milestone-story .timeline-title { color:var(--primary); font:600 20px/1.45 'Noto Serif SC',serif; }
     .milestone-story .timeline-desc { margin-top:10px; line-height:1.9; }
     .milestone-age { display:inline-flex; margin-bottom:10px; padding:5px 9px; border-radius:999px; color:var(--primary); background:color-mix(in srgb,var(--accent) 14%,white); font-size:11px; }
+    .record-source { display:inline-flex; align-items:center; gap:5px; width:max-content; max-width:100%; margin:0 0 9px 7px; padding:5px 9px; border-radius:999px; color:var(--primary); background:color-mix(in srgb,var(--primary) 7%,white); border:1px solid color-mix(in srgb,var(--primary) 12%,white); font-size:10px; font-weight:700; letter-spacing:.02em; vertical-align:middle; }
+    .record-source.parent { color:#8a4c5b; background:#fff2f5; border-color:#f1cad5; }
+    .record-source.compact { margin:0; padding:4px 7px; font-size:9px; }
     .milestone-evidence { height:132px; border-radius:20px; overflow:hidden; background:var(--art-soft); box-shadow:0 12px 28px rgba(44,62,107,.12); transform:rotate(1deg); }
     .milestone:nth-child(even) .milestone-evidence { transform:rotate(-1deg); }
     .milestone-evidence img { width:100%; height:100%; object-fit:cover; transition:transform .5s; }
@@ -570,7 +574,8 @@
     .report-page-avatar { width:84px; height:84px; display:grid; place-items:center; border-radius:50%; overflow:hidden; background:var(--art-soft); border:4px solid #fff; box-shadow:0 10px 26px rgba(44,62,107,.14); font-size:36px; }
     .report-page-avatar img { width:100%; height:100%; object-fit:cover; }
     .report-page-tags { display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-top:12px; }
-    .report-page-tags span { padding:5px 8px; border-radius:999px; background:#fff; color:var(--primary); font-size:9px; }
+    .report-page-tags span { padding:5px 8px; border-radius:999px; background:#fff; color:var(--primary); font-size:9px; display:inline-flex; align-items:center; gap:4px; }
+    .report-page-tag-icon { font-size:11px; line-height:1; }
     .report-page-quote { margin-top:14px; max-width:250px; color:var(--text-mid); font-size:10px; line-height:1.7; }
     .report-page-list { display:grid; gap:8px; margin-top:14px; }
     .report-page-card { min-width:0; padding:10px 11px; border-radius:13px; background:rgba(255,255,255,.82); border:1px solid color-mix(in srgb,var(--primary) 10%,transparent); }
@@ -889,6 +894,40 @@
     return pages;
   }
 
+  function getCartoonTagIcon(label, group = '') {
+    const value = String(label || '');
+    const rules = [
+      [/森林|自然|植物|观察|发现|好奇/, '🌿'],
+      [/英语|故事|戏剧|角色|表达|分享|舞台|语言/, '🎭'],
+      [/建造|搭建|工程|结构|空间/, '🧱'],
+      [/画|艺术|创意|设计|作品|手工/, '🎨'],
+      [/合作|伙伴|小组|帮助|团队/, '🤝'],
+      [/勇敢|自信|高光|荣誉|之星/, '🌟'],
+      [/专注|坚持|独立|行动|完成/, '🚀'],
+      [/运动|体能|跑|跳|球|舞蹈/, '⚽'],
+      [/音乐|唱|琴|节奏/, '🎵'],
+      [/阅读|书|知识|学习|课程/, '📚'],
+      [/科学|实验|探索|研究/, '🔭'],
+      [/成长|进步|闪光|日常/, '🌱']
+    ];
+    const matched = rules.find(([pattern]) => pattern.test(value));
+    if (matched) return matched[1];
+    return group === 'skill' ? '🧩' : group === 'interest' ? '🦊' : '✨';
+  }
+
+  function renderIconTag(label, group = '') {
+    return `<span class="profile-tag"><i class="profile-tag-icon" aria-hidden="true">${getCartoonTagIcon(label, group)}</i>${escapeHtml(label)}</span>`;
+  }
+
+  function renderBookIconTag(label, group = '') {
+    return `<span><i class="report-page-tag-icon" aria-hidden="true">${getCartoonTagIcon(label, group)}</i>${escapeHtml(label)}</span>`;
+  }
+
+  function renderRecordSource(source, compact = false) {
+    const parent = source === 'PARENT_PROVIDED';
+    return `<span class="record-source${parent ? ' parent' : ''}${compact ? ' compact' : ''}">${parent ? '🏠 家长补充 · 已审核' : '🧑‍🏫 机构老师记录'}</span>`;
+  }
+
   function buildInteractiveBookPages(context) {
     const pages = [];
     const child = context.child || {};
@@ -915,14 +954,14 @@
       eyebrow:`${escapeHtml(child.name || '我的')} · MY GROWTH`,
       title:'我的成长关键词',
       intro:'从真实成长记录中，看见独一无二的我',
-      body:`<div class="report-page-profile"><div class="report-page-avatar">${context.avatarHtml}</div><div class="report-page-tags">${keywords.map(item => `<span>${escapeHtml(item)}</span>`).join('')}</div>${profileQuote ? `<p class="report-page-quote">“${escapeHtml(profileQuote)}”</p>` : ''}</div>`
+      body:`<div class="report-page-profile"><div class="report-page-avatar">${context.avatarHtml}</div><div class="report-page-tags">${keywords.map(item => renderBookIconTag(item, 'keyword')).join('')}</div>${profileQuote ? `<p class="report-page-quote">“${escapeHtml(profileQuote)}”</p>` : ''}</div>`
     });
 
     const timeline = records.filter(record => record.type === 'MILESTONE');
     chunkReportBookItems(timeline, 3).forEach((items, index, groups) => pages.push({
       type:'timeline', eyebrow:`GROWTH TIMELINE${groups.length > 1 ? ` · ${index + 1}/${groups.length}` : ''}`,
       title:'成长轨迹', intro:'沿着时间，重温每一次真实发生的成长',
-      body:`<div class="report-page-list">${items.map(item => `<article class="report-page-card"><time>${escapeHtml(formatDate(item.date))}</time><h4>${escapeHtml(item.title)}</h4>${item.detail ? `<p>${escapeHtml(item.detail)}</p>` : ''}</article>`).join('')}</div>`
+      body:`<div class="report-page-list">${items.map(item => `<article class="report-page-card"><time>${escapeHtml(formatDate(item.date))}</time>${renderRecordSource(item.source, true)}<h4>${escapeHtml(item.title)}</h4>${item.detail ? `<p>${escapeHtml(item.detail)}</p>` : ''}</article>`).join('')}</div>`
     }));
 
     const projects = records.filter(record => ['PROJECT','WORK','ACTIVITY'].includes(record.type));
@@ -932,14 +971,14 @@
       body:`<div class="report-page-list">${items.map(item => {
         const evidence = (item.evidence || []).find(asset => ['image','photo','work','certificate','document'].includes(String(asset.kind || '').toLowerCase()) && asset.url);
         const imageUrl = evidence ? (item.source === 'PARENT_PROVIDED' ? parentEvidenceUrl(evidence) : getPhotoUrl(evidence.url)) : '';
-        const copy = `<div><small>${escapeHtml(formatDate(item.date))}</small><h4>${escapeHtml(item.title)}</h4>${item.detail ? `<p>${escapeHtml(item.detail)}</p>` : ''}</div>`;
+        const copy = `<div><small>${escapeHtml(formatDate(item.date))}</small>${renderRecordSource(item.source, true)}<h4>${escapeHtml(item.title)}</h4>${item.detail ? `<p>${escapeHtml(item.detail)}</p>` : ''}</div>`;
         return `<article class="report-page-card${imageUrl ? ' report-page-project' : ''}">${imageUrl ? `<img data-media-kind="${escapeHtml(evidence.kind || 'image')}" onload="refineMediaFit(this)" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.title)}">` : ''}${copy}</article>`;
       }).join('')}</div>`
     }));
 
     if (context.skills.length || context.interests.length) pages.push({
       type:'skills-interests', eyebrow:'SKILLS & INTERESTS', title:'技能与兴趣', intro:'每一次练习和好奇，都在慢慢长成自己的方向',
-      body:`<div class="report-page-clusters">${context.skills.length ? `<section class="report-page-cluster"><h4>技能积累</h4><div class="report-page-tags">${context.skills.slice(0, 6).map(item => `<span>${escapeHtml(item)}</span>`).join('')}</div></section>` : ''}${context.interests.length ? `<section class="report-page-cluster"><h4>兴趣画像</h4><div class="report-page-tags">${context.interests.slice(0, 6).map(item => `<span>${escapeHtml(item)}</span>`).join('')}</div></section>` : ''}</div>`
+      body:`<div class="report-page-clusters">${context.skills.length ? `<section class="report-page-cluster"><h4>技能积累</h4><div class="report-page-tags">${context.skills.slice(0, 6).map(item => renderBookIconTag(item, 'skill')).join('')}</div></section>` : ''}${context.interests.length ? `<section class="report-page-cluster"><h4>兴趣画像</h4><div class="report-page-tags">${context.interests.slice(0, 6).map(item => renderBookIconTag(item, 'interest')).join('')}</div></section>` : ''}</div>`
     });
 
     const achievements = records.filter(record => record.type === 'ACHIEVEMENT');
@@ -1149,6 +1188,9 @@
     const profileSkills = getProfileSkills(profile);
     const profileJourney = getProfileJourney(profile);
     const publishedRecords = portfolio.records.filter(record => record.status === 'PUBLISHED');
+    const timelineRecords = publishedRecords
+      .filter(record => record.type === 'MILESTONE')
+      .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
     const teacherObservations = getTeacherObservationItems(publishedRecords);
     const reportBookKeywords = heroKeywords.filter(item => !['成长进行时','闪光日常'].includes(item));
     const reportBookSkills = [...new Set([
@@ -1253,9 +1295,9 @@
                 ${c.enrollment_date ? `<span class="profile-fact">🌱 ${formatDate(c.enrollment_date)} 加入机构</span>` : ''}
               </div>
               <div class="profile-clusters">
-                ${profileInterests.length ? `<div class="profile-cluster"><h4>兴趣爱好 · INTERESTS</h4><div class="profile-tags">${profileInterests.map(item => `<span class="profile-tag">${escapeHtml(item)}</span>`).join('')}</div></div>` : ''}
-                ${profileSkills.length ? `<div class="profile-cluster"><h4>学习技能 · SKILLS</h4><div class="profile-tags">${profileSkills.map(item => `<span class="profile-tag">${escapeHtml(item)}</span>`).join('')}</div></div>` : ''}
-                <div class="profile-cluster"><h4>成长关键词 · KEYWORDS</h4><div class="profile-tags">${heroKeywords.map(item => `<span class="profile-tag">${escapeHtml(item)}</span>`).join('')}</div></div>
+                ${profileInterests.length ? `<div class="profile-cluster"><h4>兴趣爱好 · INTERESTS</h4><div class="profile-tags">${profileInterests.map(item => renderIconTag(item, 'interest')).join('')}</div></div>` : ''}
+                ${profileSkills.length ? `<div class="profile-cluster"><h4>学习技能 · SKILLS</h4><div class="profile-tags">${profileSkills.map(item => renderIconTag(item, 'skill')).join('')}</div></div>` : ''}
+                <div class="profile-cluster"><h4>成长关键词 · KEYWORDS</h4><div class="profile-tags">${heroKeywords.map(item => renderIconTag(item, 'keyword')).join('')}</div></div>
               </div>
               ${profileJourney.length ? `<div class="profile-journey"><h4>My Journey · 我的成长历程</h4><div class="profile-journey-list">${profileJourney.map(item => `<div class="profile-journey-item"><time>${item.date ? formatDate(item.date) : '成长中'}</time><span>${escapeHtml(item.label)}</span></div>`).join('')}</div></div>` : ''}
               ${profile.comments?.[0]?.comment ? `<div class="profile-teacher-note">${escapeHtml(profile.comments[0].comment)}<strong>${escapeHtml(profile.comments[0].teacher_name || '老师')}${profile.comments[0].semester ? ` · ${escapeHtml(profile.comments[0].semester)}` : ''}</strong></div>` : ''}
@@ -1268,7 +1310,7 @@
           <div class="section-title"><span class="icon">👣</span> 成长轨迹</div>
           <div class="section-sub">沿着时间，看见每一次尝试、突破与闪光</div>
           <div class="section-line"></div>
-          ${renderTimeline(profile.timeline, profile.photos, c.birthday)}
+          ${renderTimeline(timelineRecords, profile.photos, c.birthday)}
         </div>
 
         <!-- D · Projects & Works -->
@@ -1325,7 +1367,7 @@
           <div class="section-sub">把珍贵的成长经历，保存为可以长期收藏的完整履历</div>
           <div class="section-line"></div>
           <div class="contribution-invite">
-            <div><small>FAMILY CONTRIBUTION</small><h3>一起补充成长记忆</h3><p>家长可以提交一条成长经历，机构审核后再展示在成长主页。</p></div>
+            <div><small>PARENT CONTRIBUTION · 家长填写区</small><h3>家长补充成长记忆</h3><p>家长可以提交一条成长经历；老师与机构记录由后台填写。家长内容通过审核后才会展示。</p></div>
             <button type="button" class="contribution-button" onclick="toggleContributionPanel(true)">＋ 补充成长记录</button>
           </div>
           <div class="report-book-stage">
@@ -1391,7 +1433,7 @@
       <div class="contribution-panel" id="contribution-panel" aria-hidden="true" onclick="closeContributionFromBackdrop(event)">
         <div class="contribution-dialog" role="dialog" aria-modal="true" aria-labelledby="contribution-title">
           <div class="contribution-dialog-head">
-            <div><small>FAMILY GROWTH NOTE</small><h3 id="contribution-title">补充一条成长记录</h3><p>只需填写三个必填项，提交后由机构审核。</p></div>
+            <div><small>PARENT GROWTH NOTE · 家长填写区</small><h3 id="contribution-title">家长补充一条成长记录</h3><p>只需填写三个必填项，提交后由机构审核；老师记录请在机构后台填写。</p></div>
             <button type="button" class="contribution-close" aria-label="关闭投稿面板" onclick="toggleContributionPanel(false)">×</button>
           </div>
           <form class="contribution-form" id="contribution-form" onsubmit="submitParentContribution(event)">
@@ -1626,17 +1668,27 @@
   // ============================================
   function renderTimeline(items, photos = [], birthday = null) {
     if (!items || !items.length) return '<div class="empty">暂无成长记录</div>';
-    return '<div class="timeline-portfolio">' + items.map((item, index) => `
+    return '<div class="timeline-portfolio">' + items.map((item, index) => {
+      const date = item.date || item.event_date || '';
+      const detail = item.detail || item.description || '';
+      const evidence = (item.evidence || []).find(asset => ['image','photo','work','certificate','document'].includes(String(asset.kind || '').toLowerCase()) && asset.url);
+      const fallbackPhoto = photos[index];
+      const imageUrl = evidence
+        ? (item.source === 'PARENT_PROVIDED' ? parentEvidenceUrl(evidence) : getPhotoUrl(evidence.url))
+        : item.photo_url ? getPhotoUrl(item.photo_url)
+          : fallbackPhoto ? getPhotoUrl(fallbackPhoto.photo_url) : '';
+      const imageAlt = evidence?.title || fallbackPhoto?.caption || item.title || '成长记录照片';
+      return `
       <article class="milestone${index === items.length - 1 ? ' is-highlight' : ''}">
-        <div class="milestone-marker"><strong>${String(index + 1).padStart(2, '0')}</strong><span>${new Date(item.event_date).getFullYear() || ''}</span></div>
+        <div class="milestone-marker"><strong>${String(index + 1).padStart(2, '0')}</strong><span>${date ? new Date(date).getFullYear() : ''}</span></div>
         <div class="milestone-story">
-          <span class="milestone-age">${getAgeAtDate(birthday, item.event_date)}</span>
+          <span class="milestone-age">${getAgeAtDate(birthday, date)}</span>${renderRecordSource(item.source)}
           <div class="timeline-title">${escapeHtml(item.title || '')}</div>
-          <div class="timeline-desc">${escapeHtml(item.description || '')}</div>
+          <div class="timeline-desc">${escapeHtml(detail)}</div>
         </div>
-        ${photos[index] ? `<button class="milestone-evidence" onclick="showLightbox('${getPhotoUrl(photos[index].photo_url)}')"><img src="${getPhotoUrl(photos[index].photo_url)}" alt="${photos[index].caption || item.title || ''}" loading="lazy"></button>` : ''}
-      </article>
-    `).join('') + '</div>';
+        ${imageUrl ? `<button class="milestone-evidence" onclick="showLightbox('${escapeHtml(imageUrl)}')"><img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(imageAlt)}" loading="lazy"></button>` : ''}
+      </article>`;
+    }).join('') + '</div>';
   }
 
   function renderCards(items, renderer) {
@@ -1683,10 +1735,10 @@
     if (!projects.length) return '<div class="empty">暂无项目记录</div>';
     return projects.map(record => {
       const story = GrowthReportComposer.growthStoryView(record);
-      if (!story) return `<article class="project-story"><div class="card-title">${escapeHtml(record.title || '成长项目')}</div><div class="card-meta">${record.date ? `<span>${escapeHtml(formatDate(record.date))}</span>` : ''}${record.legacy?.raw?.role ? `<span>${escapeHtml(record.legacy.raw.role)}</span>` : ''}</div>${record.detail ? `<div class="card-body">${escapeHtml(record.detail)}</div>` : ''}</article>`;
+      if (!story) return `<article class="project-story">${renderRecordSource(record.source, true)}<div class="card-title">${escapeHtml(record.title || '成长项目')}</div><div class="card-meta">${record.date ? `<span>${escapeHtml(formatDate(record.date))}</span>` : ''}${record.legacy?.raw?.role ? `<span>${escapeHtml(record.legacy.raw.role)}</span>` : ''}</div>${record.detail ? `<div class="card-body">${escapeHtml(record.detail)}</div>` : ''}</article>`;
       const photo = story.evidence[0];
       const contain = ['certificate','document'].includes(String(photo.kind || '').toLowerCase()) ? 'story-contain' : '';
-      return `<article class="project-growth-story"><figure><img class="${contain}" data-media-kind="${escapeHtml(photo.kind || 'image')}" onload="refineMediaFit(this)" src="${escapeHtml(getPhotoUrl(photo.url))}" alt="${escapeHtml(story.title || '成长证据')}" loading="lazy"></figure><div class="project-growth-copy"><div class="story-meta"><b>GROWTH STORY</b>${story.date ? `<time>${escapeHtml(formatDate(story.date))}</time>` : ''}</div><h3>${escapeHtml(story.title || '成长故事')}</h3>${record.legacy?.raw?.role ? `<p>参与角色：${escapeHtml(record.legacy.raw.role)}</p>` : ''}${story.detail ? `<p>${escapeHtml(story.detail)}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(story.teacherObservation)}</blockquote>` : ''}${story.tags.length ? `<div class="project-growth-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}</div></article>`;
+      return `<article class="project-growth-story"><figure><img class="${contain}" data-media-kind="${escapeHtml(photo.kind || 'image')}" onload="refineMediaFit(this)" src="${escapeHtml(getPhotoUrl(photo.url))}" alt="${escapeHtml(story.title || '成长证据')}" loading="lazy"></figure><div class="project-growth-copy"><div class="story-meta"><b>GROWTH STORY</b>${story.date ? `<time>${escapeHtml(formatDate(story.date))}</time>` : ''}</div>${renderRecordSource(record.source, true)}<h3>${escapeHtml(story.title || '成长故事')}</h3>${record.legacy?.raw?.role ? `<p>参与角色：${escapeHtml(record.legacy.raw.role)}</p>` : ''}${story.detail ? `<p>${escapeHtml(story.detail)}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(story.teacherObservation)}</blockquote>` : ''}${story.tags.length ? `<div class="project-growth-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}</div></article>`;
     }).join('');
   }
 

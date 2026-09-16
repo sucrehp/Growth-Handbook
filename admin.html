@@ -871,8 +871,8 @@
   function openGrowthRecordModal() {
     const today = new Date().toISOString().slice(0, 10);
     openModal(`
-      <h3>新增一条成长记录</h3>
-      <p style="font-size:13px;color:var(--text-light);margin:-10px 0 18px">选择类型后，系统会自动保存到合适的原有业务记录中。</p>
+      <h3>老师 / 机构新增成长记录</h3>
+      <p style="font-size:13px;color:var(--text-light);margin:-10px 0 18px">这是机构后台填写区。选择类型后，系统会自动保存到合适的原有业务记录中。</p>
       <form onsubmit="event.preventDefault();saveUnifiedGrowthRecord(this)">
         <div class="form-row">
           <div class="form-group"><label>类型</label><select class="form-input" name="record_type" required>${GROWTH_RECORD_TYPES.map(([value,label]) => `<option value="${value}">${label}</option>`).join('')}</select></div>
