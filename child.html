@@ -360,9 +360,9 @@
       .nav-item { scroll-snap-align:center; }
       .nav-bar { scrollbar-width:none; }
       .nav-bar::-webkit-scrollbar { display:none; }
-      .fab { right:14px; bottom:14px; }
-      .fab button { width:50px; height:50px; padding:0; justify-content:center; border-radius:50%; font-size:0; }
-      .fab button svg { width:20px; height:20px; }
+      .fab { right:14px; bottom:calc(14px + env(safe-area-inset-bottom)); pointer-events:none; }
+      .fab > button { display:none; }
+      .fab .download-progress { position:fixed; left:50%; right:auto; bottom:calc(18px + env(safe-area-inset-bottom)); max-width:calc(100vw - 32px); margin:0; transform:translateX(-50%); white-space:normal; text-align:center; }
       .theme-dialog { padding:22px 18px; border-radius:26px; }
       .theme-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
     }
@@ -562,13 +562,22 @@
       .interest-constellation { min-height:360px; }.interest-constellation::after{width:330px;height:330px}
       .interest-node:nth-of-type(2){left:4%;top:13%}.interest-node:nth-of-type(3){right:3%;top:16%}
       .interest-node:nth-of-type(4){left:4%;bottom:14%}.interest-node:nth-of-type(5){right:3%;bottom:12%}
-      .report-book-stage { min-height:400px; padding:20px 4px; }
+      .report-book-stage { min-height:0; padding:24px 4px; overflow:visible; }
+      .report-book { width:min(360px,88%); min-height:470px; aspect-ratio:.64; transform:rotateY(-4deg) rotateX(1deg); }
+      .report-cover { padding:32px 28px; }
+      .report-cover h3 { margin-top:34px; font-size:31px; }
+      .report-actions { flex-direction:column; flex-wrap:nowrap; }
+      .report-cover .report-button { width:100%; min-height:44px; justify-content:center; align-self:stretch; }
     }
     @media(max-width:420px){
       .profile-portrait-card { padding:16px; border-radius:24px; }
       .profile-photo { height:285px; }
       .profile-clusters { grid-template-columns:1fr; }
       .profile-journey-item { grid-template-columns:64px minmax(0,1fr); }
+      .report-book { width:min(340px,92%); aspect-ratio:.62; }
+      .report-cover { padding:28px 24px; }
+      .report-cover h3 { margin-top:30px; font-size:29px; }
+      .report-cover-stats { gap:12px; }
     }
 
     /* ===== Parent contribution lite ===== */
