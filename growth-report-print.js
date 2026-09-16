@@ -27,9 +27,12 @@
     return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
   }
 
-  function img(url, alt, extraClass) {
+  function img(url, alt, extraClass, mediaKind, frameRatio) {
     if (!url) return `<div class="gpr-image-empty">${escapeHtml(alt || '成长影像')}</div>`;
-    return `<img class="${extraClass || ''}" src="${escapeHtml(url)}" alt="${escapeHtml(alt || '成长影像')}">`;
+    const fitData = mediaKind
+      ? ` data-media-kind="${escapeHtml(mediaKind)}" data-frame-ratio="${Number(frameRatio) > 0 ? Number(frameRatio) : 1}"`
+      : '';
+    return `<img class="${extraClass || ''}"${fitData} src="${escapeHtml(url)}" alt="${escapeHtml(alt || '成长影像')}">`;
   }
 
   function pageShell(model, page, body, className) {
@@ -96,15 +99,19 @@
         const evidence = evidenceForRecord(model, record.id)[0];
         const contain = evidence && ['certificate','document'].includes(String(evidence.kind || '').toLowerCase()) ? 'gpr-contain' : '';
         const story = GrowthReportComposer.growthStoryView(record, evidenceForRecord(model, record.id));
-        if (story) return `<section class="gpr-growth-story${page.items.length === 1 ? ' gpr-story-featured' : ''}"><div class="gpr-project-image">${img(evidence.url, story.title, contain)}</div><div class="gpr-story-copy"><div class="gpr-story-meta"><b>GROWTH STORY</b><time>${formatDate(story.date)}</time></div><h3>${escapeHtml(short(story.title, 35))}</h3>${story.detail ? `<p>${escapeHtml(short(story.detail, 180))}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(short(story.teacherObservation, 95))}</blockquote>` : ''}${story.tags.length ? `<div class="gpr-story-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}${story.source === 'PARENT_PROVIDED' ? '<small>家长补充 · 机构已审核</small>' : ''}</div></section>`;
-        return `<section><div class="gpr-project-image">${img(evidence && evidence.url, record.title, contain)}</div><div><time>${formatDate(record.date)}</time><h3>${escapeHtml(record.title)}</h3><p>${escapeHtml(record.detail || record.teacherObservation)}</p>${record.source === 'PARENT_PROVIDED' ? '<small>家长补充 · 机构已审核</small>' : ''}</div></section>`;
+        if (story) return `<section class="gpr-growth-story${page.items.length === 1 ? ' gpr-story-featured' : ''}"><div class="gpr-project-image">${img(evidence.url, story.title, contain, evidence.kind, page.items.length === 1 ? 1.33 : .95)}</div><div class="gpr-story-copy"><div class="gpr-story-meta"><b>GROWTH STORY</b><time>${formatDate(story.date)}</time></div><h3>${escapeHtml(short(story.title, 35))}</h3>${story.detail ? `<p>${escapeHtml(short(story.detail, 180))}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(short(story.teacherObservation, 95))}</blockquote>` : ''}${story.tags.length ? `<div class="gpr-story-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}${story.source === 'PARENT_PROVIDED' ? '<small>家长补充 · 机构已审核</small>' : ''}</div></section>`;
+        return `<section><div class="gpr-project-image">${img(evidence && evidence.url, record.title, contain, evidence && evidence.kind, .95)}</div><div><time>${formatDate(record.date)}</time><h3>${escapeHtml(record.title)}</h3><p>${escapeHtml(record.detail || record.teacherObservation)}</p>${record.source === 'PARENT_PROVIDED' ? '<small>家长补充 · 机构已审核</small>' : ''}</div></section>`;
       }).join('')}</div>`;
     return pageShell(model, page, body);
   }
 
   function renderGallery(model, page) {
+    const ratios = page.items.length === 1 ? [0.96]
+      : page.items.length === 2 ? [0.47, 0.47]
+      : page.items.length === 3 ? [0.59, 0.71, 0.71]
+      : [0.96, 0.96, 0.96, 0.96];
     const body = `${heading('每一份证据都值得被认真收藏', `GROWTH EVIDENCE${page.total > 1 ? ` · ${page.index}/${page.total}` : ''}`)}
-      <div class="gpr-gallery gpr-gallery-${page.items.length}">${page.items.map(item => `<figure>${img(item.url, item.title, ['certificate','document'].includes(item.kind) ? 'gpr-contain' : '')}<figcaption>${escapeHtml(item.title || '成长影像')}</figcaption></figure>`).join('')}</div>`;
+      <div class="gpr-gallery gpr-gallery-${page.items.length}">${page.items.map((item, index) => `<figure>${img(item.url, item.title, ['certificate','document'].includes(item.kind) ? 'gpr-contain' : '', item.kind, ratios[index])}<figcaption>${escapeHtml(item.title || '成长影像')}</figcaption></figure>`).join('')}</div>`;
     return pageShell(model, page, body);
   }
 
@@ -196,6 +203,16 @@
     document.body.insertAdjacentHTML('beforeend', renderReportHtml(model));
     const root = document.getElementById('growth-report-print-root');
     await waitForImages(root, 6000);
+    root.querySelectorAll('img[data-media-kind]').forEach(image => {
+      const mode = GrowthReportComposer.imageFitMode(
+        image.dataset.mediaKind,
+        image.naturalWidth,
+        image.naturalHeight,
+        Number(image.dataset.frameRatio) || 1,
+        1
+      );
+      image.classList.toggle('gpr-contain', mode === 'contain');
+    });
     document.body.classList.add('growth-report-printing');
     const cleanup = () => {
       document.body.classList.remove('growth-report-printing');

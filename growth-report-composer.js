@@ -124,6 +124,20 @@
       .filter(item => !seen.has(item.url) && seen.add(item.url));
   }
 
+  function imageFitMode(kind, sourceWidth, sourceHeight, frameWidth, frameHeight) {
+    const normalizedKind = text(kind).toLowerCase();
+    if (['certificate', 'document'].includes(normalizedKind)) return 'contain';
+    const width = Number(sourceWidth);
+    const height = Number(sourceHeight);
+    const targetWidth = Number(frameWidth);
+    const targetHeight = Number(frameHeight);
+    if (!(width > 0 && height > 0 && targetWidth > 0 && targetHeight > 0)) return 'cover';
+    const sourceRatio = width / height;
+    const frameRatio = targetWidth / targetHeight;
+    const retainedAxis = Math.min(sourceRatio / frameRatio, frameRatio / sourceRatio);
+    return retainedAxis < 0.42 ? 'contain' : 'cover';
+  }
+
   function paginate(items, pageSize) {
     const size = Math.max(1, Number(pageSize) || 1);
     const pages = [];
@@ -261,6 +275,7 @@
     resolveTheme,
     paginate,
     selectEvidence,
+    imageFitMode,
     buildPagePlan,
     buildReportModel,
     growthStoryView

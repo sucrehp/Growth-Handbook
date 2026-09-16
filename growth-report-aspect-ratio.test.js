@@ -44,7 +44,13 @@ async function verifyGallery(label, images) {
     const originalRatio = images[index].width / images[index].height;
     const assignedRatio = options.w / options.h;
     assert(Math.abs(originalRatio - assignedRatio) < 1e-9, `${label}: source ratio ${index}`);
-    assert.equal(options.sizing.type, ['certificate','document'].includes(images[index].kind) ? 'contain' : 'cover');
+    assert.equal(options.sizing.type, Composer.imageFitMode(
+      images[index].kind,
+      images[index].width,
+      images[index].height,
+      frames[index].w,
+      frames[index].h
+    ));
     assert.equal(options.sizing.w, frames[index].w);
     assert.equal(options.sizing.h, frames[index].h);
     assert.equal(options.x, frames[index].x);
@@ -69,6 +75,10 @@ function verifyGalleryPagination() {
 }
 
 async function run() {
+  assert.equal(Composer.imageFitMode('photo', 1600, 900, 12, 4.75), 'cover', 'normal landscape prefers cover');
+  assert.equal(Composer.imageFitMode('photo', 6400, 640, 12, 4.75), 'contain', 'extreme panorama avoids destructive crop');
+  assert.equal(Composer.imageFitMode('photo', 640, 6400, 12, 4.75), 'contain', 'extreme portrait avoids destructive crop');
+  assert.equal(Composer.imageFitMode('certificate', 2100, 2970, 12, 4.75), 'contain', 'certificate always preserves all text');
   await verifyGallery('portrait', [{ label:'portrait photo', kind:'photo', width:900, height:1600 }]);
   await verifyGallery('landscape', [{ label:'landscape photo', kind:'photo', width:1600, height:900 }]);
   await verifyGallery('square', [{ label:'square photo', kind:'photo', width:1200, height:1200 }]);
@@ -98,8 +108,12 @@ async function run() {
   assert.match(childHtml, /sourceWidth = image\.naturalWidth/);
   assert.match(childHtml, /sourceHeight = image\.naturalHeight/);
   assert.match(childHtml, /return \{ data, width:sourceWidth, height:sourceHeight \}/);
+  assert.match(childHtml, /function refineMediaFit\(image\)/);
+  assert.match(childHtml, /GrowthReportComposer\.imageFitMode/);
   assert.match(fs.readFileSync('growth-report-ppt.js', 'utf8'), /ASSET_DIMENSIONS_UNAVAILABLE/);
-  console.log('P1.1 PPT IMAGE ASPECT RATIO PASS: 12 requirements');
+  const printSource = fs.readFileSync('growth-report-print.js', 'utf8');
+  assert.match(printSource, /image\.classList\.toggle\('gpr-contain', mode === 'contain'\)/);
+  console.log('R4.2 IMAGE CROP AND FIT PASS: Web, PPT and PDF share aspect-aware strategy');
 }
 
 run().catch(error => { console.error(error); process.exitCode = 1; });

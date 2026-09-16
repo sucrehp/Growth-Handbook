@@ -99,7 +99,9 @@
   function addImageFrame(slide, pptx, asset, frame, theme, mode, label) {
     addShape(slide, pptx, 'roundRect', { x:frame.x, y:frame.y, w:frame.w, h:frame.h, rectRadius:.08, line:{ color:theme.soft, width:1 }, fill:{ color:theme.soft } });
     if (asset && (asset.data || asset.path) && asset.width > 0 && asset.height > 0) {
-      slide.addImage(imageOptions(asset, frame, mode));
+      const kind = mode === 'contain' ? 'document' : 'image';
+      const fitMode = GrowthReportComposer.imageFitMode(kind, asset.width, asset.height, frame.w, frame.h);
+      slide.addImage(imageOptions(asset, frame, fitMode));
       return;
     }
     slide.addText(label || '成长影像', { x:frame.x + .15, y:frame.y + frame.h / 2 - .15, w:frame.w - .3, h:.3, fontFace:FONT, fontSize:14, color:theme.muted, align:'center', margin:0 });

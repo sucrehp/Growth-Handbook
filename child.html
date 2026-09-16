@@ -442,6 +442,7 @@
     .work-editorial { display:grid; gap:16px; }
     .featured-work { position:relative; min-height:430px; overflow:hidden; border-radius:30px; cursor:pointer; box-shadow:0 24px 58px rgba(44,62,107,.16); }
     .featured-work img { width:100%; height:100%; min-height:430px; object-fit:cover; transition:transform .7s cubic-bezier(.2,.8,.2,1); }
+    img.media-contain { object-fit:contain!important; background:color-mix(in srgb,var(--art-soft) 45%,white); }
     .featured-work:hover img { transform:scale(1.035); }
     .featured-work::after { content:""; position:absolute; inset:34% 0 0; background:linear-gradient(transparent,rgba(10,18,38,.82)); }
     .featured-work-copy { position:absolute; z-index:2; left:30px; right:30px; bottom:26px; color:#fff; }
@@ -739,6 +740,7 @@
   let activeShareToken = '';
   let isDemoMode = false;
   let parentContributionFiles = [];
+  let mediaFitResizeBound = false;
   const THEME_CONTRACT = {
     sky:{ label:'天空探索', tagline:'天空探索 · 自由想象 · 向光出发', preview:['#315F91','#74B7E8','#F1B84B'] },
     cosmic:{ label:'宇宙创客', tagline:'星际创想 · 保持好奇 · 勇敢抵达', preview:['#493A8E','#7769D8','#FFCA57'] },
@@ -1197,6 +1199,11 @@
     };
     addEventListener('scroll', updateMotion, { passive:true });
     updateMotion();
+    requestAnimationFrame(refreshMediaFits);
+    if (!mediaFitResizeBound) {
+      addEventListener('resize', () => requestAnimationFrame(refreshMediaFits), { passive:true });
+      mediaFitResizeBound = true;
+    }
 
     const tiltCard = document.getElementById('digital-card');
     if (tiltCard && matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
@@ -1410,10 +1417,10 @@
     const [featured, ...rest] = evidence;
     return `<div class="work-editorial">
       <article class="featured-work" onclick="showLightbox('${escapeHtml(featured.url)}')">
-        <img src="${escapeHtml(featured.url)}" alt="${escapeHtml(featured.title || '精选成长作品')}" loading="lazy">
+        <img data-media-kind="${escapeHtml(featured.kind || 'image')}" onload="refineMediaFit(this)" src="${escapeHtml(featured.url)}" alt="${escapeHtml(featured.title || '精选成长作品')}" loading="lazy">
         <div class="featured-work-copy"><span class="work-index">FEATURED WORK · 01</span><h3>${escapeHtml(featured.title || '我的精选成长作品')}</h3><p>一份值得被认真收藏的成长证据</p></div>
       </article>
-      ${rest.length ? `<div class="work-thumbs">${rest.map((item, index) => `<article class="work-card" onclick="showLightbox('${escapeHtml(item.url)}')"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.title || '成长作品')}" loading="lazy"><div class="work-card-copy"><small>WORK · ${String(index + 2).padStart(2, '0')}</small><strong>${escapeHtml(item.title || '成长作品')}</strong></div></article>`).join('')}</div>` : ''}
+      ${rest.length ? `<div class="work-thumbs">${rest.map((item, index) => `<article class="work-card" onclick="showLightbox('${escapeHtml(item.url)}')"><img data-media-kind="${escapeHtml(item.kind || 'image')}" onload="refineMediaFit(this)" src="${escapeHtml(item.url)}" alt="${escapeHtml(item.title || '成长作品')}" loading="lazy"><div class="work-card-copy"><small>WORK · ${String(index + 2).padStart(2, '0')}</small><strong>${escapeHtml(item.title || '成长作品')}</strong></div></article>`).join('')}</div>` : ''}
     </div>`;
   }
 
@@ -1427,7 +1434,7 @@
       if (!story) return `<article class="project-story"><div class="card-title">${escapeHtml(record.title || '成长项目')}</div><div class="card-meta">${record.date ? `<span>${escapeHtml(formatDate(record.date))}</span>` : ''}${record.legacy?.raw?.role ? `<span>${escapeHtml(record.legacy.raw.role)}</span>` : ''}</div>${record.detail ? `<div class="card-body">${escapeHtml(record.detail)}</div>` : ''}</article>`;
       const photo = story.evidence[0];
       const contain = ['certificate','document'].includes(String(photo.kind || '').toLowerCase()) ? 'story-contain' : '';
-      return `<article class="project-growth-story"><figure><img class="${contain}" src="${escapeHtml(getPhotoUrl(photo.url))}" alt="${escapeHtml(story.title || '成长证据')}" loading="lazy"></figure><div class="project-growth-copy"><div class="story-meta"><b>GROWTH STORY</b>${story.date ? `<time>${escapeHtml(formatDate(story.date))}</time>` : ''}</div><h3>${escapeHtml(story.title || '成长故事')}</h3>${record.legacy?.raw?.role ? `<p>参与角色：${escapeHtml(record.legacy.raw.role)}</p>` : ''}${story.detail ? `<p>${escapeHtml(story.detail)}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(story.teacherObservation)}</blockquote>` : ''}${story.tags.length ? `<div class="project-growth-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}</div></article>`;
+      return `<article class="project-growth-story"><figure><img class="${contain}" data-media-kind="${escapeHtml(photo.kind || 'image')}" onload="refineMediaFit(this)" src="${escapeHtml(getPhotoUrl(photo.url))}" alt="${escapeHtml(story.title || '成长证据')}" loading="lazy"></figure><div class="project-growth-copy"><div class="story-meta"><b>GROWTH STORY</b>${story.date ? `<time>${escapeHtml(formatDate(story.date))}</time>` : ''}</div><h3>${escapeHtml(story.title || '成长故事')}</h3>${record.legacy?.raw?.role ? `<p>参与角色：${escapeHtml(record.legacy.raw.role)}</p>` : ''}${story.detail ? `<p>${escapeHtml(story.detail)}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(story.teacherObservation)}</blockquote>` : ''}${story.tags.length ? `<div class="project-growth-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}</div></article>`;
     }).join('');
   }
 
@@ -1443,6 +1450,24 @@
 
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>'"]/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[character]));
+  }
+
+  function refineMediaFit(image) {
+    if (!image?.naturalWidth || !image?.naturalHeight) return;
+    const frame = image.parentElement?.getBoundingClientRect();
+    const mode = GrowthReportComposer.imageFitMode(
+      image.dataset.mediaKind,
+      image.naturalWidth,
+      image.naturalHeight,
+      frame?.width,
+      frame?.height
+    );
+    image.classList.toggle('media-contain', mode === 'contain');
+    image.dataset.fitMode = mode;
+  }
+
+  function refreshMediaFits() {
+    document.querySelectorAll('img[data-media-kind]').forEach(refineMediaFit);
   }
 
   function parentEvidenceUrl(evidence) {
@@ -1461,9 +1486,9 @@
       if (story) {
         const photo = story.evidence[0];
         const contain = ['certificate','document'].includes(String(photo.kind || '').toLowerCase()) ? 'story-contain' : '';
-        return `<article class="family-record family-growth-story"><figure><img class="${contain}" src="${escapeHtml(parentEvidenceUrl(photo))}" alt="${escapeHtml(story.title || '家庭成长证据')}" loading="lazy"></figure><div class="family-story-copy"><span class="family-story-label">GROWTH STORY · 家长补充已审核</span>${story.date ? `<time>${escapeHtml(formatDate(story.date))}</time>` : ''}<h4>${escapeHtml(story.title || '成长记录')}</h4>${story.detail ? `<p>${escapeHtml(story.detail)}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(story.teacherObservation)}</blockquote>` : ''}${story.tags.length ? `<div class="family-record-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}${videos.map(item => `<a class="family-video-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">查看家庭视频记录 ↗</a>`).join('')}</div></article>`;
+        return `<article class="family-record family-growth-story"><figure><img class="${contain}" data-media-kind="${escapeHtml(photo.kind || 'image')}" onload="refineMediaFit(this)" src="${escapeHtml(parentEvidenceUrl(photo))}" alt="${escapeHtml(story.title || '家庭成长证据')}" loading="lazy"></figure><div class="family-story-copy"><span class="family-story-label">GROWTH STORY · 家长补充已审核</span>${story.date ? `<time>${escapeHtml(formatDate(story.date))}</time>` : ''}<h4>${escapeHtml(story.title || '成长记录')}</h4>${story.detail ? `<p>${escapeHtml(story.detail)}</p>` : ''}${story.teacherObservation ? `<blockquote>老师观察：${escapeHtml(story.teacherObservation)}</blockquote>` : ''}${story.tags.length ? `<div class="family-record-tags">${story.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}${videos.map(item => `<a class="family-video-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">查看家庭视频记录 ↗</a>`).join('')}</div></article>`;
       }
-      return `<article class="family-record"><time>${escapeHtml(formatDate(record.date))}</time><h4>${escapeHtml(record.title || '成长记录')}</h4>${record.detail ? `<p>${escapeHtml(record.detail)}</p>` : ''}${record.tags?.length ? `<div class="family-record-tags">${record.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}${images.length ? `<div class="family-record-media">${images.map(item => `<img src="${escapeHtml(parentEvidenceUrl(item))}" alt="${escapeHtml(record.title || '家庭成长图片')}" loading="lazy">`).join('')}</div>` : ''}${videos.map(item => `<a class="family-video-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">查看家庭视频记录 ↗</a>`).join('')}</article>`;
+      return `<article class="family-record"><time>${escapeHtml(formatDate(record.date))}</time><h4>${escapeHtml(record.title || '成长记录')}</h4>${record.detail ? `<p>${escapeHtml(record.detail)}</p>` : ''}${record.tags?.length ? `<div class="family-record-tags">${record.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}${images.length ? `<div class="family-record-media">${images.map(item => `<img data-media-kind="${escapeHtml(item.kind || 'image')}" onload="refineMediaFit(this)" src="${escapeHtml(parentEvidenceUrl(item))}" alt="${escapeHtml(record.title || '家庭成长图片')}" loading="lazy">`).join('')}</div>` : ''}${videos.map(item => `<a class="family-video-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">查看家庭视频记录 ↗</a>`).join('')}</article>`;
     }).join('')}</div></section>`;
   }
 
