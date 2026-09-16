@@ -35,11 +35,14 @@ assert.match(child, /id="report-book-indicator"/);
 assert.match(child, /event\.key === 'ArrowLeft'/);
 assert.match(child, /event\.key === 'ArrowRight'/);
 assert.match(child, /Math\.abs\(distance\) < 44/);
+assert.match(child, /class="report-book-return" aria-label="返回成长册封面"/);
+assert.match(child, /\.report-book-return::before \{ content:"↙"/);
+assert.doesNotMatch(child, /report-inside-close|← 合上成长册/);
 assert.equal((child.match(/onclick="downloadPPT\(\)"/g) || []).length, 1, 'PPT export must only remain in the page export actions');
 assert.equal((child.match(/onclick="downloadPDF\(\)"/g) || []).length, 1, 'PDF export must only remain in the page export actions');
 assert.doesNotMatch(child, /report-inside-actions|class="report-actions"/);
 assert.match(child, /\.fab \{ position:static; width:min\(520px,calc\(100% - 32px\)\)/, 'mobile export actions must join document flow');
 assert.equal((child.match(/class="nav-item" onclick="scrollTo2/g) || []).length, 6, 'top navigation must not grow');
 
-console.log('R4.4 MULTI-PAGE INTERACTIVE BOOK PASS');
-console.log('Dynamic content pages, desktop spreads, mobile single pages, controls, swipe and reduced motion verified');
+console.log('R4.5 INTERACTIVE BOOK POLISH PASS');
+console.log('Dynamic pages, responsive navigation, swipe, reduced motion and subtle return control verified');
