@@ -23,8 +23,10 @@ for (const section of ['成长轨迹', '作品项目', '技能积累', '兴趣�
 }
 assert.match(child, /record\.status === 'PUBLISHED'/);
 assert.match(child, /profile\.comments\?\.\[0\]\?\.comment/);
-assert.match(child, /downloadPPT\(\)/);
-assert.match(child, /downloadPDF\(\)/);
+assert.equal((child.match(/onclick="downloadPPT\(\)"/g) || []).length, 1, 'PPT export must only remain in the page export actions');
+assert.equal((child.match(/onclick="downloadPDF\(\)"/g) || []).length, 1, 'PDF export must only remain in the page export actions');
+assert.doesNotMatch(child, /report-inside-actions|class="report-actions"/);
+assert.match(child, /\.fab \{ position:static; width:min\(520px,calc\(100% - 32px\)\)/, 'mobile export actions must join document flow');
 assert.equal((child.match(/class="nav-item" onclick="scrollTo2/g) || []).length, 6, 'top navigation must not grow');
 
 console.log('V1.1-P1-R3 INTERACTIVE PORTFOLIO BOOK PASS');
