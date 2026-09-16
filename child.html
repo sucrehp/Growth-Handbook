@@ -901,6 +901,11 @@
     const profileSkills = getProfileSkills(profile);
     const profileJourney = getProfileJourney(profile);
     const publishedRecords = portfolio.records.filter(record => record.status === 'PUBLISHED');
+    const portfolioEvidence = GrowthReportComposer.selectEvidence(publishedRecords, portfolio.unlinkedEvidence, {
+      resolveEvidenceUrl: (evidence, record) => record?.source === 'PARENT_PROVIDED'
+        ? parentEvidenceUrl(evidence)
+        : getPhotoUrl(evidence?.url)
+    });
     const firstRecord = types => publishedRecords.find(record => types.includes(record.type));
     const milestoneHighlight = firstRecord(['MILESTONE']);
     const projectHighlight = firstRecord(['PROJECT','WORK','ACTIVITY']);
@@ -1012,7 +1017,7 @@
           <div class="section-title"><span class="icon">🎨</span> 作品与成长故事</div>
           <div class="section-sub">用作品保存想法，也看见项目中的真实参与</div>
           <div class="section-line"></div>
-          ${renderProjectGallery(profile.photos)}
+          ${renderProjectGallery(portfolioEvidence)}
           <div class="project-stories">
             ${renderPortfolioProjects(portfolio.records)}
           </div>
@@ -1400,15 +1405,15 @@
     return data?.publicUrl || '';
   }
 
-  function renderProjectGallery(photos) {
-    if (!photos || !photos.length) return '<div class="empty">暂无作品</div>';
-    const [featured, ...rest] = photos;
+  function renderProjectGallery(evidence) {
+    if (!evidence || !evidence.length) return '<div class="empty">暂无作品</div>';
+    const [featured, ...rest] = evidence;
     return `<div class="work-editorial">
-      <article class="featured-work" onclick="showLightbox('${getPhotoUrl(featured.photo_url)}')">
-        <img src="${getPhotoUrl(featured.photo_url)}" alt="${featured.caption || '精选成长作品'}" loading="lazy">
-        <div class="featured-work-copy"><span class="work-index">FEATURED WORK · 01</span><h3>${featured.caption || '我的精选成长作品'}</h3><p>一份值得被认真收藏的成长证据</p></div>
+      <article class="featured-work" onclick="showLightbox('${escapeHtml(featured.url)}')">
+        <img src="${escapeHtml(featured.url)}" alt="${escapeHtml(featured.title || '精选成长作品')}" loading="lazy">
+        <div class="featured-work-copy"><span class="work-index">FEATURED WORK · 01</span><h3>${escapeHtml(featured.title || '我的精选成长作品')}</h3><p>一份值得被认真收藏的成长证据</p></div>
       </article>
-      ${rest.length ? `<div class="work-thumbs">${rest.map((item, index) => `<article class="work-card" onclick="showLightbox('${getPhotoUrl(item.photo_url)}')"><img src="${getPhotoUrl(item.photo_url)}" alt="${item.caption || '成长作品'}" loading="lazy"><div class="work-card-copy"><small>WORK · ${String(index + 2).padStart(2, '0')}</small><strong>${item.caption || '成长作品'}</strong></div></article>`).join('')}</div>` : ''}
+      ${rest.length ? `<div class="work-thumbs">${rest.map((item, index) => `<article class="work-card" onclick="showLightbox('${escapeHtml(item.url)}')"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.title || '成长作品')}" loading="lazy"><div class="work-card-copy"><small>WORK · ${String(index + 2).padStart(2, '0')}</small><strong>${escapeHtml(item.title || '成长作品')}</strong></div></article>`).join('')}</div>` : ''}
     </div>`;
   }
 

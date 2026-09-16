@@ -120,10 +120,10 @@ async function run() {
   assertCore(onePhoto);
   results.push(['D', 'one-photo', onePhoto.pages.length]);
 
-  // E. Many photos: evidence is curated to 24 and paginated four per page.
+  // E. Many photos: every unique image is preserved and paginated four per page.
   const manyPhotos = model(profile({ photos:photos(30) }));
-  assert.equal(manyPhotos.evidence.length, 24);
-  assert.equal(manyPhotos.pages.filter(page => page.type === 'gallery').length, 6);
+  assert.equal(manyPhotos.evidence.length, 30);
+  assert.equal(manyPhotos.pages.filter(page => page.type === 'gallery').length, 8);
   assertCore(manyPhotos);
   results.push(['E', 'many-photos', manyPhotos.pages.length]);
 

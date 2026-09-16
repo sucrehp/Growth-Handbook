@@ -108,7 +108,6 @@
 
   function selectEvidence(records, unlinkedEvidence, options) {
     const resolveEvidenceUrl = options && options.resolveEvidenceUrl;
-    const maximum = Number(options && options.maximum) || 24;
     const linked = records.flatMap(record => array(record.evidence)
       .map(item => normalizeEvidence(item, record, resolveEvidenceUrl)).filter(Boolean));
     const unlinked = array(unlinkedEvidence)
@@ -122,8 +121,7 @@
     return [...linked, ...unlinked]
       .filter(item => ['image', 'photo', 'certificate', 'document', 'work'].includes(item.kind))
       .sort((a, b) => score(b) - score(a))
-      .filter(item => !seen.has(item.url) && seen.add(item.url))
-      .slice(0, maximum);
+      .filter(item => !seen.has(item.url) && seen.add(item.url));
   }
 
   function paginate(items, pageSize) {
