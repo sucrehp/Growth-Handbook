@@ -539,6 +539,14 @@
     .report-book-page-content { position:relative; z-index:1; flex:1; min-height:0; overflow:hidden; }
     .report-book-page { height:100%; display:flex; flex-direction:column; padding:3px 1px; animation:reportPageIn .38s cubic-bezier(.2,.72,.2,1) both; }
     .report-book-page.is-previous { animation-name:reportPageInReverse; }
+    .report-page-leaf { position:absolute; inset:0; z-index:6; border-radius:7px 22px 22px 7px; transform-origin:left center; transform-style:preserve-3d; pointer-events:none; transition:transform .76s cubic-bezier(.22,.68,.18,1); }
+    .report-page-leaf.is-forward.is-turning { transform:rotateY(-180deg); }
+    .report-page-leaf.is-backward { transform:rotateY(-180deg); }
+    .report-page-leaf.is-backward.is-turning { transform:rotateY(0deg); }
+    .report-page-leaf-face { position:absolute; inset:0; padding:28px 26px 24px; border-radius:7px 22px 22px 7px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:linear-gradient(145deg,#fff,color-mix(in srgb,var(--art-soft) 58%,white)); box-shadow:0 12px 30px rgba(44,62,107,.12); }
+    .report-page-leaf-face .report-book-page-content { height:100%; }
+    .report-page-leaf-back { transform:rotateY(180deg); box-shadow:inset -15px 0 22px rgba(44,62,107,.08),0 12px 30px rgba(44,62,107,.12); }
+    .report-page-leaf-face::before { content:""; position:absolute; inset:10px; border:1px solid color-mix(in srgb,var(--primary) 10%,transparent); border-radius:4px 16px 16px 4px; pointer-events:none; }
     .report-page-eyebrow { color:var(--accent); font-size:9px; font-weight:700; letter-spacing:.16em; }
     .report-book-page h3 { margin:7px 0 4px; color:var(--primary); font:700 22px/1.25 'Noto Serif SC',serif; }
     .report-page-intro { color:var(--text-light); font-size:9px; line-height:1.5; }
@@ -579,6 +587,10 @@
     .report-book-return { position:absolute; z-index:4; right:0; top:0; width:48px; height:48px; border:0; border-radius:0 20px 0 24px; background:linear-gradient(225deg,color-mix(in srgb,var(--primary) 11%,white) 0 49%,transparent 50%); color:var(--primary); cursor:pointer; opacity:.72; transition:opacity .2s,transform .2s; }
     .report-book-return::before { content:"↙"; position:absolute; right:9px; top:7px; font-size:15px; line-height:1; }
     .report-book-return:hover,.report-book-return:focus-visible { opacity:1; transform:translate(-1px,1px); outline:none; }
+    .report-page-corner-next { position:absolute; z-index:4; right:0; bottom:0; width:66px; height:66px; border:0; border-radius:26px 0 20px 0; clip-path:polygon(100% 0,100% 100%,0 100%); background:linear-gradient(135deg,transparent 0 48%,color-mix(in srgb,var(--accent) 24%,white) 49% 70%,color-mix(in srgb,var(--primary) 18%,white) 71% 100%); color:var(--primary); cursor:pointer; filter:drop-shadow(-5px -5px 8px rgba(44,62,107,.09)); transition:transform .2s,filter .2s,opacity .2s; }
+    .report-page-corner-next::after { content:"›"; position:absolute; right:10px; bottom:6px; font:700 22px/1 'Noto Serif SC',serif; transform:rotate(-8deg); }
+    .report-page-corner-next:hover,.report-page-corner-next:focus-visible { transform:translate(-2px,-2px); filter:drop-shadow(-8px -8px 10px rgba(44,62,107,.14)); outline:none; }
+    .report-page-corner-next:disabled { opacity:0; pointer-events:none; }
     .report-cover { position:absolute; inset:0; z-index:3; transform-origin:left center; transform-style:preserve-3d; transition:transform 1.05s cubic-bezier(.2,.74,.18,1); }
     .report-book.is-open .report-cover { transform:rotateY(-172deg); }
     .report-cover-face { position:absolute; inset:0; display:flex; flex-direction:column; padding:38px 34px; border-radius:7px 22px 22px 7px; backface-visibility:hidden; -webkit-backface-visibility:hidden; overflow:hidden; }
@@ -631,6 +643,7 @@
       .report-cover-face { padding:32px 28px; }
       .report-cover-front h3 { margin-top:30px; font-size:31px; }
       .report-book-inside { padding:27px 23px 22px; }
+      .report-page-leaf-face { padding:27px 23px 22px; }
       .report-highlight { min-height:62px; }
     }
     @media(max-width:420px){
@@ -643,6 +656,7 @@
       .report-cover-front h3 { margin-top:26px; font-size:29px; }
       .report-cover-stats { gap:12px; }
       .report-book-inside { padding:26px 20px 20px; }
+      .report-page-leaf-face { padding:26px 20px 20px; }
       .report-highlight-grid { gap:6px; }
       .report-highlight { padding:8px; }
     }
@@ -769,6 +783,7 @@
   let reportBookPages = [];
   let reportBookPageIndex = 0;
   let reportBookSwipeStartX = null;
+  let reportBookTurning = false;
   const THEME_CONTRACT = {
     sky:{ label:'天空探索', tagline:'天空探索 · 自由想象 · 向光出发', preview:['#315F91','#74B7E8','#F1B84B'] },
     cosmic:{ label:'宇宙创客', tagline:'星际创想 · 保持好奇 · 勇敢抵达', preview:['#493A8E','#7769D8','#FFCA57'] },
@@ -932,13 +947,54 @@
     requestAnimationFrame(refreshMediaFits);
   }
 
-  function turnReportBookPage(direction) {
-    if (!direction || !reportBookPages.length) return;
+  function reportBookTargetIndex(direction) {
     const mobile = reportBookMobileMode() || reportBookPages.length === 1;
     const maxStart = mobile ? reportBookPages.length - 1 : Math.max(0, reportBookPages.length - 2);
-    if (direction > 0) reportBookPageIndex = Math.min(maxStart, reportBookPageIndex + (mobile ? 1 : 2));
-    else reportBookPageIndex = Math.max(0, reportBookPageIndex - (mobile ? 1 : (reportBookPageIndex % 2 ? 1 : 2)));
-    renderReportBookSpread(direction);
+    return direction > 0
+      ? Math.min(maxStart, reportBookPageIndex + (mobile ? 1 : 2))
+      : Math.max(0, reportBookPageIndex - (mobile ? 1 : (reportBookPageIndex % 2 ? 1 : 2)));
+  }
+
+  function animateReportBookTurn(direction, targetIndex) {
+    const book = document.getElementById('report-book');
+    const reducedMotion = matchMedia('(prefers-reduced-motion:reduce)').matches;
+    if (!book || reducedMotion || !book.classList.contains('is-open')) {
+      reportBookPageIndex = targetIndex;
+      renderReportBookSpread(direction);
+      return;
+    }
+    const mobile = reportBookMobileMode() || reportBookPages.length === 1;
+    const currentLeftIndex = mobile ? reportBookPageIndex : reportBookPageIndex;
+    const currentRightIndex = mobile ? reportBookPageIndex : reportBookPageIndex + 1;
+    const targetLeftIndex = mobile ? targetIndex : targetIndex;
+    const targetRightIndex = mobile ? targetIndex : targetIndex + 1;
+    const frontPage = reportBookPages[direction > 0 ? currentRightIndex : targetRightIndex];
+    const backPage = reportBookPages[direction > 0 ? targetLeftIndex : currentLeftIndex];
+    const leaf = document.createElement('div');
+    leaf.className = `report-page-leaf ${direction > 0 ? 'is-forward' : 'is-backward'}`;
+    leaf.setAttribute('aria-hidden', 'true');
+    leaf.innerHTML = `<div class="report-page-leaf-face report-page-leaf-front"><div class="report-book-page-content">${renderInteractiveBookPage(frontPage, direction)}</div></div><div class="report-page-leaf-face report-page-leaf-back"><div class="report-book-page-content">${renderInteractiveBookPage(backPage, direction)}</div></div>`;
+    book.appendChild(leaf);
+    reportBookTurning = true;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      reportBookPageIndex = targetIndex;
+      renderReportBookSpread(direction);
+      leaf.remove();
+      reportBookTurning = false;
+    };
+    leaf.addEventListener('transitionend', event => { if (event.target === leaf) finish(); });
+    requestAnimationFrame(() => requestAnimationFrame(() => leaf.classList.add('is-turning')));
+    setTimeout(finish, 920);
+  }
+
+  function turnReportBookPage(direction) {
+    if (!direction || !reportBookPages.length || reportBookTurning) return;
+    const targetIndex = reportBookTargetIndex(direction);
+    if (targetIndex === reportBookPageIndex) return;
+    animateReportBookTurn(direction, targetIndex);
   }
 
   function startReportBookSwipe(event) {
@@ -1236,6 +1292,7 @@
               <div class="report-book-inside" aria-hidden="true" inert>
                 <button type="button" class="report-book-return" aria-label="返回成长册封面" title="返回封面" onclick="toggleReportBook(false)"></button>
                 <div class="report-book-page-content" id="report-book-right-page">${renderInteractiveBookPage(reportBookPages[1] || reportBookPages[0])}</div>
+                <button type="button" class="report-page-corner-next" id="report-book-next" aria-label="翻到下一页" title="翻到下一页" onclick="event.stopPropagation(); turnReportBookPage(1)"></button>
               </div>
               <div class="report-cover">
                 <div class="report-cover-face report-cover-front" onclick="if (!event.target.closest('button')) toggleReportBook(true)">
@@ -1256,7 +1313,6 @@
             <div class="report-book-controls" id="report-book-controls" aria-hidden="true">
               <button type="button" id="report-book-prev" onclick="turnReportBookPage(-1)">← 上一页</button>
               <span class="report-book-indicator" id="report-book-indicator">1 / ${reportBookPages.length}</span>
-              <button type="button" id="report-book-next" onclick="turnReportBookPage(1)">下一页 →</button>
             </div>
           </div>
         </div>
