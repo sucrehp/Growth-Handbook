@@ -1,8 +1,8 @@
-const { send, handleError, requireUser, db } = require("./_lib");
+const { send, handleError, requireStaff, db } = require("./_lib");
 
 module.exports = async function handler(req, res) {
   try {
-    const user = await requireUser(req);
+    const user = await requireStaff(req);
     if (req.method === "GET") {
       const rows = await db(
         "publish_schedules?select=*,content_drafts(*)&order=scheduled_at.asc&limit=100"

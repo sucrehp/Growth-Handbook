@@ -17,6 +17,7 @@
   "rewrites": [
     { "source": "/api/children", "destination": "/api/operations?__operation=children" },
     { "source": "/api/photos", "destination": "/api/operations?__operation=photos" },
+    { "source": "/api/guardian-access", "destination": "/api/operations?__operation=guardian-access" },
     { "source": "/api/parent-contribution-media", "destination": "/api/operations?__operation=parent-contribution-media" },
     { "source": "/api/parent-contribution-review", "destination": "/api/operations?__operation=parent-contribution-review" },
     { "source": "/marketing", "destination": "/marketing.html" },

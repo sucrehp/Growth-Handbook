@@ -153,6 +153,17 @@
     .review-media img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; background:var(--border); }
     .review-video { display:inline-flex; margin-top:10px; color:var(--primary); font-size:12px; }
     .review-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
+
+    /* ===== Guardian Access ===== */
+    .guardian-list { display:grid; gap:12px; margin-bottom:16px; }
+    .guardian-card { border:1px solid var(--border); border-radius:12px; padding:16px; background:var(--bg); }
+    .guardian-card.inactive { opacity:.62; }
+    .guardian-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+    .guardian-email { font-size:14px; font-weight:600; color:var(--text); word-break:break-all; }
+    .guardian-meta { margin-top:4px; color:var(--text-light); font-size:12px; }
+    .guardian-permissions { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+    .guardian-permissions span { background:#fff; border:1px solid var(--border); border-radius:999px; padding:4px 9px; font-size:11px; color:var(--text-mid); }
+    .guardian-note { padding:12px 14px; border-radius:10px; background:#fff8e6; color:#80642b; font-size:12px; line-height:1.7; margin-bottom:16px; }
     
     /* ===== Modal ===== */
     .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
@@ -281,6 +292,28 @@
     return path;
   }
 
+  async function authFetch(url, options = {}) {
+    const { data:{ session } } = await db.auth.getSession();
+    if (!session?.access_token) throw new Error('登录已过期，请重新登录');
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+        ...(options.headers || {})
+      }
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || '服务请求失败');
+    return payload;
+  }
+
+  async function ensureStaffSession() {
+    const profile = await authFetch('/api/edu-me');
+    if (profile.accountType !== 'staff') throw new Error('该账号没有机构后台权限');
+    return profile;
+  }
+
   // ============================================
   // Auth
   // ============================================
@@ -295,8 +328,16 @@
       }
     }
     if (session) {
-      user = session.user;
-      renderDashboard();
+      try {
+        await ensureStaffSession();
+        user = session.user;
+        renderDashboard();
+      } catch (error) {
+        await db.auth.signOut();
+        user = null;
+        renderLogin();
+        toast(error.message, 'error');
+      }
     } else {
       renderLogin();
     }
@@ -306,9 +347,15 @@
     const { error } = await db.auth.signInWithPassword({ email, password });
     if (error) { toast(error.message === 'Invalid login credentials' ? '邮箱或密码错误' : error.message, 'error'); return; }
     const { data: { session } } = await db.auth.getSession();
-    user = session.user;
-    toast('登录成功', 'success');
-    renderDashboard();
+    try {
+      await ensureStaffSession();
+      user = session.user;
+      toast('登录成功', 'success');
+      renderDashboard();
+    } catch (accessError) {
+      await db.auth.signOut();
+      toast(accessError.message, 'error');
+    }
   }
 
   async function logout() {
@@ -351,6 +398,14 @@
     }
     const metadataByUpload = new Map(metadata.map(item => [item.parent_upload_id, item]));
     currentContent.contributions = uploads.filter(item => metadataByUpload.has(item.id)).map(item => ({ ...item, metadata:metadataByUpload.get(item.id) }));
+    currentContent.guardians = [];
+    currentContent.guardianError = '';
+    try {
+      const guardianData = await authFetch(`/api/guardian-access?childId=${encodeURIComponent(childId)}`);
+      currentContent.guardians = guardianData.bindings || [];
+    } catch (error) {
+      currentContent.guardianError = error.message;
+    }
   }
 
   // ============================================
@@ -478,6 +533,7 @@
       { id: 'achievements', label: '获奖成就' },
       { id: 'messages', label: '家长留言' },
       { id: 'contributions', label: `家长投稿${(currentContent.contributions || []).some(item => item.audit_status === 'pending') ? ' · 待审核' : ''}` },
+      { id: 'guardians', label: '监护人权限' },
     ];
 
     const tabsHtml = tabDefs.map(t =>
@@ -537,6 +593,7 @@
       case 'achievements': renderListTab(panel, 'achievements', '获奖成就', achievementItemHtml, 'achievementModal'); break;
       case 'messages': renderListTab(panel, 'messages', '家长留言', messageItemHtml, 'messageModal'); break;
       case 'contributions': renderContributionsTab(panel); break;
+      case 'guardians': renderGuardiansTab(panel); break;
     }
   }
 
@@ -651,6 +708,132 @@
     document.querySelector('[name=style_preference]').value = id;
     document.querySelectorAll('.style-opt').forEach(el => el.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
+  }
+
+  // --- Guardian Access Tab ---
+  function renderGuardiansTab(panel) {
+    const guardians = currentContent.guardians || [];
+    const errorHtml = currentContent.guardianError
+      ? `<div class="guardian-note">监护人权限服务暂不可用：${escapeHtml(currentContent.guardianError)}。在 Production 执行已审核的家长权限迁移并完成部署后即可使用。</div>`
+      : '';
+    const cards = guardians.length ? guardians.map((item, index) => {
+      const enabled = item.status === 'active';
+      const permissions = [
+        item.can_upload_growth ? '可提交成长素材' : '不可提交素材',
+        item.can_reply_comments ? '可回复老师评语' : '不可回复评语',
+        '不可修改孩子基本资料'
+      ];
+      return `
+        <div class="guardian-card ${enabled ? '' : 'inactive'}">
+          <div class="guardian-head">
+            <div>
+              <div class="guardian-email">${escapeHtml(item.email)}</div>
+              <div class="guardian-meta">${escapeHtml(item.relation || '家长')} ${item.is_primary ? '· 主要监护人' : ''} · ${enabled ? '已授权' : '已停用'}</div>
+            </div>
+            <div class="item-actions">
+              <button class="btn btn-outline btn-sm" onclick="openGuardianModal(${index})">编辑</button>
+              <button class="btn ${enabled ? 'btn-danger' : 'btn-primary'} btn-sm" onclick="toggleGuardianStatus(${index})">${enabled ? '停用' : '恢复'}</button>
+            </div>
+          </div>
+          <div class="guardian-permissions">${permissions.map(text => `<span>${text}</span>`).join('')}</div>
+        </div>`;
+    }).join('') : '<div class="empty-state"><div class="icon">👨‍👩‍👧</div><p>尚未绑定家长账号</p></div>';
+
+    panel.innerHTML = `
+      <h3>监护人权限</h3>
+      <div class="guardian-note">家长账号仅能查看已绑定的孩子；普通成长资料由机构维护，家长可按授权提交素材或回复评语。邀请邮件中的链接只能发给对应监护人。</div>
+      ${errorHtml}
+      <div class="guardian-list">${cards}</div>
+      <button class="btn btn-accent" onclick="openGuardianModal()" ${currentContent.guardianError ? 'disabled' : ''}>＋ 邀请并绑定家长</button>
+    `;
+  }
+
+  function openGuardianModal(index = null) {
+    const item = index === null ? null : (currentContent.guardians || [])[index];
+    openModal(`
+      <h3>${item ? '编辑监护人权限' : '邀请并绑定家长'}</h3>
+      <form id="guardianForm" onsubmit="event.preventDefault();saveGuardian(${index === null ? 'null' : index})">
+        <div class="form-group">
+          <label>家长邮箱 *</label>
+          <input class="form-input" name="email" type="email" value="${escapeHtml(item?.email || '')}" ${item ? 'readonly' : 'required'} placeholder="parent@example.com">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>与孩子关系</label>
+            <input class="form-input" name="relation" maxlength="24" value="${escapeHtml(item?.relation || '家长')}" placeholder="如：妈妈、爸爸、监护人">
+          </div>
+          <div class="form-group">
+            <label>账号状态</label>
+            <select class="form-input" name="status">
+              <option value="active" ${item?.status !== 'inactive' ? 'selected' : ''}>已授权</option>
+              <option value="inactive" ${item?.status === 'inactive' ? 'selected' : ''}>已停用</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label><input type="checkbox" name="is_primary" ${item?.is_primary ? 'checked' : ''}> 设为主要监护人</label></div>
+        <div class="form-group"><label><input type="checkbox" name="can_upload_growth" ${item?.can_upload_growth !== false ? 'checked' : ''}> 允许提交家庭成长素材</label></div>
+        <div class="form-group"><label><input type="checkbox" name="can_reply_comments" ${item?.can_reply_comments !== false ? 'checked' : ''}> 允许回复老师评语</label></div>
+        <div class="guardian-note">V1 暂不允许家长修改姓名、生日、班级等机构档案。新邮箱将收到 Supabase 官方邀请邮件。</div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn btn-primary">${item ? '保存权限' : '发送邀请并绑定'}</button>
+        </div>
+      </form>`);
+  }
+
+  async function saveGuardian(index) {
+    const form = document.getElementById('guardianForm');
+    const item = index === null ? null : (currentContent.guardians || [])[index];
+    const payload = {
+      childId: currentChild.id,
+      email: form.email.value,
+      relation: form.relation.value,
+      status: form.status.value,
+      isPrimary: form.is_primary.checked,
+      canUploadGrowth: form.can_upload_growth.checked,
+      canReplyComments: form.can_reply_comments.checked
+    };
+    if (item) payload.bindingId = item.id;
+    try {
+      const result = await authFetch('/api/guardian-access', {
+        method: item ? 'PATCH' : 'POST',
+        body: JSON.stringify(payload)
+      });
+      closeModal();
+      await loadChildContent(currentChild.id);
+      activeTab = 'guardians';
+      renderEditor();
+      toast(result.invitationSent ? '邀请邮件已发送，家长完成设置后即可登录' : '监护人权限已保存', 'success');
+    } catch (error) {
+      toast(error.message, 'error');
+    }
+  }
+
+  async function toggleGuardianStatus(index) {
+    const item = (currentContent.guardians || [])[index];
+    if (!item) return;
+    const nextStatus = item.status === 'active' ? 'inactive' : 'active';
+    if (nextStatus === 'inactive' && !confirm('停用后，该家长将立即无法通过账号查看孩子资料，是否继续？')) return;
+    try {
+      await authFetch('/api/guardian-access', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          bindingId: item.id,
+          childId: currentChild.id,
+          relation: item.relation,
+          status: nextStatus,
+          isPrimary: item.is_primary,
+          canUploadGrowth: item.can_upload_growth,
+          canReplyComments: item.can_reply_comments
+        })
+      });
+      await loadChildContent(currentChild.id);
+      activeTab = 'guardians';
+      renderEditor();
+      toast(nextStatus === 'active' ? '家长权限已恢复' : '家长权限已停用', 'success');
+    } catch (error) {
+      toast(error.message, 'error');
+    }
   }
 
   // --- Generic List Tab ---

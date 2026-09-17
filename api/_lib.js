@@ -50,6 +50,60 @@ async function requireUser(req) {
   return response.json();
 }
 
+async function requireStaff(req) {
+  const user = await requireUser(req);
+  const rows = await db(
+    `staff_profiles?select=id,display_name,role,status&id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=1`
+  );
+  if (!rows.length) {
+    const error = new Error("该账号没有机构后台操作权限");
+    error.statusCode = 403;
+    throw error;
+  }
+  return { ...user, staffProfile: rows[0] };
+}
+
+async function authAdmin(endpoint, options = {}) {
+  assertConfigured();
+  const headers = {
+    apikey: SECRET_KEY,
+    Authorization: `Bearer ${SECRET_KEY}`,
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/admin/${endpoint}`, {
+    ...options,
+    headers
+  });
+  if (!response.ok) {
+    const error = new Error(`账号服务请求失败：${await response.text()}`);
+    error.statusCode = response.status;
+    throw error;
+  }
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function inviteAuthUser(email, redirectTo) {
+  assertConfigured();
+  const query = redirectTo ? `?redirect_to=${encodeURIComponent(redirectTo)}` : "";
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/invite${query}`, {
+    method: "POST",
+    headers: {
+      apikey: SECRET_KEY,
+      Authorization: `Bearer ${SECRET_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email })
+  });
+  if (!response.ok) {
+    const error = new Error(`邀请邮件发送失败：${await response.text()}`);
+    error.statusCode = response.status;
+    throw error;
+  }
+  return response.json();
+}
+
 async function db(endpoint, options = {}) {
   assertConfigured();
   const headers = {
@@ -123,6 +177,9 @@ module.exports = {
   handleError,
   requireMethod,
   requireUser,
+  requireStaff,
+  authAdmin,
+  inviteAuthUser,
   db,
   uploadPhoto,
   normalizeCategory

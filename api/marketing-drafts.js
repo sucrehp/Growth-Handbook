@@ -1,8 +1,8 @@
-const { send, handleError, requireUser, db } = require("./_lib");
+const { send, handleError, requireStaff, db } = require("./_lib");
 
 module.exports = async function handler(req, res) {
   try {
-    await requireUser(req);
+    await requireStaff(req);
     if (req.method === "GET") {
       const rows = await db(
         "content_drafts?select=*,marketing_materials(*)&order=created_at.desc&limit=100"

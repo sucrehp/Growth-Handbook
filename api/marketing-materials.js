@@ -3,7 +3,7 @@ const {
   SUPABASE_URL,
   send,
   handleError,
-  requireUser,
+  requireStaff,
   db
 } = require("./_lib");
 
@@ -12,7 +12,7 @@ const BUCKET = process.env.SUPABASE_MARKETING_BUCKET || "marketing-materials";
 
 module.exports = async function handler(req, res) {
   try {
-    const user = await requireUser(req);
+    const user = await requireStaff(req);
     if (req.method === "GET") {
       const rows = await db(
         "marketing_materials?select=*&order=created_at.desc&limit=100"

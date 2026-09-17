@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const { requireStaff } = require("../../api/_lib");
 
 const SUPABASE_URL = String(process.env.SUPABASE_URL || "").replace(/\/$/, "");
 const SECRET_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -124,16 +125,6 @@ async function patchRows(table, id, payload) {
   });
 }
 
-async function requireAuthenticatedOperator(req) {
-  const authorization = String(req.headers.authorization || "");
-  if (!authorization.startsWith("Bearer ")) throw fail("请先登录管理后台", 401);
-  const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    headers: serviceHeaders({ Authorization: authorization })
-  });
-  if (!response.ok) throw fail("管理员登录已过期", 401);
-  return response.json();
-}
-
 async function authorizeMediaRead(req, path) {
   if (!/^[0-9a-f-]{36}\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i.test(path)) {
     throw fail("媒体路径无效");
@@ -142,7 +133,7 @@ async function authorizeMediaRead(req, path) {
   const authorization = String(req.headers.authorization || "");
   let tokenScoped = false;
   if (authorization.startsWith("Bearer ")) {
-    await requireAuthenticatedOperator(req);
+    await requireStaff(req);
   } else {
     const token = String(req.query?.token || "").trim();
     const child = await getChildByToken(token);

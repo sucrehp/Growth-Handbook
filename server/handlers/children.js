@@ -1,9 +1,9 @@
-const { send, handleError, requireMethod, requireUser, db } = require("../../api/_lib");
+const { send, handleError, requireMethod, requireStaff, db } = require("../../api/_lib");
 
 module.exports = async function handler(req, res) {
   try {
     requireMethod(req, "GET");
-    await requireUser(req);
+    await requireStaff(req);
     const rows = await db("children?select=id,name,class_name,status&order=name");
     send(res, 200, rows);
   } catch (error) {

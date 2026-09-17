@@ -1,4 +1,4 @@
-const { send, handleError, requireUser, db } = require("./_lib");
+const { send, handleError, requireStaff, db } = require("./_lib");
 
 const resources = {
   leads: {
@@ -51,7 +51,7 @@ const resources = {
 
 module.exports = async function handler(req, res) {
   try {
-    const user = await requireUser(req);
+    const user = await requireStaff(req);
     const resource = resources[String(req.query?.resource || req.body?.resource || "")];
     if (!resource) {
       const error = new Error("不支持的数据模块");

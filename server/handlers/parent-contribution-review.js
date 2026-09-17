@@ -1,6 +1,7 @@
 const SUPABASE_URL = String(process.env.SUPABASE_URL || "").replace(/\/$/, "");
 const SECRET_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const BUCKET = "parent-uploads";
+const { requireStaff } = require("../../api/_lib");
 
 function send(res, status, payload) {
   res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
@@ -29,17 +30,6 @@ async function serviceRest(endpoint, options = {}) {
   if (!response.ok) throw fail("审核数据读取失败", 503);
   const text = await response.text();
   return text ? JSON.parse(text) : null;
-}
-
-async function requireOperator(req) {
-  if (!SUPABASE_URL || !SECRET_KEY) throw fail("审核服务尚未配置", 503);
-  const authorization = String(req.headers.authorization || "");
-  if (!authorization.startsWith("Bearer ")) throw fail("请先登录管理后台", 401);
-  const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    headers: serviceHeaders({ Authorization: authorization })
-  });
-  if (!response.ok) throw fail("管理员登录已过期", 401);
-  return authorization;
 }
 
 async function invokeReview(authorization, body) {
@@ -82,7 +72,8 @@ async function removeRejectedEvidence(contributionId, evidence) {
 module.exports = async function handler(req, res) {
   try {
     if (req.method !== "POST") throw fail("请求方式不支持", 405);
-    const authorization = await requireOperator(req);
+    await requireStaff(req);
+    const authorization = String(req.headers.authorization || "");
     const contributionId = String(req.body?.contributionId || "").trim();
     const decision = String(req.body?.decision || "").toUpperCase();
     const remark = String(req.body?.remark || "").trim();
@@ -109,4 +100,3 @@ module.exports = async function handler(req, res) {
     send(res, error.statusCode || 500, { error: error.message || "审核失败" });
   }
 };
-

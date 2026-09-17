@@ -2,7 +2,7 @@ const {
   send,
   handleError,
   requireMethod,
-  requireUser,
+  requireStaff,
   db,
   uploadPhoto,
   normalizeCategory
@@ -11,7 +11,7 @@ const {
 module.exports = async function handler(req, res) {
   try {
     requireMethod(req, "POST");
-    const user = await requireUser(req);
+    const user = await requireStaff(req);
     const body = req.body || {};
     if (!body.childId || !body.fileData) {
       const error = new Error("缺少学员或照片");

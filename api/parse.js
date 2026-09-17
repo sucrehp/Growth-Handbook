@@ -1,9 +1,9 @@
-const { send, handleError, requireMethod, requireUser, db, normalizeCategory } = require("./_lib");
+const { send, handleError, requireMethod, requireStaff, db, normalizeCategory } = require("./_lib");
 
 module.exports = async function handler(req, res) {
   try {
     requireMethod(req, "POST");
-    await requireUser(req);
+    await requireStaff(req);
     const text = String(req.body?.instruction || "").trim();
     if (!text) {
       const error = new Error("请输入归档指令");

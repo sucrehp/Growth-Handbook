@@ -1,8 +1,8 @@
-const { send, handleError, requireUser, db } = require("./_lib");
+const { send, handleError, requireStaff, db } = require("./_lib");
 
 module.exports = async function handler(req, res) {
   try {
-    const user = await requireUser(req);
+    const user = await requireStaff(req);
     if (req.method !== "POST") {
       const error = new Error("请求方式不支持");
       error.statusCode = 405;

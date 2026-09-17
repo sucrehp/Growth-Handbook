@@ -12,9 +12,10 @@ const roleModules = {
 module.exports = async function handler(req, res) {
   try {
     const user = await requireUser(req);
+    const parents = await db(`parent_accounts?select=child_id,relation,is_primary,can_edit_basic,can_reply_comments,can_upload_growth&user_id=eq.${encodeURIComponent(user.id)}&status=eq.active`);
     let rows = await db(`staff_profiles?select=id,campus_id,display_name,role,status,module_permissions&id=eq.${encodeURIComponent(user.id)}&limit=1`);
 
-    if (!rows.length) {
+    if (!rows.length && !parents.length) {
       const existing = await db("staff_profiles?select=id&limit=1");
       if (!existing.length) {
         rows = await db("staff_profiles", {
@@ -30,13 +31,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    if (!rows.length || rows[0].status !== "active") {
-      const parents = await db(`parent_accounts?select=child_id,relation,is_primary,can_edit_basic,can_reply_comments,can_upload_growth&user_id=eq.${encodeURIComponent(user.id)}&status=eq.active`);
-      if (!parents.length) {
-        const error = new Error("该账号尚未分配 EDU 使用权限");
-        error.statusCode = 403;
-        throw error;
-      }
+    if ((!rows.length || rows[0].status !== "active") && parents.length) {
       return send(res, 200, {
         id: user.id,
         email: user.email,
@@ -46,6 +41,12 @@ module.exports = async function handler(req, res) {
         modules: ["parent_home","growth","messages","uploads"],
         children: parents
       });
+    }
+
+    if (!rows.length || rows[0].status !== "active") {
+      const error = new Error("该账号尚未分配 EDU 使用权限");
+      error.statusCode = 403;
+      throw error;
     }
 
     const profile = rows[0];
