@@ -35,7 +35,7 @@ create table if not exists public.parent_accounts (
   relation text not null default '家长',
   is_primary boolean not null default false,
   can_edit_basic boolean not null default false,
-  can_reply_comments boolean not null default true,
+  can_reply_comments boolean not null default false,
   can_upload_growth boolean not null default true,
   status text not null default 'active' check (status in ('active','inactive')),
   granted_by uuid references auth.users(id) on delete set null,
@@ -48,7 +48,7 @@ alter table public.parent_accounts
   add column if not exists relation text not null default '家长',
   add column if not exists is_primary boolean not null default false,
   add column if not exists can_edit_basic boolean not null default false,
-  add column if not exists can_reply_comments boolean not null default true,
+  add column if not exists can_reply_comments boolean not null default false,
   add column if not exists can_upload_growth boolean not null default true,
   add column if not exists status text not null default 'active',
   add column if not exists granted_by uuid references auth.users(id) on delete set null,
@@ -56,6 +56,7 @@ alter table public.parent_accounts
   add column if not exists updated_at timestamptz not null default now();
 
 alter table public.parent_accounts alter column can_edit_basic set default false;
+alter table public.parent_accounts alter column can_reply_comments set default false;
 
 create index if not exists idx_parent_accounts_user_status
   on public.parent_accounts(user_id, status);
@@ -147,6 +148,162 @@ begin
   end loop;
 end;
 $policies$;
+
+-- Parent contribution now requires both an authenticated parent account and an
+-- active child binding. The share token still scopes the target child, while
+-- the account binding supplies the authorization decision.
+create or replace function public.submit_parent_contribution_by_token(
+  p_token text,
+  p_record_type text,
+  p_event_date date,
+  p_title text,
+  p_detail text default null,
+  p_tags text[] default '{}',
+  p_external_video_url text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $func$
+declare
+  v_child_id uuid;
+  v_upload_id uuid;
+  v_type text := upper(trim(coalesce(p_record_type, '')));
+  v_title text := trim(coalesce(p_title, ''));
+  v_detail text := nullif(trim(coalesce(p_detail, '')), '');
+  v_video_url text := nullif(trim(coalesce(p_external_video_url, '')), '');
+  v_content_type text;
+  v_month_count integer;
+begin
+  if auth.uid() is null then
+    raise exception 'parent authentication required';
+  end if;
+  if nullif(trim(coalesce(p_token, '')), '') is null then
+    raise exception 'invalid share token';
+  end if;
+
+  select c.id into v_child_id
+  from public.children c
+  where c.share_token = p_token
+    and exists (
+      select 1 from public.parent_accounts account
+      where account.user_id = auth.uid()
+        and account.child_id = c.id
+        and account.status = 'active'
+        and account.can_upload_growth
+    );
+
+  if v_child_id is null then
+    raise exception 'parent child access denied';
+  end if;
+  if p_event_date is null then
+    raise exception 'event date is required';
+  end if;
+  if v_title = '' or char_length(v_title) > 120 then
+    raise exception 'title is required and must not exceed 120 characters';
+  end if;
+  if char_length(coalesce(v_detail, '')) > 1000 then
+    raise exception 'detail must not exceed 1000 characters';
+  end if;
+  if v_type not in (
+    'LEARNING', 'PROJECT', 'WORK', 'ACTIVITY', 'SKILL', 'INTEREST',
+    'ACHIEVEMENT', 'TEACHER_OBSERVATION', 'MILESTONE', 'OTHER'
+  ) then
+    raise exception 'unsupported record type';
+  end if;
+  if v_video_url is not null
+     and (char_length(v_video_url) > 2000 or v_video_url !~* '^https://') then
+    raise exception 'external video link must use https';
+  end if;
+  if coalesce(array_length(p_tags, 1), 0) > 8
+     or exists (
+       select 1 from unnest(coalesce(p_tags, '{}')) tag
+       where char_length(trim(tag)) > 30
+     ) then
+    raise exception 'tags must contain at most 8 items of 30 characters';
+  end if;
+
+  select count(*) into v_month_count
+  from public.parent_uploads upload
+  where upload.child_id = v_child_id
+    and upload.created_at >= date_trunc('month', now());
+  if v_month_count >= 5 then
+    raise exception 'monthly parent contribution limit reached';
+  end if;
+
+  v_content_type := case
+    when v_type = 'MILESTONE' then 'milestone'
+    when v_type in ('LEARNING', 'SKILL', 'INTEREST') then 'skill'
+    when v_type = 'ACTIVITY' then 'daily'
+    else 'story'
+  end;
+
+  insert into public.parent_uploads (
+    child_id, parent_openid, content_type, title, description,
+    photo_urls, event_date, audit_status, visible_in_handbook
+  ) values (
+    v_child_id, auth.uid()::text, v_content_type, v_title, v_detail,
+    '{}', p_event_date, 'pending', false
+  ) returning id into v_upload_id;
+
+  insert into public.parent_contribution_metadata (
+    parent_upload_id, child_id, record_type, tags, evidence, external_video_url
+  ) values (
+    v_upload_id, v_child_id, v_type, coalesce(p_tags, '{}'),
+    '[]'::jsonb, v_video_url
+  );
+
+  return jsonb_build_object('contribution_id', v_upload_id, 'status', 'PENDING_REVIEW');
+end;
+$func$;
+
+revoke all on function public.submit_parent_contribution_by_token(
+  text, text, date, text, text, text[], text
+) from public, anon, authenticated;
+grant execute on function public.submit_parent_contribution_by_token(
+  text, text, date, text, text, text[], text
+) to authenticated;
+
+create or replace function public.cancel_parent_contribution_by_token(
+  p_token text,
+  p_contribution_id uuid
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $func$
+declare
+  v_deleted_id uuid;
+begin
+  if auth.uid() is null then
+    raise exception 'parent authentication required';
+  end if;
+  delete from public.parent_uploads upload
+  using public.children child
+  where upload.id = p_contribution_id
+    and upload.child_id = child.id
+    and child.share_token = p_token
+    and upload.parent_openid = auth.uid()::text
+    and upload.audit_status = 'pending'
+    and upload.visible_in_handbook = false
+    and exists (
+      select 1 from public.parent_accounts account
+      where account.user_id = auth.uid()
+        and account.child_id = child.id
+        and account.status = 'active'
+        and account.can_upload_growth
+    )
+  returning upload.id into v_deleted_id;
+  return v_deleted_id is not null;
+end;
+$func$;
+
+revoke all on function public.cancel_parent_contribution_by_token(text, uuid)
+  from public, anon, authenticated;
+grant execute on function public.cancel_parent_contribution_by_token(text, uuid)
+  to authenticated;
 
 -- Keep public photo viewing unchanged, but authenticated upload/delete is staff-only.
 drop policy if exists "认证用户上传照片" on storage.objects;

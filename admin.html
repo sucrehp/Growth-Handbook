@@ -720,7 +720,7 @@
       const enabled = item.status === 'active';
       const permissions = [
         item.can_upload_growth ? '可提交成长素材' : '不可提交素材',
-        item.can_reply_comments ? '可回复老师评语' : '不可回复评语',
+        '老师评语当前只读',
         '不可修改孩子基本资料'
       ];
       return `
@@ -772,8 +772,7 @@
         </div>
         <div class="form-group"><label><input type="checkbox" name="is_primary" ${item?.is_primary ? 'checked' : ''}> 设为主要监护人</label></div>
         <div class="form-group"><label><input type="checkbox" name="can_upload_growth" ${item?.can_upload_growth !== false ? 'checked' : ''}> 允许提交家庭成长素材</label></div>
-        <div class="form-group"><label><input type="checkbox" name="can_reply_comments" ${item?.can_reply_comments !== false ? 'checked' : ''}> 允许回复老师评语</label></div>
-        <div class="guardian-note">V1 暂不允许家长修改姓名、生日、班级等机构档案。新邮箱将收到 Supabase 官方邀请邮件。</div>
+        <div class="guardian-note">V1 暂不允许家长修改姓名、生日、班级等机构档案；老师评语保持只读。新邮箱将收到 Supabase 官方邀请邮件。</div>
         <div class="modal-actions">
           <button type="button" class="btn btn-outline" onclick="closeModal()">取消</button>
           <button type="submit" class="btn btn-primary">${item ? '保存权限' : '发送邀请并绑定'}</button>
@@ -791,7 +790,7 @@
       status: form.status.value,
       isPrimary: form.is_primary.checked,
       canUploadGrowth: form.can_upload_growth.checked,
-      canReplyComments: form.can_reply_comments.checked
+      canReplyComments: false
     };
     if (item) payload.bindingId = item.id;
     try {
@@ -824,7 +823,7 @@
           status: nextStatus,
           isPrimary: item.is_primary,
           canUploadGrowth: item.can_upload_growth,
-          canReplyComments: item.can_reply_comments
+          canReplyComments: false
         })
       });
       await loadChildContent(currentChild.id);

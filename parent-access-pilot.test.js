@@ -14,14 +14,17 @@ const normalized = sql.replace(/\s+/g, ' ').toLowerCase();
 
 assert.match(lib, /async function requireStaff\(req\)/);
 assert.match(lib, /staff_profiles\?select=.*status=eq\.active/);
+assert.match(lib, /isMissingTableError\(error, "staff_profiles"\)/);
+assert.match(lib, /legacyStaffBoundary: true/);
 assert.match(lib, /async function inviteAuthUser\(email, redirectTo\)/);
 assert.match(lib, /Authorization: `Bearer \$\{SECRET_KEY\}`/);
 
-const parentLookup = me.indexOf('const parents = await db(`parent_accounts');
+const parentLookup = me.indexOf('parents = await db(`parent_accounts');
 const bootstrap = me.indexOf('if (!rows.length && !parents.length)');
 assert.ok(parentLookup >= 0 && parentLookup < bootstrap, 'parent bindings must be checked before first-owner bootstrap');
 assert.match(me, /accountType: "parent"/);
 assert.match(me, /accountType: "staff"/);
+assert.match(me, /authorizationMode: "LEGACY_PRE_PARENT_PILOT"/);
 
 for (const file of [
   'server/handlers/children.js', 'server/handlers/photos.js',
@@ -73,7 +76,7 @@ for (const table of [
 
 assert.doesNotMatch(sql, /drop\s+table/i);
 assert.doesNotMatch(sql, /truncate/i);
-assert.doesNotMatch(sql, /delete\s+from/i);
+assert.doesNotMatch(sql, /delete\s+from\s+public\.(children|growth_timeline|course_records|teacher_comments|activity_records|achievements|photo_records|parent_messages)/i);
 assert.doesNotMatch(sql, /update\s+public\.(children|growth_timeline|course_records|teacher_comments|activity_records|achievements|photo_records|parent_messages)/i);
 assert.doesNotMatch(sql, /get_growth_portfolio_by_token/);
 

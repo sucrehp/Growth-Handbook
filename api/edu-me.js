@@ -1,4 +1,4 @@
-const { send, handleError, requireUser, db } = require("./_lib");
+const { send, handleError, requireUser, isMissingTableError, db } = require("./_lib");
 
 const roleModules = {
   owner: ["overview","leads","contracts","accounts","tasks","growth","teacher","marketing","finance","settings"],
@@ -12,8 +12,25 @@ const roleModules = {
 module.exports = async function handler(req, res) {
   try {
     const user = await requireUser(req);
-    const parents = await db(`parent_accounts?select=child_id,relation,is_primary,can_edit_basic,can_reply_comments,can_upload_growth&user_id=eq.${encodeURIComponent(user.id)}&status=eq.active`);
-    let rows = await db(`staff_profiles?select=id,campus_id,display_name,role,status,module_permissions&id=eq.${encodeURIComponent(user.id)}&limit=1`);
+    let parents;
+    let rows;
+    try {
+      parents = await db(`parent_accounts?select=child_id,relation,is_primary,can_edit_basic,can_reply_comments,can_upload_growth&user_id=eq.${encodeURIComponent(user.id)}&status=eq.active`);
+      rows = await db(`staff_profiles?select=id,campus_id,display_name,role,status,module_permissions&id=eq.${encodeURIComponent(user.id)}&limit=1`);
+    } catch (error) {
+      if (!isMissingTableError(error, "parent_accounts") && !isMissingTableError(error, "staff_profiles")) throw error;
+      return send(res, 200, {
+        id: user.id,
+        email: user.email,
+        displayName: user.user_metadata?.display_name || user.email,
+        accountType: "staff",
+        role: "owner",
+        campusId: null,
+        modules: roleModules.owner,
+        childAccess: [],
+        authorizationMode: "LEGACY_PRE_PARENT_PILOT"
+      });
+    }
 
     if (!rows.length && !parents.length) {
       const existing = await db("staff_profiles?select=id&limit=1");
@@ -38,7 +55,7 @@ module.exports = async function handler(req, res) {
         displayName: user.user_metadata?.display_name || "家长",
         accountType: "parent",
         role: "parent",
-        modules: ["parent_home","growth","messages","uploads"],
+        modules: ["parent_home","growth","uploads"],
         children: parents
       });
     }

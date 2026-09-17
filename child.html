@@ -808,6 +808,7 @@
   let activeTheme = 'sky';
   let activeShareToken = '';
   let isDemoMode = false;
+  let parentContributionAllowed = false;
   let parentContributionFiles = [];
   let mediaFitResizeBound = false;
   let reportBookPages = [];
@@ -1121,6 +1122,26 @@
     return data;
   }
 
+  async function resolveParentContributionAccess(childId) {
+    const accessToken = localStorage.getItem('edu_access_token') || '';
+    const refreshToken = localStorage.getItem('edu_refresh_token') || '';
+    if (!accessToken || !refreshToken) return false;
+    try {
+      const restored = await db.auth.setSession({ access_token:accessToken, refresh_token:refreshToken });
+      const session = restored.data?.session;
+      if (restored.error || !session?.access_token) return false;
+      localStorage.setItem('edu_access_token', session.access_token);
+      localStorage.setItem('edu_refresh_token', session.refresh_token || refreshToken);
+      const response = await fetch('/api/parent-portal', { headers:{ Authorization:`Bearer ${session.access_token}` } });
+      if (!response.ok) return false;
+      const payload = await response.json();
+      const match = (payload.children || []).find(child => child.id === childId);
+      return match?.permissions?.uploadGrowth === true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   async function init() {
     const params = new URLSearchParams(location.search);
     const token = params.get('t');
@@ -1128,6 +1149,7 @@
     const requestedTheme = params.get('theme');
     if (params.get('demo') === '1' || location.protocol === 'file:') {
       isDemoMode = true;
+      parentContributionAllowed = true;
       profile = createDemoProfile();
       applyTheme(requestedTheme || getStoredTheme(), profile.child.style_preference);
       document.title = '成长手册动态演示 - 阿墨逗儿童成长中心';
@@ -1141,6 +1163,7 @@
       if (!data || !data.child) { showError('未找到记录', '该分享链接可能已失效，请联系老师确认'); return; }
 
       profile = data;
+      parentContributionAllowed = await resolveParentContributionAccess(data.child.id);
       applyTheme(requestedTheme || getStoredTheme(), data.child.style_preference);
       document.title = `${data.child.name}的成长手册 - 阿墨逗儿童成长中心`;
       render();
@@ -1367,8 +1390,8 @@
           <div class="section-sub">把珍贵的成长经历，保存为可以长期收藏的完整履历</div>
           <div class="section-line"></div>
           <div class="contribution-invite">
-            <div><small>PARENT CONTRIBUTION · 家长填写区</small><h3>家长补充成长记忆</h3><p>家长可以提交一条成长经历；老师与机构记录由后台填写。家长内容通过审核后才会展示。</p></div>
-            <button type="button" class="contribution-button" onclick="toggleContributionPanel(true)">＋ 补充成长记录</button>
+            <div><small>PARENT CONTRIBUTION · 家长填写区</small><h3>家长补充成长记忆</h3><p>${parentContributionAllowed || isDemoMode ? '家长可以提交一条成长经历；老师与机构记录由后台填写。家长内容通过审核后才会展示。' : '分享链接用于查看成长档案；补充家庭成长素材需要登录已绑定的家长账号。'}</p></div>
+            ${parentContributionAllowed || isDemoMode ? '<button type="button" class="contribution-button" onclick="toggleContributionPanel(true)">＋ 补充成长记录</button>' : '<button type="button" class="contribution-button" onclick="location.href=\'/parent\'">家长登录后补充</button>'}
           </div>
           <div class="report-book-stage">
             <div class="report-book" id="report-book" aria-label="${escapeHtml(c.name)}的互动成长册" ontouchstart="startReportBookSwipe(event)" ontouchend="endReportBookSwipe(event)">
@@ -1430,7 +1453,7 @@
         </div>
       </div>
 
-      <div class="contribution-panel" id="contribution-panel" aria-hidden="true" onclick="closeContributionFromBackdrop(event)">
+      ${parentContributionAllowed || isDemoMode ? `<div class="contribution-panel" id="contribution-panel" aria-hidden="true" onclick="closeContributionFromBackdrop(event)">
         <div class="contribution-dialog" role="dialog" aria-modal="true" aria-labelledby="contribution-title">
           <div class="contribution-dialog-head">
             <div><small>PARENT GROWTH NOTE · 家长填写区</small><h3 id="contribution-title">家长补充一条成长记录</h3><p>只需填写三个必填项，提交后由机构审核；老师记录请在机构后台填写。</p></div>
@@ -1450,7 +1473,7 @@
             <div class="contribution-actions"><button type="button" class="contribution-cancel" onclick="toggleContributionPanel(false)">稍后再填</button><button type="submit" class="contribution-submit" id="contribution-submit">提交机构审核</button></div>
           </form>
         </div>
-      </div>
+      </div>` : ''}
     `;
     syncThemeControls();
     document.onkeydown = event => {
@@ -1598,9 +1621,11 @@
       compressed.push(await compressParentContributionImage(files[index], certificateMode));
     }
     document.getElementById('contribution-submit').textContent = '正在安全上传…';
+    const { data:{ session } } = await db.auth.getSession();
+    if (!session?.access_token) throw new Error('PARENT_AUTH_REQUIRED');
     const response = await fetch('/api/parent-contribution-media', {
       method:'POST',
-      headers:{ 'Content-Type':'application/json' },
+      headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${session.access_token}` },
       body:JSON.stringify({ token:activeShareToken, contributionId, files:compressed })
     });
     const payload = await response.json().catch(() => ({}));
@@ -1627,6 +1652,10 @@
     }
     if (!activeShareToken) {
       showContributionMessage('当前分享链接无效，请联系机构重新获取。', 'error');
+      return;
+    }
+    if (!parentContributionAllowed) {
+      showContributionMessage('请先使用机构已绑定的家长账号登录。', 'error');
       return;
     }
     submitButton.disabled = true;

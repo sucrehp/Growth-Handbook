@@ -2,6 +2,7 @@ const { send, handleError, requireParent, db } = require("../../api/_lib");
 
 module.exports = async function handler(req, res) {
   try {
+    res.setHeader("Cache-Control", "private, no-store");
     if (req.method !== "GET") {
       const error = new Error("请求方式不支持");
       error.statusCode = 405;
@@ -30,7 +31,7 @@ module.exports = async function handler(req, res) {
           isPrimary: binding.is_primary,
           permissions: {
             editBasic: false,
-            replyComments: binding.can_reply_comments,
+            replyComments: false,
             uploadGrowth: binding.can_upload_growth
           }
         };

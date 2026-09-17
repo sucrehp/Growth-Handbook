@@ -52,15 +52,28 @@ async function requireUser(req) {
 
 async function requireStaff(req) {
   const user = await requireUser(req);
-  const rows = await db(
-    `staff_profiles?select=id,display_name,role,status&id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=1`
-  );
+  let rows;
+  try {
+    rows = await db(
+      `staff_profiles?select=id,display_name,role,status&id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=1`
+    );
+  } catch (error) {
+    if (isMissingTableError(error, "staff_profiles")) {
+      return { ...user, legacyStaffBoundary: true };
+    }
+    throw error;
+  }
   if (!rows.length) {
     const error = new Error("该账号没有机构后台操作权限");
     error.statusCode = 403;
     throw error;
   }
   return { ...user, staffProfile: rows[0] };
+}
+
+function isMissingTableError(error, tableName) {
+  const message = String(error?.message || "");
+  return message.includes("PGRST205") && message.includes(tableName);
 }
 
 async function requireParent(req) {
@@ -192,6 +205,7 @@ module.exports = {
   requireUser,
   requireStaff,
   requireParent,
+  isMissingTableError,
   authAdmin,
   inviteAuthUser,
   db,

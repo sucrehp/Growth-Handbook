@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const { requireStaff } = require("../../api/_lib");
+const { requireStaff, requireParent } = require("../../api/_lib");
 
 const SUPABASE_URL = String(process.env.SUPABASE_URL || "").replace(/\/$/, "");
 const SECRET_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -190,6 +190,9 @@ module.exports = async function handler(req, res) {
     }
     const images = body.files.map(decodeImage);
     const child = await getChildByToken(token);
+    const { bindings } = await requireParent(req);
+    const binding = bindings.find(item => item.child_id === child.id && item.can_upload_growth);
+    if (!binding) throw fail("当前家长账号没有为这个孩子上传素材的权限", 403);
     const contribution = await getPendingContribution(child.id, contributionId);
     previousEvidence = Array.isArray(contribution.metadata.evidence) ? contribution.metadata.evidence : [];
     previousPhotoUrls = Array.isArray(contribution.upload.photo_urls) ? contribution.upload.photo_urls : [];

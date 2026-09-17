@@ -90,7 +90,7 @@ async function createBinding(req, res, staff) {
     relation,
     is_primary: booleanValue(body.isPrimary),
     can_edit_basic: false,
-    can_reply_comments: booleanValue(body.canReplyComments, true),
+    can_reply_comments: false,
     can_upload_growth: booleanValue(body.canUploadGrowth, true),
     status: "active",
     granted_by: staff.id
@@ -124,7 +124,7 @@ async function updateBinding(req, res, staff) {
       relation,
       is_primary: booleanValue(body.isPrimary),
       can_edit_basic: false,
-      can_reply_comments: booleanValue(body.canReplyComments, true),
+      can_reply_comments: false,
       can_upload_growth: booleanValue(body.canUploadGrowth, true),
       status,
       granted_by: staff.id,
@@ -136,6 +136,7 @@ async function updateBinding(req, res, staff) {
 
 module.exports = async function handler(req, res) {
   try {
+    res.setHeader("Cache-Control", "private, no-store");
     const staff = await requireStaff(req);
     if (req.method === "GET") {
       const childId = String(req.query?.childId || "").trim();

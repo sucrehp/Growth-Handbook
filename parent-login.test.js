@@ -9,6 +9,8 @@ const lib = fs.readFileSync('api/_lib.js', 'utf8');
 const eduHtml = fs.readFileSync('edu.html', 'utf8');
 const eduJs = fs.readFileSync('edu.js', 'utf8');
 const sql = fs.readFileSync('supabase-parent-access-pilot.sql', 'utf8');
+const childHtml = fs.readFileSync('child.html', 'utf8');
+const mediaHandler = fs.readFileSync('server/handlers/parent-contribution-media.js', 'utf8');
 const vercel = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
 
 assert.match(parentHtml, /家长登录/);
@@ -33,6 +35,14 @@ assert.match(eduHtml, /员工 \/ 家长邮箱/);
 assert.match(eduJs, /if\(state\.me\.accountType==="parent"\)\{location\.href="\/parent"/);
 assert.match(sql, /using \(user_id = auth\.uid\(\)\)/);
 assert.match(sql, /revoke insert, update, delete on table public\.staff_profiles, public\.parent_accounts from authenticated/i);
+assert.match(sql, /submit_parent_contribution_by_token[\s\S]*auth\.uid\(\) is null/);
+assert.match(sql, /account\.user_id = auth\.uid\(\)[\s\S]*account\.child_id = c\.id[\s\S]*account\.can_upload_growth/);
+assert.match(sql, /submit_parent_contribution_by_token[\s\S]*from public, anon, authenticated;[\s\S]*to authenticated/);
+assert.match(childHtml, /resolveParentContributionAccess/);
+assert.match(childHtml, /parentContributionAllowed = await resolveParentContributionAccess/);
+assert.match(childHtml, /Authorization:`Bearer \$\{session\.access_token\}`/);
+assert.match(mediaHandler, /const \{ bindings \} = await requireParent\(req\)/);
+assert.match(mediaHandler, /item\.child_id === child\.id && item\.can_upload_growth/);
 
 const rewrites = new Map(vercel.rewrites.map(item => [item.source, item.destination]));
 assert.equal(rewrites.get('/parent'), '/parent.html');
