@@ -78,6 +78,7 @@ async function createBinding(req, res, staff) {
   let invitationSent = false;
   if (!authUser) {
     authUser = await inviteAuthUser(email, parentRedirectUrl());
+    authUser = authUser?.user || authUser;
     invitationSent = true;
   }
   if (!UUID_PATTERN.test(String(authUser?.id || ""))) throw fail("家长账号创建失败", 503);

@@ -63,6 +63,19 @@ async function requireStaff(req) {
   return { ...user, staffProfile: rows[0] };
 }
 
+async function requireParent(req) {
+  const user = await requireUser(req);
+  const bindings = await db(
+    `parent_accounts?select=id,child_id,relation,is_primary,can_edit_basic,can_reply_comments,can_upload_growth,status&user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&order=is_primary.desc,created_at.asc`
+  );
+  if (!bindings.length) {
+    const error = new Error("该账号尚未绑定孩子，或权限已被机构停用");
+    error.statusCode = 403;
+    throw error;
+  }
+  return { user, bindings };
+}
+
 async function authAdmin(endpoint, options = {}) {
   assertConfigured();
   const headers = {
@@ -178,6 +191,7 @@ module.exports = {
   requireMethod,
   requireUser,
   requireStaff,
+  requireParent,
   authAdmin,
   inviteAuthUser,
   db,

@@ -2,6 +2,7 @@ const handlers = Object.freeze({
   children: require("../server/handlers/children"),
   photos: require("../server/handlers/photos"),
   "guardian-access": require("../server/handlers/guardian-access"),
+  "parent-portal": require("../server/handlers/parent-portal"),
   "parent-contribution-media": require("../server/handlers/parent-contribution-media"),
   "parent-contribution-review": require("../server/handlers/parent-contribution-review")
 });
